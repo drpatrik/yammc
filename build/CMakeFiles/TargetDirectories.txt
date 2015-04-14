@@ -1,0 +1,2 @@
+/Users/patrikt/source/midas_dev/build/midas/CMakeFiles/midas.dir
+/Users/patrikt/source/midas_dev/build/midas/CMakeFiles/midas_test.dir

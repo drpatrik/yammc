@@ -1,0 +1,22 @@
+project(midas)
+
+add_definitions(-DASSETS_FOLDER="${midas_SOURCE_DIR}/assets/" )
+
+# midas
+add_executable(midas src/midas.cpp src/board.cpp src/asset_manager.cpp)
+target_link_libraries(midas ${SDL2_LIBRARY})
+
+#find_library(SDL2_ttf PATHS /usr/local/opt/sdl2_ttf/lib)
+#find_library(CURL_LIBRARY
+#    NAMES curl curllib libcurl_imp curllib_static
+#    HINTS "${CMAKE_PREFIX_PATH}/curl/lib"
+#)
+#set(CMAKE_PREFIX_PATH /usr/local/opt/sdl2_ttf/lib)
+target_link_libraries(midas -L/usr/local/opt/sdl2_ttf/lib -lSDL2_ttf)
+install(TARGETS midas RUNTIME DESTINATION ${BIN_DIR})
+
+# midas_test
+include_directories(midas src/)
+add_executable(midas_test test/midas_test.cpp)
+target_link_libraries(midas_test ${GTEST_BOTH_LIBRARIES})
+add_test(AllTestsInMidasTest midas_test)
