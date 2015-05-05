@@ -122,7 +122,7 @@ std::shared_ptr<Animation> Board::GetInteraction(int row, int col) {
   return std::make_shared<UpdateMarkerAnim>(animation->row(), animation->col());
 }
 
-void Board::RenderText(int x, int y, Font font, const std::string text) {
+void Board::RenderText(int x, int y, Font font, const std::string& text) {
   const SDL_Color color { 255, 255, 255, 255 };
 
   SDL_Surface *surface = TTF_RenderText_Blended(asset_manager_->GetFont(font), text.c_str(), color);

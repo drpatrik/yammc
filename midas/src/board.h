@@ -25,7 +25,7 @@ class Board {
   int id(int row, int col) { return grid_->At(row, col); }
 
  protected:
-  void RenderText(int x, int y, Font font, const std::string text);
+  void RenderText(int x, int y, Font font, const std::string& text);
   void UpdateStatus(int x, int y);
 
  private:
