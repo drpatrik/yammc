@@ -23,9 +23,9 @@ class Grid {
 
   ~Grid() = default;
 
-  int rows() const { return rows_; }
+  inline int rows() const { return rows_; }
 
-  int cols() const { return cols_; }
+  inline int cols() const { return cols_; }
 
   inline const T& At(int row, int col) const {
     return grid_.at(row).at(col);
@@ -72,7 +72,7 @@ class Grid {
     }
   }
 
-  std::set<Position> GetAllMatches() const {
+  inline std::set<Position> GetAllMatches() const {
     return Matches(0, 0, rows_, cols_);
   }
 
