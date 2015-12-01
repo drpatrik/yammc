@@ -114,10 +114,11 @@ std::shared_ptr<Animation> Board::Render(std::shared_ptr<Animation> animation) {
       }
     }
     if (animations_.size() == 0) {
-      auto result = grid_->Collaps();
+      int new_score;
 
-      board_busy_ = result.first;
-      score_ += result.second;
+      std::tie(board_busy_, new_score) = grid_->Collaps();
+
+      score_ += new_score;
     }
   } else {
     RenderText(400, 233, Font::Bold, "G A M E  O V E R");
