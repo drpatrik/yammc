@@ -37,17 +37,19 @@ class SwitchAnim : public Animation {
 
   virtual void Start(SDL_Renderer *renderer) override {
     renderer_ = renderer;
-    std::swap(id1_, grid_.At(p1_));
-    rc1_ = {col_to_pixel(p1_.second), row_to_pixel(p1_.first),35,35};
-    std::swap(id2_, grid_.At(p2_));
-    rc2_ = {col_to_pixel(p2_.second), row_to_pixel(p2_.first),35,35};
+    on_same_row = (p1_.first == p2_.first);
 
-    if (p1_.first == p2_.first &&  rc2_.x > rc1_.x) {
-      std::swap(rc1_, rc2_);
-      on_same_row = true;
-    } else if (rc2_.y > rc1_.y) {
-      std::swap(rc1_, rc2_);
+    if (on_same_row) {
+      if (p2_.second > p1_.second) {
+        std::swap(p1_, p2_);
+      }
+    } else if (p2_.first > p1_.first) {
+      std::swap(p1_, p2_);
     }
+    std::swap(id1_, grid_.At(p1_));
+    rc1_ = {col_to_pixel(p1_.second), row_to_pixel(p1_.first), 35, 35};
+    std::swap(id2_, grid_.At(p2_));
+    rc2_ = {col_to_pixel(p2_.second), row_to_pixel(p2_.first), 35, 35};
   }
 
   virtual void Update() override {
@@ -69,8 +71,15 @@ class SwitchAnim : public Animation {
       SDL_RenderCopy(renderer_, asset_manager_->GetTexture(id2_), nullptr, &rc2_);
       return false;
     }
+    SDL_RenderCopy(renderer_, asset_manager_->GetTexture(id1_), nullptr, &rc1_);
+    SDL_RenderCopy(renderer_, asset_manager_->GetTexture(id2_), nullptr, &rc2_);
+
+    if (has_match_) {
+      std::swap(id1_, id2_);
+    }
     std::swap(id1_, grid_.At(p1_));
     std::swap(id2_, grid_.At(p2_));
+
     return true;
   }
 
@@ -129,5 +138,42 @@ class MatchAnim : public Animation {
   int blink_ = 0;
   int ticks_ = 0;
   std::set<Position> matches_;
+  SDL_Renderer *renderer_ = nullptr;
+};
+
+class MoveDownAnim : public Animation {
+ public:
+  MoveDownAnim(int row, int col, Grid<int> &grid, const Position &p, std::shared_ptr<AssetManager> asset_manager) : Animation(row, col), grid_(grid), p_(p), asset_manager_(asset_manager) {}
+
+  virtual bool Queue() const override { return true; }
+
+  virtual void Start(SDL_Renderer *renderer) override {
+    renderer_ = renderer;
+    std::swap(id_, grid_.At(p_));
+    rc_ = {col_to_pixel(p_.second), row_to_pixel(p_.first) - 35, 35, 35};
+  }
+
+  virtual void Update() override {
+    ticks_++;
+  }
+
+  virtual bool End() override {
+    if (ticks_ <= 7) {
+      rc_.y += 5;
+      SDL_RenderCopy(renderer_, asset_manager_->GetTexture(id_), nullptr, &rc_);
+      return false;
+    }
+    std::swap(id_, grid_.At(p_));
+    SDL_RenderCopy(renderer_, asset_manager_->GetTexture(grid_.At(p_)), nullptr, &rc_);
+    return true;
+  }
+
+ private:
+  Grid<int> &grid_;
+  Position p_;
+  std::shared_ptr<AssetManager> asset_manager_;
+  SDL_Rect rc_;
+  int ticks_ = 0;
+  int id_ = -2;
   SDL_Renderer *renderer_ = nullptr;
 };

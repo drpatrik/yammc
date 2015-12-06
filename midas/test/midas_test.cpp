@@ -98,16 +98,17 @@ TEST(MidasTest, CollapseTest) {
     {1, 1, 1, 51, 52, 53, 54, 55}, // 6
     {56, 57, 58, 59, 60, 61, 62, 63}  // 7
   };
+  std::vector<Position> p;
 
   Grid<int > grid(init_grid);
 
   ASSERT_EQ(grid.GetAllMatches().size(), 9u);
-  grid.Collaps();
+  grid.Collaps(p);
   ASSERT_TRUE(grid.GetAllMatches().empty());
-  grid.Collaps();
-  grid.Collaps();
-  grid.Collaps();
-  grid.Collaps();
+  grid.Collaps(p);
+  grid.Collaps(p);
+  grid.Collaps(p);
+  grid.Collaps(p);
   ASSERT_TRUE(grid.At(3,3) == 3);
   ASSERT_TRUE(grid.At(3,4) == 4);
   ASSERT_TRUE(grid.At(5,3) == 19);

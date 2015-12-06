@@ -76,7 +76,7 @@ class Grid {
     return Matches(0, 0, rows_, cols_);
   }
 
-  std::pair<bool,int> Collaps() {
+  std::pair<bool,int> Collaps(std::vector<Position>& p) {
     bool found = false;
 
     for (auto col = 0;col < cols_; ++col) {
@@ -88,6 +88,7 @@ class Grid {
       for (auto col = 0; col < cols_; ++col) {
         if (At(row, col) == kEmptyObject) {
           std::swap(At(row, col), At(row - 1, col));
+          p.push_back(std::make_pair(row, col));
           found = true;
         }
       }
@@ -111,11 +112,7 @@ class Grid {
 
     auto matches = GetAllMatches();
 
-    if (matches.empty()) {
-      std::swap(At(p1), At(p2));
-    } else {
-      assert(matches.count(p1) || matches.count(p2));
-    }
+    std::swap(At(p1), At(p2));
     return matches;
   }
 

@@ -38,6 +38,8 @@ void Board::Restart() {
   board_busy_ = false;
   first_marker_ = kEmptyMarker;
   grid_ = std::make_unique<Grid<int>>();
+  active_animations_.clear();
+  queued_animations_.clear();
 }
 
 inline bool valid_second_choice(const std::pair<int, int>& old_pos,
@@ -85,8 +87,10 @@ std::shared_ptr<Animation> Board::Render(std::vector<std::shared_ptr<Animation>>
   SDL_Rect rc{0, 0, kWidth, kHeight};
 
   SDL_RenderClear(renderer_);
-  SDL_RenderCopy(renderer_, asset_manager_->GetBackgroundTexture(), nullptr,
-                 &rc);
+  SDL_RenderCopy(renderer_, asset_manager_->GetBackgroundTexture(), nullptr, &rc);
+
+  int row = animations[0]->row();
+  int col = animations[0]->col();
 
   if (timer_()) {
     grid_->for_each([this](int row, int col, int id) {
@@ -128,9 +132,17 @@ std::shared_ptr<Animation> Board::Render(std::vector<std::shared_ptr<Animation>>
     }
     if (active_animations_.empty() && queued_animations_.empty()) {
       int new_score;
+      std::vector<Position> new_objects;
 
-      std::tie(board_busy_, new_score) = grid_->Collaps();
+      std::tie(board_busy_, new_score) = grid_->Collaps(new_objects);
       score_ += new_score;
+
+      for (auto no:new_objects) {
+        auto animation = std::make_shared<MoveDownAnim>(row, col, *grid_.get(), no, asset_manager_);
+
+        animation->Start(renderer_);
+        active_animations_.push_back(animation);
+      }
     }
   } else {
     RenderText(400, 233, Font::Bold, "G A M E  O V E R");
@@ -138,7 +150,7 @@ std::shared_ptr<Animation> Board::Render(std::vector<std::shared_ptr<Animation>>
   UpdateStatus(10, 10);
   SDL_RenderPresent(renderer_);
 
-  return std::make_shared<UpdateMarkerAnim>(animations[0]->row(), animations[0]->col());
+  return std::make_shared<UpdateMarkerAnim>(row, col);
 }
 
 void Board::RenderText(int x, int y, Font font, const std::string& text) {
