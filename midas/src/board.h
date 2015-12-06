@@ -18,9 +18,9 @@ class Board {
 
   void Restart();
 
-  std::shared_ptr<Animation> GetInteraction(int row, int col);
+  std::vector<std::shared_ptr<Animation>> GetInteraction(int row, int col);
 
-  std::shared_ptr<Animation> Render(std::shared_ptr<Animation> action);
+  std::shared_ptr<Animation> Render(std::vector<std::shared_ptr<Animation>>&);
 
   int id(int row, int col) { return grid_->At(row, col); }
 
@@ -34,9 +34,10 @@ class Board {
   int score_ = 0;
   Timer timer_ = kGameTime;
   std::unique_ptr<Grid<int>> grid_;
-  std::unique_ptr<AssetManager> asset_manager_;
+  std::shared_ptr<AssetManager> asset_manager_;
 
   SDL_Window *window_ = nullptr;
   SDL_Renderer *renderer_ = nullptr;
-  std::vector<std::shared_ptr<Animation>> animations_;
+  std::vector<std::shared_ptr<Animation>> queued_animations_;
+  std::vector<std::shared_ptr<Animation>> active_animations_;
 };

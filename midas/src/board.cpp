@@ -22,7 +22,7 @@ Board::Board() {
   }
   SDL_RenderSetLogicalSize(renderer_, kWidth, kHeight);
 
-  asset_manager_ = std::make_unique<AssetManager>(renderer_);
+  asset_manager_ = std::make_shared<AssetManager>(renderer_);
 
   Restart();
 }
@@ -38,7 +38,6 @@ void Board::Restart() {
   board_busy_ = false;
   first_marker_ = kEmptyMarker;
   grid_ = std::make_unique<Grid<int>>();
-  animations_.clear();
 }
 
 inline bool valid_second_choice(const std::pair<int, int>& old_pos,
@@ -52,11 +51,14 @@ inline bool valid_second_choice(const std::pair<int, int>& old_pos,
   return (c > 0);
 }
 
-std::shared_ptr<Animation> Board::GetInteraction(int row, int col) {
+std::vector<std::shared_ptr<Animation>> Board::GetInteraction(int row, int col) {
+  std::vector<std::shared_ptr<Animation>> animations;
+
   if (board_busy_ || !timer_() || row == -1 || col == -1) {
-    return std::make_shared<NoneAnim>();
+    animations.push_back(std::make_shared<NoneAnim>());
+
+    return animations;
   }
-  std::shared_ptr<Animation> animation;
   auto new_pos = std::make_pair(row, col);
 
   if (kEmptyMarker == first_marker_) {
@@ -65,20 +67,21 @@ std::shared_ptr<Animation> Board::GetInteraction(int row, int col) {
     if (valid_second_choice(first_marker_, new_pos)) {
       auto matches = grid_->Switch(first_marker_, new_pos);
 
-      if (matches.empty()) {
-        animation = std::make_shared<SwitchAnim>(row, col, *grid_.get(),
-                                                 first_marker_, new_pos);
-      } else {
-        animation = std::make_shared<MatchAnim>(row, col, matches);
+      animations.push_back(std::make_shared<SwitchAnim>(row, col, *grid_.get(), first_marker_, new_pos, !matches.empty(), asset_manager_));
+      if (!matches.empty()) {
+        animations.push_back(std::make_shared<MatchAnim>(row, col, matches));
       }
     }
     first_marker_ = {-1, -1};
   }
-  return (!animation) ? std::make_shared<UpdateMarkerAnim>(row, col)
-                      : animation;
+  if (animations.empty()) {
+    animations.push_back(std::make_shared<UpdateMarkerAnim>(row, col));
+  }
+
+  return animations;
 }
 
-std::shared_ptr<Animation> Board::Render(std::shared_ptr<Animation> animation) {
+std::shared_ptr<Animation> Board::Render(std::vector<std::shared_ptr<Animation>>& animations) {
   SDL_Rect rc{0, 0, kWidth, kHeight};
 
   SDL_RenderClear(renderer_);
@@ -89,35 +92,44 @@ std::shared_ptr<Animation> Board::Render(std::shared_ptr<Animation> animation) {
     grid_->for_each([this](int row, int col, int id) {
       SDL_Rect rc{col_to_pixel(col), row_to_pixel(row), 35, 35};
 
-      SDL_RenderCopy(renderer_, asset_manager_->GetTexture(id), nullptr, &rc);
+      if (id >= 0) {
+        SDL_RenderCopy(renderer_, asset_manager_->GetTexture(id), nullptr, &rc);
+      }
     });
     if (kEmptyMarker != first_marker_) {
-      SDL_Rect rc{col_to_pixel(animation->col()),
-                  row_to_pixel(animation->row()), 35, 35};
+      SDL_Rect rc{col_to_pixel(animations[0]->col()),
+                  row_to_pixel(animations[0]->row()), 35, 35};
 
       SDL_SetRenderDrawColor(renderer_, 255, 255, 255, 255);  // White
       SDL_RenderDrawRect(renderer_, &rc);
     }
-    if (animation->Queue()) {
+    for (auto a:animations) {
+      if (a->Queue()) {
+        queued_animations_.push_back(a);
+      }
+    }
+    if (active_animations_.empty() && !queued_animations_.empty()) {
+      auto animation = queued_animations_.front();
+      queued_animations_.erase(std::begin(queued_animations_));
+
       board_busy_ = true;
       animation->Start(renderer_);
-      animations_.push_back(animation);
+      active_animations_.push_back(animation);
     }
-    auto it = std::begin(animations_);
+    auto it = std::begin(active_animations_);
 
-    while (it != std::end(animations_)) {
+    while (it != std::end(active_animations_)) {
       (*it)->Update();
       if ((*it)->End()) {
-        it = animations_.erase(it);
+        it = active_animations_.erase(it);
       } else {
         ++it;
       }
     }
-    if (animations_.size() == 0) {
+    if (active_animations_.empty() && queued_animations_.empty()) {
       int new_score;
 
       std::tie(board_busy_, new_score) = grid_->Collaps();
-
       score_ += new_score;
     }
   } else {
@@ -126,7 +138,7 @@ std::shared_ptr<Animation> Board::Render(std::shared_ptr<Animation> animation) {
   UpdateStatus(10, 10);
   SDL_RenderPresent(renderer_);
 
-  return std::make_shared<UpdateMarkerAnim>(animation->row(), animation->col());
+  return std::make_shared<UpdateMarkerAnim>(animations[0]->row(), animations[0]->col());
 }
 
 void Board::RenderText(int x, int y, Font font, const std::string& text) {
