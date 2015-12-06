@@ -7,3 +7,4 @@ const int kFontSize = 25;
 const size_t kNumObjects = 5;
 const size_t kMatchNumber = 3;
 const size_t kEmptyObject = kNumObjects;
+const int kObjectOwnedByAnimation = -1;

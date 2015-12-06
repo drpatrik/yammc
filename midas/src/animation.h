@@ -92,8 +92,8 @@ class SwitchAnim : public Animation {
   SDL_Rect rc1_;
   SDL_Rect rc2_;
   int ticks_ = 0;
-  int id1_ = -1;
-  int id2_ = -1;
+  int id1_ = kObjectOwnedByAnimation;
+  int id2_ = kObjectOwnedByAnimation;
   bool on_same_row = false;
   SDL_Renderer *renderer_ = nullptr;
 };
@@ -174,6 +174,6 @@ class MoveDownAnim : public Animation {
   std::shared_ptr<AssetManager> asset_manager_;
   SDL_Rect rc_;
   int ticks_ = 0;
-  int id_ = -2;
+  int id_ = kObjectOwnedByAnimation;
   SDL_Renderer *renderer_ = nullptr;
 };

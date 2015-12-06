@@ -54,11 +54,17 @@ class Grid {
     // Look behind
     int match_row = (row - 1 >= 0) && At(row - 1, col) == At(row, col);
     match_row += (row - 2 >= 0) && At(row - 2, col) == At(row, col);
+    // Look in front
+    match_row += (row + 1 < kRows) && At(row + 1, col) == At(row, col);
+    match_row += (row + 2 < kRows) && At(row + 2, col) == At(row, col);
     // Look above
     int match_col = (col - 1 >= 0) && At(row, col - 1) == At(row, col);
-    match_col += (col - 2 >= 0) && At(row, col - 1) == At(row, col);
+    match_col += (col - 2 >= 0) && At(row, col - 2) == At(row, col);
+    // Look Below
+    match_col += (col + 1 < kCols) && At(row, col + 1) == At(row, col);
+    match_col += (col + 2 < kCols) && At(row, col + 2) == At(row, col);
 
-    return (match_row == 2) || (match_col == 2);
+    return (match_row >= 2) || (match_col >= 2);
   }
 
   void Generate() {
