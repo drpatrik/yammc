@@ -62,7 +62,7 @@ class MidasMiner {
             }
         }
       }
-      SDL_Delay(20);
+      SDL_Delay(33);
       animation = { board.Render(animation) };
     }
     SDL_Quit();
