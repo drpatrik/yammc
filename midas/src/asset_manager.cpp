@@ -40,7 +40,7 @@ AssetManager::AssetManager(SDL_Renderer *renderer) {
   for (auto& obj:objects) {
     textures_.push_back(LoadTexture(renderer, obj));
   }
-  std::vector<std::string> fonts {"Arial.ttf", "ArialBold.ttf"};
+  std::vector<std::string> fonts {"Cabin-Regular.ttf", "Cabin-Bold.ttf"};
 
   for (auto& f:fonts) {
     fonts_.push_back(LoadFont(f, kFontSize));
@@ -49,6 +49,6 @@ AssetManager::AssetManager(SDL_Renderer *renderer) {
 }
 
 AssetManager::~AssetManager() noexcept {
-  std::for_each(std::begin(textures_), std::end(textures_), [] (SDL_Texture *texture) { SDL_DestroyTexture(texture); });
-  std::for_each(std::begin(fonts_), std::end(fonts_), [] (TTF_Font *font) { TTF_CloseFont(font); });
+  std::for_each(std::begin(textures_), std::end(textures_), [] (auto texture) { SDL_DestroyTexture(texture); });
+  std::for_each(std::begin(fonts_), std::end(fonts_), [] (auto font) { TTF_CloseFont(font); });
 }
