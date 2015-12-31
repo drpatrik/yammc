@@ -35,20 +35,23 @@ TTF_Font *LoadFont(const std::string& name, int size) {
 }
 
 AssetManager::AssetManager(SDL_Renderer *renderer) {
-  std::vector<std::string> objects {"Blue.bmp", "Green.bmp", "Red.bmp", "Yellow.bmp", "Purple.bmp", "BackGround.bmp"};
+  std::vector<SpriteName> names_ {Blue, Green, Red, Yellow, Purple};
+  std::vector<std::string> sprites {"Blue.bmp", "Green.bmp", "Red.bmp", "Yellow.bmp", "Purple.bmp"};
+  std::vector<std::string> selected {"BlueSelected.bmp", "GreenSelected.bmp", "RedSelected.bmp", "YellowSelected.bmp", "PurpleSelected.bmp"};
 
-  for (auto& obj:objects) {
-    textures_.push_back(LoadTexture(renderer, obj));
+  for (size_t i = 0; i < sprites.size(); ++i) {
+    sprites_.push_back(std::make_shared<Sprite>(names_[i], LoadTexture(renderer, sprites[i]), LoadTexture(renderer, selected[i])));
   }
+  sprites_.push_back(std::make_shared<Sprite>(Empty, nullptr, nullptr));
   std::vector<std::string> fonts {"Cabin-Regular.ttf", "Cabin-Bold.ttf"};
 
   for (auto& f:fonts) {
     fonts_.push_back(LoadFont(f, kFontSize));
   }
-
+  background_texture_ = LoadTexture(renderer, "BackGround.bmp");
 }
 
 AssetManager::~AssetManager() noexcept {
-  std::for_each(std::begin(textures_), std::end(textures_), [] (auto texture) { SDL_DestroyTexture(texture); });
   std::for_each(std::begin(fonts_), std::end(fonts_), [] (auto font) { TTF_CloseFont(font); });
+  SDL_DestroyTexture(background_texture_);
 }

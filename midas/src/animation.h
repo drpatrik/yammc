@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SDL2/SDL.h>
-#include "asset_manager.h"
+#include "element.h"
 #include "grid.h"
 
 class Animation {
@@ -31,7 +31,7 @@ class UpdateMarkerAnim : public Animation {
 
 class SwitchAnim : public Animation {
  public:
-  SwitchAnim(int row, int col, Grid<int> &grid, const Position &p1, Position &p2, bool has_match,  std::shared_ptr<AssetManager> asset_manager) : Animation(row, col), grid_(grid), p1_(p1), p2_(p2), has_match_(has_match), asset_manager_(asset_manager) {}
+  SwitchAnim(int row, int col, Grid &grid, const Position &p1, Position &p2, bool has_match,  std::shared_ptr<AssetManager> asset_manager) : Animation(row, col), grid_(grid), p1_(p1), p2_(p2), has_match_(has_match), asset_manager_(asset_manager) {}
 
   virtual bool Queue() const override { return true; }
 
@@ -46,9 +46,9 @@ class SwitchAnim : public Animation {
     } else if (p2_.first > p1_.first) {
       std::swap(p1_, p2_);
     }
-    std::swap(id1_, grid_.At(p1_));
+    SwapSpriteName(id1_, grid_.At(p1_)());
     rc1_ = {col_to_pixel(p1_.second), row_to_pixel(p1_.first), 35, 35};
-    std::swap(id2_, grid_.At(p2_));
+    SwapSpriteName(id2_, grid_.At(p2_)());
     rc2_ = {col_to_pixel(p2_.second), row_to_pixel(p2_.first), 35, 35};
   }
 
@@ -67,24 +67,24 @@ class SwitchAnim : public Animation {
         rc1_.y += -(5 * sign1);
         rc2_.y += -(5 * sign2);
       }
-      SDL_RenderCopy(renderer_, asset_manager_->GetTexture(id1_), nullptr, &rc1_);
-      SDL_RenderCopy(renderer_, asset_manager_->GetTexture(id2_), nullptr, &rc2_);
+      SDL_RenderCopy(renderer_, asset_manager_->GetSprite(id1_)(), nullptr, &rc1_);
+      SDL_RenderCopy(renderer_, asset_manager_->GetSprite(id2_)(), nullptr, &rc2_);
       return false;
     }
-    SDL_RenderCopy(renderer_, asset_manager_->GetTexture(id1_), nullptr, &rc1_);
-    SDL_RenderCopy(renderer_, asset_manager_->GetTexture(id2_), nullptr, &rc2_);
+    SDL_RenderCopy(renderer_, asset_manager_->GetSprite(id1_)(), nullptr, &rc1_);
+    SDL_RenderCopy(renderer_, asset_manager_->GetSprite(id2_)(), nullptr, &rc2_);
 
     if (has_match_) {
       std::swap(id1_, id2_);
     }
-    std::swap(id1_, grid_.At(p1_));
-    std::swap(id2_, grid_.At(p2_));
+    SwapSpriteName(id1_, grid_.At(p1_)());
+    SwapSpriteName(id2_, grid_.At(p2_)());
 
     return true;
   }
 
  private:
-  Grid<int> &grid_;
+  Grid &grid_;
   Position p1_;
   Position p2_;
   bool has_match_;
@@ -92,8 +92,8 @@ class SwitchAnim : public Animation {
   SDL_Rect rc1_;
   SDL_Rect rc2_;
   int ticks_ = 0;
-  int id1_ = kObjectOwnedByAnimation;
-  int id2_ = kObjectOwnedByAnimation;
+  SpriteName id1_ = OwnedByAnimation;
+  SpriteName id2_ = OwnedByAnimation;
   bool on_same_row = false;
   SDL_Renderer *renderer_ = nullptr;
 };
@@ -143,13 +143,13 @@ class MatchAnim : public Animation {
 
 class MoveDownAnim : public Animation {
  public:
-  MoveDownAnim(int row, int col, Grid<int> &grid, const Position &p, std::shared_ptr<AssetManager> asset_manager) : Animation(row, col), grid_(grid), p_(p), asset_manager_(asset_manager) {}
+  MoveDownAnim(int row, int col, Grid &grid, const Position &p, std::shared_ptr<AssetManager> asset_manager) : Animation(row, col), grid_(grid), p_(p), asset_manager_(asset_manager) {}
 
   virtual bool Queue() const override { return true; }
 
   virtual void Start(SDL_Renderer *renderer) override {
     renderer_ = renderer;
-    std::swap(id_, grid_.At(p_));
+    SwapSpriteName(id_,grid_.At(p_)());
     rc_ = {col_to_pixel(p_.second), row_to_pixel(p_.first) - 35, 35, 35};
   }
 
@@ -160,20 +160,20 @@ class MoveDownAnim : public Animation {
   virtual bool End() override {
     if (ticks_ <= 7) {
       rc_.y += 5;
-      SDL_RenderCopy(renderer_, asset_manager_->GetTexture(id_), nullptr, &rc_);
+      SDL_RenderCopy(renderer_, asset_manager_->GetSprite(id_)(), nullptr, &rc_);
       return false;
     }
-    std::swap(id_, grid_.At(p_));
-    SDL_RenderCopy(renderer_, asset_manager_->GetTexture(grid_.At(p_)), nullptr, &rc_);
+    SwapSpriteName(id_,grid_.At(p_)());
+    SDL_RenderCopy(renderer_, asset_manager_->GetSprite(grid_.At(p_)())(), nullptr, &rc_);
     return true;
   }
 
  private:
-  Grid<int> &grid_;
+  Grid &grid_;
   Position p_;
   std::shared_ptr<AssetManager> asset_manager_;
   SDL_Rect rc_;
   int ticks_ = 0;
-  int id_ = kObjectOwnedByAnimation;
+  SpriteName id_ = OwnedByAnimation;
   SDL_Renderer *renderer_ = nullptr;
 };

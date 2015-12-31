@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "animation.h"
-#include "asset_manager.h"
+#include "element.h"
 #include "timer.h"
 
 class Board {
@@ -22,7 +22,7 @@ class Board {
 
   std::shared_ptr<Animation> Render(std::vector<std::shared_ptr<Animation>>&);
 
-  int id(int row, int col) { return grid_->At(row, col); }
+  auto operator()(int row, int col) { return grid_->At(row, col); }
 
  protected:
   void RenderText(int x, int y, Font font, const std::string& text);
@@ -33,7 +33,7 @@ class Board {
   bool board_busy_ = false;
   int score_ = 0;
   Timer timer_ = kGameTime;
-  std::unique_ptr<Grid<int>> grid_;
+  std::unique_ptr<Grid> grid_;
   std::shared_ptr<AssetManager> asset_manager_;
 
   SDL_Window *window_ = nullptr;

@@ -8,17 +8,17 @@
 
 #include "constants.h"
 #include "coordinates.h"
+#include "element.h"
 
-template <typename T>
 class Grid {
  public:
-  Grid() : Grid(kRows, kCols) {}
+  Grid() : Grid(kRows, kCols, nullptr) {}
 
-  Grid(int rows, int cols) : rows_(rows), cols_(cols) {
+  Grid(int rows, int cols, AssetManager *am) : rows_(rows), cols_(cols), asset_manager_(am) {
     Generate();
   }
 
-  Grid(const std::vector<std::vector<T>>& grid)
+  Grid(const std::vector<std::vector<Element>>& grid)
       : rows_(grid.size()), cols_(grid.at(0).size()), grid_(grid) {}
 
   ~Grid() = default;
@@ -27,28 +27,18 @@ class Grid {
 
   inline int cols() const { return cols_; }
 
-  inline const T& At(int row, int col) const {
+  inline const Element& At(int row, int col) const {
     return grid_.at(row).at(col);
   }
 
-  inline T& At(int row, int col) { return grid_.at(row).at(col); }
+  inline Element& At(int row, int col) { return grid_.at(row).at(col); }
 
-  inline const T& At(const Position& p) const {
+  inline const Element& At(const Position& p) const {
     return grid_.at(p.first).at(p.second);
   }
 
-  inline T& At(const Position& p) { return grid_.at(p.first).at(p.second); }
+  inline Element& At(const Position& p) { return grid_.at(p.first).at(p.second); }
 
-  void for_each(std::function<void(int row, int col, int id)> eval) {
-    for (auto row = 0;row < rows_; ++row) {
-      for (auto col = 0;col < cols_; ++col) {
-        eval(row, col, At(row, col));
-      }
-    }
-  }
-
-  // Can only be used for checking a match when generating a
-  // new board
   bool IsMatch(int row, int col) const {
     assert(kMatchNumber <= 3);
     // Look behind
@@ -68,11 +58,11 @@ class Grid {
   }
 
   void Generate() {
-    grid_.resize(rows_, std::vector<T>(cols_, T(kEmptyObject)));
+    grid_.resize(rows_, std::vector<Element>(cols_, Element(asset_manager_->GetSprite(SpriteName::Empty))));
     for (auto row = 0; row < rows_; ++row) {
       for (auto col = 0; col < cols_; ++col) {
         do {
-          At(row, col) = T(distribution_(engine_));
+          At(row, col) = Element(asset_manager_->GetSprite(distribution_(engine_)), row, col);
         } while(IsMatch(row, col));
       }
     }
@@ -86,14 +76,14 @@ class Grid {
     bool found = false;
 
     for (auto col = 0;col < cols_; ++col) {
-      if (At(0, col) == kEmptyObject) {
-        At(0, col) = T(distribution_(engine_));
+      if (At(0, col)() == SpriteName::Empty) {
+        At(0, col) = Element(asset_manager_->GetSprite(distribution_(engine_)), 0, col);
       }
     }
     for (auto row = rows_ - 1;row >= 1; --row) {
       for (auto col = 0; col < cols_; ++col) {
-        if (At(row, col) == kEmptyObject) {
-          std::swap(At(row, col), At(row - 1, col));
+        if (At(row, col)() == SpriteName::Empty) {
+          SwapPosition(At(row, col), At(row - 1, col));
           p.push_back(std::make_pair(row, col));
           found = true;
         }
@@ -107,25 +97,32 @@ class Grid {
       match_count += matches.size();
 
       for (auto& m : matches) {
-        At(m) = kEmptyObject;
+        At(m)() = SpriteName::Empty;
       }
     }
     return std::make_pair(found, match_count);
   }
 
   std::set<Position> Switch(const Position& p1, const Position& p2) {
-    std::swap(At(p1), At(p2));
+    SwapSpriteName(At(p1)(), At(p2)());
 
     auto matches = GetAllMatches();
 
-    std::swap(At(p1), At(p2));
+    SwapSpriteName(At(p1)(), At(p2)());
     return matches;
+  }
+
+  void Render(SDL_Renderer *renderer) {
+    for (int row = 0; row < rows_; ++row)
+      for (int col = 0; col < cols_; ++col) {
+        At(row, col).Render(renderer);
+      }
   }
 
   void Print() const {
     for (auto row = 0; row < rows_; ++row) {
       for (auto col = 0; col < cols_; ++col) {
-        std::cout << At(row, col) << '\t';
+        std::cout << At(row, col)() << '\t';
       }
       std::cout << '\n';
     }
@@ -133,7 +130,7 @@ class Grid {
   }
 
  protected:
-  using GetValue = std::function<T(int i)>;
+  using GetValue = std::function<Element(int i)>;
   using GetPosition = std::function<Position(int i)>;
 
   std::set<Position> Matches(int start_row, int start_col, int rows, int cols) const {
@@ -158,17 +155,17 @@ class Grid {
 
     matches.emplace(row, col);
     // check lower bounds
-    auto value = At(row, col);
+    auto& value = At(row, col);
 
     for (int i = start - 1; i >= 0; i--) {
-      if (value_at(i) != value || value_at(i) == kEmptyObject) {
+      if (value_at(i) != value || value_at(i).IsEmpty()) {
         break;
       }
       matches.emplace(pos(i));
     }
     // check upper bounds
     for (int i = start + 1; i < end; i++) {
-      if (value_at(i) != value || value_at(i) == kEmptyObject) {
+      if (value_at(i) != value || value_at(i).IsEmpty()) {
         break;
       }
       matches.emplace(pos(i));
@@ -198,5 +195,6 @@ class Grid {
   int cols_;
   std::mt19937 engine_ {std::random_device{}()};
   std::uniform_int_distribution<int> distribution_{0, kNumObjects - 1};
-  std::vector<std::vector<T>> grid_;
+  std::vector<std::vector<Element>> grid_;
+  AssetManager *asset_manager_ = nullptr;
 };

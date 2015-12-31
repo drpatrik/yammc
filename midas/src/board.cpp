@@ -10,7 +10,7 @@ const std::pair<int, int> kEmptyMarker{-1, -1};
 
 Board::Board() {
   window_ = SDL_CreateWindow("Yet Another Midas Clone", SDL_WINDOWPOS_UNDEFINED,
-                             SDL_WINDOWPOS_UNDEFINED, kWidth, kHeight, 0);
+                             SDL_WINDOWPOS_UNDEFINED, kWidth, kHeight, SDL_WINDOW_OPENGL);
   if (nullptr == window_) {
     std::cout << "Failed to create window : " << SDL_GetError();
     exit(-1);
@@ -37,7 +37,7 @@ void Board::Restart() {
   timer_ = kGameTime;
   board_busy_ = false;
   first_marker_ = kEmptyMarker;
-  grid_ = std::make_unique<Grid<int>>();
+  grid_ = std::make_unique<Grid>();
   active_animations_.clear();
   queued_animations_.clear();
 }
@@ -93,13 +93,7 @@ std::shared_ptr<Animation> Board::Render(std::vector<std::shared_ptr<Animation>>
   int col = animations[0]->col();
 
   if (timer_()) {
-    grid_->for_each([this](int row, int col, int id) {
-      SDL_Rect rc{col_to_pixel(col), row_to_pixel(row), 35, 35};
-
-      if (id >= 0) {
-        SDL_RenderCopy(renderer_, asset_manager_->GetTexture(id), nullptr, &rc);
-      }
-    });
+    grid_->Render(renderer_);
     if (kEmptyMarker != first_marker_) {
       SDL_Rect rc{col_to_pixel(animations[0]->col()),
                   row_to_pixel(animations[0]->row()), 35, 35};
