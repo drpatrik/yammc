@@ -12,14 +12,20 @@
 
 class Grid {
  public:
-  Grid() : Grid(kRows, kCols, nullptr) {}
-
-  Grid(int rows, int cols, AssetManager *am) : rows_(rows), cols_(cols), asset_manager_(am) {
+  Grid(int rows, int cols, AssetManagerInterface *am) : rows_(rows), cols_(cols), asset_manager_(am) {
     Generate();
   }
 
-  Grid(const std::vector<std::vector<Element>>& grid)
-      : rows_(grid.size()), cols_(grid.at(0).size()), grid_(grid) {}
+  Grid(const std::vector<std::vector<int>>& grid, AssetManagerInterface *am)
+      : rows_(grid.size()), cols_(grid.at(0).size()), asset_manager_(am) {
+    grid_.resize(grid.size());
+    for (int row = 0; row < rows_; row++) {
+      grid_.at(row).resize(grid.at(0).size(), Element(0));
+      for (int col = 0; col < cols_; col++) {
+        grid_.at(row).at(col) = Element(grid.at(row).at(col));
+      }
+    }
+  }
 
   ~Grid() = default;
 
@@ -58,11 +64,11 @@ class Grid {
   }
 
   void Generate() {
-    grid_.resize(rows_, std::vector<Element>(cols_, Element(asset_manager_->GetSprite(SpriteName::Empty))));
+    grid_.resize(rows_, std::vector<Element>(cols_, Element(asset_manager_->GetSprite(SpriteID::Empty))));
     for (auto row = 0; row < rows_; ++row) {
       for (auto col = 0; col < cols_; ++col) {
         do {
-          At(row, col) = Element(asset_manager_->GetSprite(distribution_(engine_)), row, col);
+          At(row, col) = Element(asset_manager_->GetSprite(static_cast<SpriteID>(distribution_(engine_))));
         } while(IsMatch(row, col));
       }
     }
@@ -76,14 +82,14 @@ class Grid {
     bool found = false;
 
     for (auto col = 0;col < cols_; ++col) {
-      if (At(0, col)() == SpriteName::Empty) {
-        At(0, col) = Element(asset_manager_->GetSprite(distribution_(engine_)), 0, col);
+      if (At(0, col) == SpriteID::Empty) {
+        At(0, col) = Element(asset_manager_->GetSprite(static_cast<SpriteID>(distribution_(engine_))));
       }
     }
     for (auto row = rows_ - 1;row >= 1; --row) {
       for (auto col = 0; col < cols_; ++col) {
-        if (At(row, col)() == SpriteName::Empty) {
-          SwapPosition(At(row, col), At(row - 1, col));
+        if (At(row, col).id() == SpriteID::Empty) {
+          std::swap(At(row, col), At(row - 1, col));
           p.push_back(std::make_pair(row, col));
           found = true;
         }
@@ -97,32 +103,33 @@ class Grid {
       match_count += matches.size();
 
       for (auto& m : matches) {
-        At(m)() = SpriteName::Empty;
+        At(m) = Element(SpriteID::Empty);
       }
     }
     return std::make_pair(found, match_count);
   }
 
   std::set<Position> Switch(const Position& p1, const Position& p2) {
-    SwapSpriteName(At(p1)(), At(p2)());
+    std::swap(At(p1), At(p2));
 
     auto matches = GetAllMatches();
 
-    SwapSpriteName(At(p1)(), At(p2)());
+    std::swap(At(p1), At(p2));
     return matches;
   }
 
   void Render(SDL_Renderer *renderer) {
-    for (int row = 0; row < rows_; ++row)
+    for (int row = 0; row < rows_; ++row) {
       for (int col = 0; col < cols_; ++col) {
-        At(row, col).Render(renderer);
+        At(row, col).Render(renderer, col_to_pixel(col), row_to_pixel(row));
       }
+    }
   }
 
   void Print() const {
     for (auto row = 0; row < rows_; ++row) {
       for (auto col = 0; col < cols_; ++col) {
-        std::cout << At(row, col)() << '\t';
+        std::cout << At(row, col).id() << '\t';
       }
       std::cout << '\n';
     }
@@ -196,5 +203,5 @@ class Grid {
   std::mt19937 engine_ {std::random_device{}()};
   std::uniform_int_distribution<int> distribution_{0, kNumObjects - 1};
   std::vector<std::vector<Element>> grid_;
-  AssetManager *asset_manager_ = nullptr;
+  AssetManagerInterface *asset_manager_ = nullptr;
 };

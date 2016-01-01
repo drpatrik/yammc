@@ -46,9 +46,9 @@ class SwitchAnim : public Animation {
     } else if (p2_.first > p1_.first) {
       std::swap(p1_, p2_);
     }
-    SwapSpriteName(id1_, grid_.At(p1_)());
+    std::swap(id1_, grid_.At(p1_));
     rc1_ = {col_to_pixel(p1_.second), row_to_pixel(p1_.first), 35, 35};
-    SwapSpriteName(id2_, grid_.At(p2_)());
+    std::swap(id2_, grid_.At(p2_));
     rc2_ = {col_to_pixel(p2_.second), row_to_pixel(p2_.first), 35, 35};
   }
 
@@ -67,18 +67,18 @@ class SwitchAnim : public Animation {
         rc1_.y += -(5 * sign1);
         rc2_.y += -(5 * sign2);
       }
-      SDL_RenderCopy(renderer_, asset_manager_->GetSprite(id1_)(), nullptr, &rc1_);
-      SDL_RenderCopy(renderer_, asset_manager_->GetSprite(id2_)(), nullptr, &rc2_);
+      SDL_RenderCopy(renderer_, asset_manager_->GetSpriteAsTexture(id1_), nullptr, &rc1_);
+      SDL_RenderCopy(renderer_, asset_manager_->GetSpriteAsTexture(id2_), nullptr, &rc2_);
       return false;
     }
-    SDL_RenderCopy(renderer_, asset_manager_->GetSprite(id1_)(), nullptr, &rc1_);
-    SDL_RenderCopy(renderer_, asset_manager_->GetSprite(id2_)(), nullptr, &rc2_);
+    SDL_RenderCopy(renderer_, asset_manager_->GetSpriteAsTexture(id1_), nullptr, &rc1_);
+    SDL_RenderCopy(renderer_, asset_manager_->GetSpriteAsTexture(id2_), nullptr, &rc2_);
 
     if (has_match_) {
       std::swap(id1_, id2_);
     }
-    SwapSpriteName(id1_, grid_.At(p1_)());
-    SwapSpriteName(id2_, grid_.At(p2_)());
+    std::swap(id1_, grid_.At(p1_));
+    std::swap(id2_, grid_.At(p2_));
 
     return true;
   }
@@ -92,8 +92,8 @@ class SwitchAnim : public Animation {
   SDL_Rect rc1_;
   SDL_Rect rc2_;
   int ticks_ = 0;
-  SpriteName id1_ = OwnedByAnimation;
-  SpriteName id2_ = OwnedByAnimation;
+  Element id1_ = Element(OwnedByAnimation);
+  Element id2_ = Element(OwnedByAnimation);
   bool on_same_row = false;
   SDL_Renderer *renderer_ = nullptr;
 };
@@ -149,7 +149,7 @@ class MoveDownAnim : public Animation {
 
   virtual void Start(SDL_Renderer *renderer) override {
     renderer_ = renderer;
-    SwapSpriteName(id_,grid_.At(p_)());
+    std::swap(id_,grid_.At(p_));
     rc_ = {col_to_pixel(p_.second), row_to_pixel(p_.first) - 35, 35, 35};
   }
 
@@ -160,11 +160,11 @@ class MoveDownAnim : public Animation {
   virtual bool End() override {
     if (ticks_ <= 7) {
       rc_.y += 5;
-      SDL_RenderCopy(renderer_, asset_manager_->GetSprite(id_)(), nullptr, &rc_);
+      SDL_RenderCopy(renderer_, asset_manager_->GetSpriteAsTexture(id_), nullptr, &rc_);
       return false;
     }
-    SwapSpriteName(id_,grid_.At(p_)());
-    SDL_RenderCopy(renderer_, asset_manager_->GetSprite(grid_.At(p_)())(), nullptr, &rc_);
+    std::swap(id_,grid_.At(p_));
+    SDL_RenderCopy(renderer_, asset_manager_->GetSpriteAsTexture(grid_.At(p_)), nullptr, &rc_);
     return true;
   }
 
@@ -174,6 +174,6 @@ class MoveDownAnim : public Animation {
   std::shared_ptr<AssetManager> asset_manager_;
   SDL_Rect rc_;
   int ticks_ = 0;
-  SpriteName id_ = OwnedByAnimation;
+  Element id_ = Element(OwnedByAnimation);
   SDL_Renderer *renderer_ = nullptr;
 };

@@ -35,12 +35,12 @@ TTF_Font *LoadFont(const std::string& name, int size) {
 }
 
 AssetManager::AssetManager(SDL_Renderer *renderer) {
-  std::vector<SpriteName> names_ {Blue, Green, Red, Yellow, Purple};
+  std::vector<SpriteID> ids_ {Blue, Green, Red, Yellow, Purple};
   std::vector<std::string> sprites {"Blue.bmp", "Green.bmp", "Red.bmp", "Yellow.bmp", "Purple.bmp"};
   std::vector<std::string> selected {"BlueSelected.bmp", "GreenSelected.bmp", "RedSelected.bmp", "YellowSelected.bmp", "PurpleSelected.bmp"};
 
   for (size_t i = 0; i < sprites.size(); ++i) {
-    sprites_.push_back(std::make_shared<Sprite>(names_[i], LoadTexture(renderer, sprites[i]), LoadTexture(renderer, selected[i])));
+    sprites_.push_back(std::make_shared<Sprite>(ids_[i], LoadTexture(renderer, sprites[i]), LoadTexture(renderer, selected[i])));
   }
   sprites_.push_back(std::make_shared<Sprite>(Empty, nullptr, nullptr));
   std::vector<std::string> fonts {"Cabin-Regular.ttf", "Cabin-Bold.ttf"};

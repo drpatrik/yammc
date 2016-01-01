@@ -2,42 +2,57 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_TTF.h>
 
-enum Font{ Normal, Bold };
-enum SpriteName{ Blue, Green, Red, Yellow, Purple, Empty, OwnedByAnimation };
+enum Font { Normal, Bold };
+enum SpriteID { Blue, Green, Red, Yellow, Purple, Empty, OwnedByAnimation };
 
-inline void SwapSpriteName(SpriteName& a, SpriteName& b) {
-  SpriteName tmp = b;
+struct Sprite {
+  Sprite(SpriteID id) : id_(id) {}
+  Sprite(SpriteID id, SDL_Texture *sprite, SDL_Texture *selected)
+      : id_(id), sprite_(sprite), selected_(selected) {}
+  Sprite(const Sprite &s)
+      : id_(s.id_), sprite_(s.sprite_), selected_(s.selected_) {}
 
-  b = a;
-  a = tmp;
+  ~Sprite() {
+    if (sprite_) {
+      SDL_DestroyTexture(sprite_);
+    }
+    if (selected_) {
+      SDL_DestroyTexture(selected_);
+    }
+  }
+  auto operator()() const { return sprite_; }
+  SpriteID id_;
+  SDL_Texture *sprite_ = nullptr;
+  SDL_Texture *selected_ = nullptr;
 };
 
-
-class AssetManager {
+class AssetManagerInterface {
  public:
-  struct Sprite {
-    Sprite(SpriteName name, SDL_Texture* sprite, SDL_Texture* selected) : name_(name), sprite_(sprite), selected_(selected) {}
-    ~Sprite() { SDL_DestroyTexture(sprite_); SDL_DestroyTexture(selected_); }
-    auto operator()() const { return sprite_; }
-    SpriteName name_;
-    SDL_Texture* sprite_;
-    SDL_Texture* selected_;
-  };
+  virtual ~AssetManagerInterface() {}
+  virtual SDL_Texture *GetBackgroundTexture() = 0;
+  virtual std::shared_ptr<Sprite> GetSprite(SpriteID id) = 0;
+  virtual SDL_Texture *GetSpriteAsTexture(SpriteID id) = 0;
+  virtual TTF_Font *GetFont(int id) = 0;
+};
 
+class AssetManager : public AssetManagerInterface {
+ public:
   AssetManager(SDL_Renderer *renderer);
-  AssetManager(const AssetManager&) = delete;
-  ~AssetManager() noexcept;
+  AssetManager(const AssetManager &) = delete;
+  virtual ~AssetManager() noexcept;
 
-  SDL_Texture* GetBackgroundTexture() { return background_texture_;}
-  Sprite& GetSprite(int id) { return *sprites_[id]; }
-  TTF_Font* GetFont(int id) { return fonts_[id]; }
+  virtual SDL_Texture *GetBackgroundTexture() override { return background_texture_; }
+  virtual std::shared_ptr<Sprite> GetSprite(SpriteID id) override { return sprites_[id]; }
+  virtual SDL_Texture * GetSpriteAsTexture(SpriteID id) override { return sprites_[id]->sprite_; }
+  virtual TTF_Font *GetFont(int id) override { return fonts_[id]; }
 
  private:
-  std::vector<TTF_Font*> fonts_;
+  std::vector<TTF_Font *> fonts_;
   std::vector<std::shared_ptr<Sprite>> sprites_;
   SDL_Texture *background_texture_;
 };

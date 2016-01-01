@@ -2,6 +2,18 @@
 #include <initializer_list>
 #include "grid.h"
 
+class AssetManagerMock : public AssetManagerInterface {
+ public:
+  virtual SDL_Texture *GetBackgroundTexture() override { return nullptr; }
+  virtual std::shared_ptr<Sprite> GetSprite(SpriteID id) override {
+    return std::make_shared<Sprite>(id);
+  }
+  virtual SDL_Texture * GetSpriteAsTexture(SpriteID) override { return nullptr; }
+  virtual TTF_Font *GetFont(int id) override { return nullptr; }
+};
+
+AssetManagerMock kAssetManagerMock;
+
 TEST(MidasTest, FindAllMatches) {
   std::vector<std::vector<int>> init_grid {
     {0,   0,  0,  3,  4,  7,  7, 7}, // 0
@@ -13,9 +25,7 @@ TEST(MidasTest, FindAllMatches) {
     {48, 49, 50, 51, 52, 53, 54, 55}, // 6
     {56, 56, 56, 59, 60, 61, 61, 61}  // 7
   };
-
-  Grid<int > grid(init_grid);
-
+  Grid grid(init_grid, &kAssetManagerMock);
 
   auto matches = grid.GetAllMatches();
 
@@ -34,7 +44,7 @@ TEST(MidasTest, TestIsMatch) {
     {56, 56, 56, 59, 60, 61, 61, 61}  // 7
   };
 
-  Grid<int > grid(init_grid);
+  Grid grid(init_grid, &kAssetManagerMock);
 
   ASSERT_TRUE(grid.IsMatch(0,1));
   ASSERT_TRUE(grid.IsMatch(3,1));
@@ -61,7 +71,7 @@ TEST(MidasTest, FindNoSolution) {
     {56, 57, 58, 59, 60, 61, 62, 63}  // 7
   };
 
-  Grid<int > grid(init_grid);
+  Grid grid(init_grid, &kAssetManagerMock);
 
   auto matches = grid.GetAllMatches();
 
@@ -80,7 +90,7 @@ TEST(MidasTest, FindSolutionAfterSwich) {
     {56, 57, 58, 59, 60, 61, 62, 63}  // 7
   };
 
-  Grid<int > grid(init_grid);
+  Grid grid(init_grid, &kAssetManagerMock);
 
   auto matches = grid.GetAllMatches();
 
@@ -102,7 +112,7 @@ TEST(MidasTest, CollapseTest) {
   };
   std::vector<Position> p;
 
-  Grid<int > grid(init_grid);
+  Grid grid(init_grid, &kAssetManagerMock);
 
   ASSERT_EQ(grid.GetAllMatches().size(), 9u);
   grid.Collaps(p);
@@ -111,14 +121,14 @@ TEST(MidasTest, CollapseTest) {
   grid.Collaps(p);
   grid.Collaps(p);
   grid.Collaps(p);
-  ASSERT_TRUE(grid.At(3,3) == 3);
-  ASSERT_TRUE(grid.At(3,4) == 4);
-  ASSERT_TRUE(grid.At(5,3) == 19);
-  ASSERT_TRUE(grid.At(5,4) == 20);
+  ASSERT_TRUE(grid.At(3,3).id() == static_cast<SpriteID>(3));
+  ASSERT_TRUE(grid.At(3,4).id() == static_cast<SpriteID>(4));
+  ASSERT_TRUE(grid.At(5,3).id() == static_cast<SpriteID>(19));
+  ASSERT_TRUE(grid.At(5,4).id() == static_cast<SpriteID>(20));
 }
 
-TEST(MidasTest, Generate) {
-  Grid<int> grid;
+TEST(MidasTest, DISABLED_Generate) {
+  Grid grid(kRows, kCols, &kAssetManagerMock);
 
   for (int i  = 0;i < 1000000;i++) {
     grid.Generate();

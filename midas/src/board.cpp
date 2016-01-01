@@ -37,7 +37,7 @@ void Board::Restart() {
   timer_ = kGameTime;
   board_busy_ = false;
   first_marker_ = kEmptyMarker;
-  grid_ = std::make_unique<Grid>();
+  grid_ = std::make_unique<Grid>(kRows, kCols, asset_manager_.get());
   active_animations_.clear();
   queued_animations_.clear();
 }

@@ -46,7 +46,7 @@ class MidasMiner {
             int id = -1;
 
             if (row != -1 && col != -1) {
-              id = board(row, col)();
+              id = board(row, col);
             }
             std::stringstream ss;
             ss << "X: " << mouseX << " Y: " << mouseY << " Row: " <<  row << " Col: " << col << " Id: " << id;
