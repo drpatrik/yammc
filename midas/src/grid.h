@@ -16,13 +16,14 @@ class Grid {
     Generate();
   }
 
+  // This constructor is only used by the test suitx
   Grid(const std::vector<std::vector<int>>& grid, AssetManagerInterface *am)
       : rows_(grid.size()), cols_(grid.at(0).size()), asset_manager_(am) {
     grid_.resize(grid.size());
     for (int row = 0; row < rows_; row++) {
       grid_.at(row).resize(grid.at(0).size(), Element(0));
       for (int col = 0; col < cols_; col++) {
-        grid_.at(row).at(col) = Element(grid.at(row).at(col));
+        grid_.at(row).at(col) = Element(static_cast<SpriteID>(grid.at(row).at(col)));
       }
     }
   }
