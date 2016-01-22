@@ -2,6 +2,9 @@
 #include <sstream>
 #include "board.h"
 
+const int kFPS = 30;
+const int kFrameDelay = 1000 / kFPS;
+
 class MidasMiner {
  public:
   MidasMiner() {
@@ -62,8 +65,15 @@ class MidasMiner {
             }
         }
       }
-      SDL_Delay(33);
+      int frame_start_rendering = SDL_GetTicks();
+
       animation = { board.Render(animation) };
+
+      int frame_rendering_time = (SDL_GetTicks() - frame_start_rendering);
+
+      if (frame_rendering_time < kFrameDelay) {
+        SDL_Delay(kFrameDelay - frame_rendering_time);
+      }
     }
     SDL_Quit();
   }
