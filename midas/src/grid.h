@@ -119,7 +119,7 @@ class Grid {
     return matches;
   }
 
-  void Render(SDL_Renderer *renderer) {
+  void Render(SDL_Renderer *renderer) const {
     for (int row = 0; row < rows_; ++row) {
       for (int col = 0; col < cols_; ++col) {
         At(row, col).Render(renderer, col_to_pixel(col), row_to_pixel(row));

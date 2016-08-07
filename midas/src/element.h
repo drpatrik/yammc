@@ -6,10 +6,8 @@
 
 class Element {
  public:
-  Element(SpriteID id) {
-    sprite_ = std::make_shared<Sprite>(id);
-  }
-  Element(std::shared_ptr<Sprite> sprite) : sprite_(sprite) {}
+  explicit Element(SpriteID id) : sprite_(std::make_shared<Sprite>(id)) {}
+  explicit Element(const std::shared_ptr<Sprite>& sprite) : sprite_(sprite) {}
 
   Element(const Element &e) : sprite_(e.sprite_) {}
 
@@ -59,7 +57,7 @@ class Element {
 
   void Visible(bool flag) { is_visible = flag; }
 
-  void Render(SDL_Renderer *renderer, int x, int y, bool render_always = false) {
+  void Render(SDL_Renderer *renderer, int x, int y, bool render_always = false) const {
     if (!render_always && (!is_visible || sprite_->IsEmpty())) {
       return;
     }

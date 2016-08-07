@@ -2,8 +2,7 @@
 
 class Timer {
  public:
-  Timer(int timer) : timer_(timer), start_(SDL_GetTicks()) {
-  }
+  explicit Timer(int timer) : timer_(timer), start_(SDL_GetTicks()) {}
 
   int operator()() {
     if (SDL_GetTicks() - start_ >= 1000) {

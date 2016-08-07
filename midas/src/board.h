@@ -32,7 +32,7 @@ class Board {
   std::pair<int, int> first_marker_ = {-1, -1};
   bool board_busy_ = false;
   int score_ = 0;
-  Timer timer_ = kGameTime;
+  Timer timer_ = Timer(kGameTime);
   std::unique_ptr<Grid> grid_;
   std::shared_ptr<AssetManager> asset_manager_;
 

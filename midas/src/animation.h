@@ -31,7 +31,7 @@ class UpdateMarkerAnim : public Animation {
 
 class SwitchAnim : public Animation {
  public:
-  SwitchAnim(int row, int col, Grid &grid, const Position &p1, Position &p2, bool has_match,  std::shared_ptr<AssetManager> asset_manager) : Animation(row, col), grid_(grid), p1_(p1), p2_(p2), has_match_(has_match), asset_manager_(asset_manager) {}
+  SwitchAnim(int row, int col, Grid &grid, const Position &p1, Position &p2, bool has_match,  const std::shared_ptr<AssetManager>& asset_manager) : Animation(row, col), grid_(grid), p1_(p1), p2_(p2), has_match_(has_match), asset_manager_(asset_manager) {}
 
   virtual bool Queue() const override { return true; }
 
@@ -143,7 +143,7 @@ class MatchAnim : public Animation {
 
 class MoveDownAnim : public Animation {
  public:
-  MoveDownAnim(int row, int col, Grid &grid, const Position &p, std::shared_ptr<AssetManager> asset_manager) : Animation(row, col), grid_(grid), p_(p), asset_manager_(asset_manager) {}
+  MoveDownAnim(int row, int col, Grid &grid, const Position &p, const std::shared_ptr<AssetManager>& asset_manager) : Animation(row, col), grid_(grid), p_(p), asset_manager_(asset_manager) {}
 
   virtual bool Queue() const override { return true; }
 

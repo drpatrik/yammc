@@ -34,7 +34,7 @@ Board::~Board() noexcept {
 
 void Board::Restart() {
   score_ = 0;
-  timer_ = kGameTime;
+  timer_ = Timer(kGameTime);
   board_busy_ = false;
   first_marker_ = kEmptyMarker;
   grid_ = std::make_unique<Grid>(kRows, kCols, asset_manager_.get());

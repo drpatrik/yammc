@@ -11,7 +11,7 @@ enum SpriteID { Blue, Green, Red, Yellow, Purple, Empty, OwnedByAnimation };
 
 class Sprite {
  public:
-  Sprite(SpriteID id) : id_(id) {}
+  explicit Sprite(SpriteID id) : id_(id) {}
 
   Sprite(SpriteID id, SDL_Texture *sprite, SDL_Texture *selected)
       : id_(id), sprite_(sprite), selected_(selected) {}
@@ -30,18 +30,18 @@ class Sprite {
     }
   }
 
-  auto id() { return id_; }
+  auto id() const { return id_; }
 
   auto operator()() const { return sprite_; }
 
-  auto sprite() { return sprite_; }
+  auto sprite() const { return sprite_; }
 
-  auto selected_sprite() { return selected_; }
+  auto selected_sprite() const { return selected_; }
 
-  bool IsEmpty() { return id_ == SpriteID::Empty; }
+  bool IsEmpty() const { return id_ == SpriteID::Empty; }
 
  private:
-  SpriteID id_;
+  const SpriteID id_;
   SDL_Texture *sprite_ = nullptr;
   SDL_Texture *selected_ = nullptr;
 };
@@ -59,7 +59,7 @@ class AssetManagerInterface {
 
 class AssetManager : public AssetManagerInterface {
  public:
-  AssetManager(SDL_Renderer *renderer);
+  explicit AssetManager(SDL_Renderer *renderer);
 
   AssetManager(const AssetManager &) = delete;
 
