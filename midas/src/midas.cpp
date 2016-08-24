@@ -22,11 +22,12 @@ class MidasMiner {
   void Play() {
     Board board;
     bool quit = false;
-    std::vector<std::shared_ptr<Animation>> animation = {std::make_shared<VoidAnimation>()};
+    std::vector<std::shared_ptr<Animation>> animations;
 
     while (!quit) {
       SDL_Event event;
 
+      animations.clear();
       while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
           quit = true;
@@ -36,7 +37,7 @@ class MidasMiner {
           case SDL_KEYDOWN:
             if(event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
               board.Restart();
-              animation = { std::make_shared<VoidAnimation>() };
+              animations = { std::make_shared<VoidAnimation>() };
             }
             break;
 #if !defined(NDEBUG)
@@ -60,14 +61,14 @@ class MidasMiner {
           case SDL_MOUSEBUTTONDOWN:
             switch (event.button.button) {
               case SDL_BUTTON_LEFT:
-                animation = board.GetInteraction(pixel_to_row(event.motion.y), pixel_to_col(event.motion.x));
+                animations = board.GetInteraction(pixel_to_row(event.motion.y), pixel_to_col(event.motion.x));
                 break;
             }
         }
       }
       int frame_start_rendering = SDL_GetTicks();
 
-      animation = { board.Render(animation) };
+      board.Render(animations);
 
       int frame_rendering_time = (SDL_GetTicks() - frame_start_rendering);
 

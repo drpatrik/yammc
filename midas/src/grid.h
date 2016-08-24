@@ -102,10 +102,6 @@ class Grid {
       matches = GetAllMatches();
 
       match_count += matches.size();
-
-      for (auto& m : matches) {
-        At(m) = Element(SpriteID::Empty);
-      }
     }
     return std::make_pair(found, match_count);
   }

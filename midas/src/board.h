@@ -20,7 +20,7 @@ class Board {
 
   std::vector<std::shared_ptr<Animation>> GetInteraction(int row, int col);
 
-  std::shared_ptr<Animation> Render(std::vector<std::shared_ptr<Animation>>&);
+  void Render(const std::vector<std::shared_ptr<Animation>>&);
 
   auto operator()(int row, int col) { return grid_->At(row, col); }
 

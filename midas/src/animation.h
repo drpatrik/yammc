@@ -99,8 +99,7 @@ class SwitchAnimation : public Animation {
 
 class MatchAnimation : public Animation {
  public:
-  MatchAnimation(int row, int col, const std::set<Position>& matches) : Animation(row, col), matches_(matches) {
-  }
+  MatchAnimation(Grid &grid, const std::set<Position>& matches) : Animation(), grid_(grid), matches_(matches) {}
 
   virtual bool Queue() const override { return true; }
 
@@ -128,6 +127,9 @@ class MatchAnimation : public Animation {
 
   virtual bool End() override {
     if (ticks_ > 30) {
+      for (auto& m : matches_) {
+        grid_.At(m) = Element(SpriteID::Empty);
+      }
       return true;
     }
     return false;
@@ -136,6 +138,7 @@ class MatchAnimation : public Animation {
  private:
   int blink_ = 0;
   int ticks_ = 0;
+  Grid &grid_;
   std::set<Position> matches_;
   SDL_Renderer *renderer_ = nullptr;
 };

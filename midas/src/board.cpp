@@ -56,7 +56,7 @@ inline bool valid_second_choice(const std::pair<int, int>& old_pos,
 std::vector<std::shared_ptr<Animation>> Board::GetInteraction(int row, int col) {
   std::vector<std::shared_ptr<Animation>> animations;
 
-  if (board_busy_ || !timer_() || row == -1 || col == -1) {
+  if (!timer_() || row == -1 || col == -1) {
     animations.push_back(std::make_shared<VoidAnimation>());
 
     return animations;
@@ -72,7 +72,7 @@ std::vector<std::shared_ptr<Animation>> Board::GetInteraction(int row, int col) 
 
       animations.push_back(std::make_shared<SwitchAnimation>(row, col, *grid_.get(), selected_, new_pos, !matches.empty(), asset_manager_));
       if (!matches.empty()) {
-        animations.push_back(std::make_shared<MatchAnimation>(row, col, matches));
+        animations.push_back(std::make_shared<MatchAnimation>(*grid_.get(), matches));
       }
     } else {
       grid_->At(selected_).Unselect();
@@ -86,7 +86,7 @@ std::vector<std::shared_ptr<Animation>> Board::GetInteraction(int row, int col) 
   return animations;
 }
 
-std::shared_ptr<Animation> Board::Render(std::vector<std::shared_ptr<Animation>>& animations) {
+void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
   SDL_Rect rc{0, 0, kWidth, kHeight};
 
   SDL_RenderClear(renderer_);
@@ -132,14 +132,18 @@ std::shared_ptr<Animation> Board::Render(std::vector<std::shared_ptr<Animation>>
         animation->Start(renderer_);
         active_animations_.push_back(animation);
       }
+      if (!matches.empty()) {
+        auto animation = std::make_shared<MatchAnimation>(*grid_.get(), matches);
+
+        animation->Start(renderer_);
+        active_animations_.push_back(animation);
+      }
     }
   } else {
     RenderText(400, 233, Font::Bold, "G A M E  O V E R");
   }
   UpdateStatus(10, 10);
   SDL_RenderPresent(renderer_);
-
-  return std::make_shared<VoidAnimation>();
 }
 
 void Board::RenderText(int x, int y, Font font, const std::string& text) {
