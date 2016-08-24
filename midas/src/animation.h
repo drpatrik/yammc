@@ -21,22 +21,21 @@ class Animation {
   int col_;
 };
 
-class NoneAnim : public Animation {
+class VoidAnimation : public Animation {
 };
 
-class UpdateMarkerAnim : public Animation {
+class SwitchAnimation : public Animation {
  public:
-  UpdateMarkerAnim(int row, int col) : Animation(row, col) {}
-};
-
-class SwitchAnim : public Animation {
- public:
-  SwitchAnim(int row, int col, Grid &grid, const Position &p1, Position &p2, bool has_match,  const std::shared_ptr<AssetManager>& asset_manager) : Animation(row, col), grid_(grid), p1_(p1), p2_(p2), has_match_(has_match), asset_manager_(asset_manager) {}
+  SwitchAnimation(int row, int col, Grid &grid, const Position &p1, Position &p2, bool has_match,  const std::shared_ptr<AssetManager>& asset_manager) : Animation(row, col), grid_(grid), p1_(p1), p2_(p2), has_match_(has_match), asset_manager_(asset_manager) {}
 
   virtual bool Queue() const override { return true; }
 
   virtual void Start(SDL_Renderer *renderer) override {
     renderer_ = renderer;
+
+    grid_.At(p1_).Unselect();
+    grid_.At(p2_).Unselect();
+
     on_same_row = (p1_.first == p2_.first);
 
     if (on_same_row) {
@@ -98,9 +97,9 @@ class SwitchAnim : public Animation {
   SDL_Renderer *renderer_ = nullptr;
 };
 
-class MatchAnim : public Animation {
+class MatchAnimation : public Animation {
  public:
-  MatchAnim(int row, int col, const std::set<Position>& matches) : Animation(row, col), matches_(matches) {
+  MatchAnimation(int row, int col, const std::set<Position>& matches) : Animation(row, col), matches_(matches) {
   }
 
   virtual bool Queue() const override { return true; }
@@ -141,9 +140,9 @@ class MatchAnim : public Animation {
   SDL_Renderer *renderer_ = nullptr;
 };
 
-class MoveDownAnim : public Animation {
+class MoveDownAnimation : public Animation {
  public:
-  MoveDownAnim(int row, int col, Grid &grid, const Position &p, const std::shared_ptr<AssetManager>& asset_manager) : Animation(row, col), grid_(grid), p_(p), asset_manager_(asset_manager) {}
+  MoveDownAnimation(int row, int col, Grid &grid, const Position &p, const std::shared_ptr<AssetManager>& asset_manager) : Animation(row, col), grid_(grid), p_(p), asset_manager_(asset_manager) {}
 
   virtual bool Queue() const override { return true; }
 

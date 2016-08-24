@@ -79,7 +79,7 @@ class Grid {
     return Matches(0, 0, rows_, cols_);
   }
 
-  std::pair<bool,int> Collaps(std::vector<Position>& p) {
+  std::pair<bool,int> Collaps(std::vector<Position>& p, std::set<Position>& matches) {
     bool found = false;
 
     for (auto col = 0;col < cols_; ++col) {
@@ -99,7 +99,7 @@ class Grid {
     int match_count = 0;
 
     if (!found) {
-      auto matches = GetAllMatches();
+      matches = GetAllMatches();
 
       match_count += matches.size();
 

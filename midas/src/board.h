@@ -29,7 +29,7 @@ class Board {
   void UpdateStatus(int x, int y);
 
  private:
-  std::pair<int, int> first_marker_ = {-1, -1};
+  std::pair<int, int> selected_;
   bool board_busy_ = false;
   int score_ = 0;
   Timer timer_ = Timer(kGameTime);

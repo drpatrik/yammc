@@ -111,16 +111,17 @@ TEST(MidasTest, CollapseTest) {
     {56, 57, 58, 59,   60, 61, 62, 63}  // 7
   };
   std::vector<Position> p;
+  std::set<Position> m;
 
   Grid grid(init_grid, &kAssetManagerMock);
 
   ASSERT_EQ(grid.GetAllMatches().size(), 9u);
-  grid.Collaps(p);
+  grid.Collaps(p, m);
   ASSERT_TRUE(grid.GetAllMatches().empty());
-  grid.Collaps(p);
-  grid.Collaps(p);
-  grid.Collaps(p);
-  grid.Collaps(p);
+  grid.Collaps(p, m);
+  grid.Collaps(p, m);
+  grid.Collaps(p, m);
+  grid.Collaps(p, m);
   ASSERT_TRUE(grid.At(3,3).id() == static_cast<SpriteID>(3));
   ASSERT_TRUE(grid.At(3,4).id() == static_cast<SpriteID>(4));
   ASSERT_TRUE(grid.At(5,3).id() == static_cast<SpriteID>(19));

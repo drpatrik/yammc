@@ -22,7 +22,7 @@ class MidasMiner {
   void Play() {
     Board board;
     bool quit = false;
-    std::vector<std::shared_ptr<Animation>> animation = {std::make_shared<NoneAnim>()};
+    std::vector<std::shared_ptr<Animation>> animation = {std::make_shared<VoidAnimation>()};
 
     while (!quit) {
       SDL_Event event;
@@ -36,7 +36,7 @@ class MidasMiner {
           case SDL_KEYDOWN:
             if(event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
               board.Restart();
-              animation = { std::make_shared<NoneAnim>() };
+              animation = { std::make_shared<VoidAnimation>() };
             }
             break;
 #if !defined(NDEBUG)
