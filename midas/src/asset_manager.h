@@ -13,11 +13,14 @@ class Sprite {
  public:
   explicit Sprite(SpriteID id) : id_(id) {}
 
-  Sprite(SpriteID id, SDL_Texture *sprite, SDL_Texture *selected)
-      : id_(id), sprite_(sprite), selected_(selected) {}
+  Sprite(SpriteID id, SDL_Texture *sprite, SDL_Texture *selected) : id_(id), sprite_(sprite), selected_(selected) {
+    Uint32 format;
+    int access;
 
-  Sprite(const Sprite &s)
-      : id_(s.id_), sprite_(s.sprite_), selected_(s.selected_) {}
+    SDL_QueryTexture(sprite, &format, &access, &width_, &height_);
+  }
+
+  Sprite(const Sprite &s) : id_(s.id_), sprite_(s.sprite_), width_(s.width_), height_(s.height_), selected_(s.selected_) {}
 
   ~Sprite() {
     if (sprite_) {
@@ -38,11 +41,17 @@ class Sprite {
 
   auto selected_sprite() const { return selected_; }
 
+  int width() const { return width_; }
+
+  int height() const { return height_; }
+
   bool IsEmpty() const { return id_ == SpriteID::Empty; }
 
  private:
   const SpriteID id_;
   SDL_Texture *sprite_ = nullptr;
+  int width_ = 0;
+  int height_ = 0;
   SDL_Texture *selected_ = nullptr;
 };
 

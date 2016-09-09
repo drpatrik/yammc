@@ -1,12 +1,15 @@
 #pragma once
 
 #include <iostream>
+
 #include "asset_manager.h"
+#include "constants.h"
 #include "coordinates.h"
 
 class Element {
  public:
   explicit Element(SpriteID id) : sprite_(std::make_shared<Sprite>(id)) {}
+
   explicit Element(const std::shared_ptr<Sprite>& sprite) : sprite_(sprite) {}
 
   Element(const Element &e) : sprite_(e.sprite_) {}
@@ -61,7 +64,7 @@ class Element {
     if (!render_always && (!is_visible || sprite_->IsEmpty())) {
       return;
     }
-    SDL_Rect rc{x, y, 35, 35};
+    SDL_Rect rc{x, y, kSpriteWidth, kSpriteHeight};
 
     if (is_selected_) {
       SDL_RenderCopy(renderer, sprite_->selected_sprite(), nullptr, &rc);

@@ -3,11 +3,11 @@
 #include <iostream>
 #include <cassert>
 #include <set>
+#include <tuple>
 #include <random>
 #include <functional>
 
 #include "constants.h"
-#include "coordinates.h"
 #include "element.h"
 
 class Grid {
@@ -79,31 +79,31 @@ class Grid {
     return Matches(0, 0, rows_, cols_);
   }
 
-  std::pair<bool,int> Collaps(std::vector<Position>& p, std::set<Position>& matches) {
+  std::tuple<std::vector<Position>, std::set<Position>, int> Collaps() {
     bool found = false;
+    std::vector<Position> moved_objects;
 
-    for (auto col = 0;col < cols_; ++col) {
-      if (At(0, col) == SpriteID::Empty) {
-        At(0, col) = Element(asset_manager_->GetSprite(static_cast<SpriteID>(distribution_(engine_))));
-      }
-    }
     for (auto row = rows_ - 1;row >= 1; --row) {
       for (auto col = 0; col < cols_; ++col) {
         if (At(row, col).id() == SpriteID::Empty) {
           std::swap(At(row, col), At(row - 1, col));
-          p.push_back(std::make_pair(row, col));
+          moved_objects.push_back(std::make_pair(row, col));
           found = true;
         }
       }
     }
-    int match_count = 0;
+    for (auto col = 0;col < cols_; ++col) {
+      if (At(0, col) == SpriteID::Empty) {
+        At(0, col) = Element(asset_manager_->GetSprite(static_cast<SpriteID>(distribution_(engine_))));
+        moved_objects.push_back(std::make_pair(0, col));
+      }
+    }
+    std::set<Position> matches;
 
     if (!found) {
       matches = GetAllMatches();
-
-      match_count += matches.size();
     }
-    return std::make_pair(found, match_count);
+    return std::make_tuple(moved_objects, matches, matches.size());
   }
 
   std::set<Position> Switch(const Position& p1, const Position& p2) {

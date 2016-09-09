@@ -18,7 +18,7 @@ class Board {
 
   void Restart();
 
-  std::vector<std::shared_ptr<Animation>> GetInteraction(int row, int col);
+  std::vector<std::shared_ptr<Animation>> ButtonPressed(int row, int col);
 
   void Render(const std::vector<std::shared_ptr<Animation>>&);
 
@@ -30,7 +30,6 @@ class Board {
 
  private:
   std::pair<int, int> selected_;
-  bool board_busy_ = false;
   int score_ = 0;
   Timer timer_ = Timer(kGameTime);
   std::unique_ptr<Grid> grid_;

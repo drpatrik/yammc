@@ -9,7 +9,6 @@ class Animation {
   Animation() : row_(-1), col_(-1) {}
   Animation(int row, int col) : row_(row), col_(col) {}
   virtual ~Animation() noexcept = default;
-  virtual bool Queue() const { return false; };
   virtual void Start(SDL_Renderer *) {}
   virtual void Update() {}
   virtual bool End() { return true; }
@@ -21,14 +20,9 @@ class Animation {
   int col_;
 };
 
-class VoidAnimation : public Animation {
-};
-
 class SwitchAnimation : public Animation {
  public:
   SwitchAnimation(int row, int col, Grid &grid, const Position &p1, Position &p2, bool has_match,  const std::shared_ptr<AssetManager>& asset_manager) : Animation(row, col), grid_(grid), p1_(p1), p2_(p2), has_match_(has_match), asset_manager_(asset_manager) {}
-
-  virtual bool Queue() const override { return true; }
 
   virtual void Start(SDL_Renderer *renderer) override {
     renderer_ = renderer;
@@ -46,9 +40,9 @@ class SwitchAnimation : public Animation {
       std::swap(p1_, p2_);
     }
     std::swap(id1_, grid_.At(p1_));
-    rc1_ = {col_to_pixel(p1_.second), row_to_pixel(p1_.first), 35, 35};
+    rc1_ = {col_to_pixel(p1_.second), row_to_pixel(p1_.first), kSpriteWidth, kSpriteWidth };
     std::swap(id2_, grid_.At(p2_));
-    rc2_ = {col_to_pixel(p2_.second), row_to_pixel(p2_.first), 35, 35};
+    rc2_ = {col_to_pixel(p2_.second), row_to_pixel(p2_.first), kSpriteWidth, kSpriteHeight };
   }
 
   virtual void Update() override {
@@ -101,32 +95,30 @@ class MatchAnimation : public Animation {
  public:
   MatchAnimation(Grid &grid, const std::set<Position>& matches) : Animation(), grid_(grid), matches_(matches) {}
 
-  virtual bool Queue() const override { return true; }
-
   virtual void Start(SDL_Renderer *renderer) override {
     renderer_ = renderer;
   }
 
   virtual void Update() override {
     ticks_++;
-    if (++blink_ < 5) {
+    if (++blink_ < 3) {
       for (auto& m:matches_) {
         int row, col;
 
         std::tie(row, col) = m;
-        SDL_Rect rc{col_to_pixel(col), row_to_pixel(row),35,35};
+        SDL_Rect rc{col_to_pixel(col), row_to_pixel(row),  kSpriteWidth, kSpriteHeight };
 
         SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255); // White
         SDL_RenderFillRect(renderer_,&rc);
       }
     }
-    if (blink_ > 10) {
+    if (blink_ >= 6) {
       blink_ = 0;
     }
   }
 
   virtual bool End() override {
-    if (ticks_ > 30) {
+    if (ticks_ >= 15) {
       for (auto& m : matches_) {
         grid_.At(m) = Element(SpriteID::Empty);
       }
@@ -145,24 +137,23 @@ class MatchAnimation : public Animation {
 
 class MoveDownAnimation : public Animation {
  public:
-  MoveDownAnimation(int row, int col, Grid &grid, const Position &p, const std::shared_ptr<AssetManager>& asset_manager) : Animation(row, col), grid_(grid), p_(p), asset_manager_(asset_manager) {}
-
-  virtual bool Queue() const override { return true; }
+  MoveDownAnimation(Grid &grid, const Position &p, const std::shared_ptr<AssetManager>& asset_manager) : Animation(), grid_(grid), p_(p), asset_manager_(asset_manager) {}
 
   virtual void Start(SDL_Renderer *renderer) override {
     renderer_ = renderer;
     std::swap(id_,grid_.At(p_));
-    rc_ = {col_to_pixel(p_.second), row_to_pixel(p_.first) - 35, 35, 35};
+    rc_ = {col_to_pixel(p_.second), row_to_pixel(p_.first) - kSpriteHeight,  kSpriteWidth, kSpriteHeight };
+    y_ = rc_.y;
+    end_ = y_ + kSpriteHeight;
   }
 
-  virtual void Update() override {
-    ticks_++;
-  }
+  virtual void Update() override {}
 
   virtual bool End() override {
-    if (ticks_ <= 7) {
-      rc_.y += 5;
+    if (y_ <= end_) {
+      rc_.y = static_cast<int>(y_);
       SDL_RenderCopy(renderer_, asset_manager_->GetSpriteAsTexture(id_), nullptr, &rc_);
+      y_ += (4 * (kSpriteHeight / kFPS));
       return false;
     }
     std::swap(id_,grid_.At(p_));
@@ -175,7 +166,8 @@ class MoveDownAnimation : public Animation {
   Position p_;
   std::shared_ptr<AssetManager> asset_manager_;
   SDL_Rect rc_;
-  int ticks_ = 0;
+  double end_ = 0.0;
+  double y_ = 0.0;
   Element id_ = Element(OwnedByAnimation);
   SDL_Renderer *renderer_ = nullptr;
 };

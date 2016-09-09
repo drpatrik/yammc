@@ -1,8 +1,9 @@
 #include <SDL2/SDL.h>
 #include <sstream>
+
+#include "constants.h"
 #include "board.h"
 
-const int kFPS = 30;
 const int kFrameDelay = 1000 / kFPS;
 
 class MidasMiner {
@@ -37,7 +38,7 @@ class MidasMiner {
           case SDL_KEYDOWN:
             if(event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
               board.Restart();
-              animations = { std::make_shared<VoidAnimation>() };
+              animations.clear();
             }
             break;
 #if !defined(NDEBUG)
@@ -61,7 +62,7 @@ class MidasMiner {
           case SDL_MOUSEBUTTONDOWN:
             switch (event.button.button) {
               case SDL_BUTTON_LEFT:
-                animations = board.GetInteraction(pixel_to_row(event.motion.y), pixel_to_col(event.motion.x));
+                animations = board.ButtonPressed(pixel_to_row(event.motion.y), pixel_to_col(event.motion.x));
                 break;
             }
         }

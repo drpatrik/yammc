@@ -35,7 +35,7 @@ Board::~Board() noexcept {
 void Board::Restart() {
   score_ = 0;
   timer_ = Timer(kGameTime);
-  board_busy_ = false;
+
   selected_ = kNothingSelected;
   grid_ = std::make_unique<Grid>(kRows, kCols, asset_manager_.get());
   active_animations_.clear();
@@ -53,12 +53,10 @@ inline bool valid_second_choice(const std::pair<int, int>& old_pos,
   return (c > 0);
 }
 
-std::vector<std::shared_ptr<Animation>> Board::GetInteraction(int row, int col) {
+std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(int row, int col) {
   std::vector<std::shared_ptr<Animation>> animations;
 
   if (!timer_() || row == -1 || col == -1) {
-    animations.push_back(std::make_shared<VoidAnimation>());
-
     return animations;
   }
   auto new_pos = std::make_pair(row, col);
@@ -79,69 +77,66 @@ std::vector<std::shared_ptr<Animation>> Board::GetInteraction(int row, int col) 
     }
     selected_ = kNothingSelected;
   }
-  if (animations.empty()) {
-    animations.push_back(std::make_shared<VoidAnimation>());
-  }
-
   return animations;
 }
 
 void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
-  SDL_Rect rc{0, 0, kWidth, kHeight};
+  SDL_Rect rc{ 0, 0, kWidth, kHeight};
+  SDL_Rect clip_rc{ kBoardStartX, kBoardStartY, kWidth, kHeight };
 
   SDL_RenderClear(renderer_);
   SDL_RenderCopy(renderer_, asset_manager_->GetBackgroundTexture(), nullptr, &rc);
 
-  if (timer_()) {
-    grid_->Render(renderer_);
+  if (!timer_()) {
+    RenderText(400, 233, Font::Bold, "G A M E  O V E R");
+    UpdateStatus(10, 10);
+    SDL_RenderPresent(renderer_);
+    return;
+  }
+  grid_->Render(renderer_);
+  SDL_RenderSetClipRect(renderer_, &clip_rc);
 
-    for (auto& a:animations) {
-      if (a->Queue()) {
-        queued_animations_.push_back(a);
-      }
+  for (auto& a:animations) {
+    queued_animations_.push_back(a);
+  }
+  if (active_animations_.empty() && !queued_animations_.empty()) {
+    auto animation = queued_animations_.front();
+    queued_animations_.erase(std::begin(queued_animations_));
+    animation->Start(renderer_);
+    active_animations_.push_back(animation);
+  }
+  auto it = std::begin(active_animations_);
+
+  while (it != std::end(active_animations_)) {
+    (*it)->Update();
+    if ((*it)->End()) {
+      it = active_animations_.erase(it);
+    } else {
+      ++it;
     }
-    if (active_animations_.empty() && !queued_animations_.empty()) {
-      auto animation = queued_animations_.front();
-      queued_animations_.erase(std::begin(queued_animations_));
+  }
+  if (active_animations_.empty() && queued_animations_.empty()) {
+    int new_score;
+    std::vector<Position> moved_objects;
+    std::set<Position> matches;
 
-      board_busy_ = true;
+    std::tie(moved_objects, matches, new_score) = grid_->Collaps();
+    score_ += new_score;
+
+    for (auto& obj:moved_objects) {
+      auto animation = std::make_shared<MoveDownAnimation>(*grid_.get(), obj, asset_manager_);
+
       animation->Start(renderer_);
       active_animations_.push_back(animation);
     }
-    auto it = std::begin(active_animations_);
+    if (!matches.empty()) {
+      auto animation = std::make_shared<MatchAnimation>(*grid_.get(), matches);
 
-    while (it != std::end(active_animations_)) {
-      (*it)->Update();
-      if ((*it)->End()) {
-        it = active_animations_.erase(it);
-      } else {
-        ++it;
-      }
+      animation->Start(renderer_);
+      active_animations_.push_back(animation);
     }
-    if (active_animations_.empty() && queued_animations_.empty()) {
-      int new_score;
-      std::vector<Position> new_objects;
-      std::set<Position> matches;
-
-      std::tie(board_busy_, new_score) = grid_->Collaps(new_objects, matches);
-      score_ += new_score;
-
-      for (auto& obj:new_objects) {
-        auto animation = std::make_shared<MoveDownAnimation>(obj.first, obj.second, *grid_.get(), obj, asset_manager_);
-
-        animation->Start(renderer_);
-        active_animations_.push_back(animation);
-      }
-      if (!matches.empty()) {
-        auto animation = std::make_shared<MatchAnimation>(*grid_.get(), matches);
-
-        animation->Start(renderer_);
-        active_animations_.push_back(animation);
-      }
-    }
-  } else {
-    RenderText(400, 233, Font::Bold, "G A M E  O V E R");
   }
+  SDL_RenderSetClipRect(renderer_, &rc);
   UpdateStatus(10, 10);
   SDL_RenderPresent(renderer_);
 }
