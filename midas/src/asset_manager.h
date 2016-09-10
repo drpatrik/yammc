@@ -45,7 +45,7 @@ class Sprite {
 
   int height() const { return height_; }
 
-  bool IsEmpty() const { return id_ == SpriteID::Empty; }
+  bool IsEmpty() const { return (id_ == SpriteID::Empty || id_ == SpriteID::OwnedByAnimation); }
 
  private:
   const SpriteID id_;
@@ -76,9 +76,9 @@ class AssetManager : public AssetManagerInterface {
 
   virtual SDL_Texture *GetBackgroundTexture() override { return background_texture_; }
 
-  virtual std::shared_ptr<Sprite> GetSprite(SpriteID id) override { return sprites_[id]; }
+  virtual std::shared_ptr<Sprite> GetSprite(SpriteID id) override { return sprites_.at(id); }
 
-  virtual SDL_Texture * GetSpriteAsTexture(SpriteID id) override { return sprites_[id]->sprite(); }
+  virtual SDL_Texture * GetSpriteAsTexture(SpriteID id) override { return sprites_.at(id)->sprite(); }
 
   virtual TTF_Font *GetFont(int id) override { return fonts_[id]; }
 

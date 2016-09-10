@@ -3,7 +3,6 @@
 #include <iostream>
 #include <cassert>
 #include <set>
-#include <tuple>
 #include <random>
 #include <functional>
 
@@ -79,7 +78,7 @@ class Grid {
     return Matches(0, 0, rows_, cols_);
   }
 
-  std::tuple<std::vector<Position>, std::set<Position>, int> Collaps() {
+  std::pair<std::vector<Position>, std::set<Position>> Collaps() {
     bool found = false;
     std::vector<Position> moved_objects;
 
@@ -103,7 +102,7 @@ class Grid {
     if (!found) {
       matches = GetAllMatches();
     }
-    return std::make_tuple(moved_objects, matches, matches.size());
+    return std::make_pair(moved_objects, matches);
   }
 
   std::set<Position> Switch(const Position& p1, const Position& p2) {

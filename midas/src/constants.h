@@ -1,6 +1,6 @@
 #pragma once
 
-const int kFPS = 30;
+const int kFPS = 60;
 const int kRows = 8;
 const int kCols = 8;
 const int kGameTime = 60;

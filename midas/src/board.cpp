@@ -1,4 +1,3 @@
-#include <iostream>
 #include <algorithm>
 
 #include "board.h"
@@ -68,10 +67,12 @@ std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(int row, int col) {
     if (valid_second_choice(selected_, new_pos)) {
       auto matches = grid_->Switch(selected_, new_pos);
 
-      animations.push_back(std::make_shared<SwitchAnimation>(row, col, *grid_.get(), selected_, new_pos, !matches.empty(), asset_manager_));
+      animations.push_back(std::make_shared<SwitchAnimation>(renderer_, row, col, *grid_.get(), selected_, new_pos, !matches.empty(), asset_manager_));
+
       if (!matches.empty()) {
-        animations.push_back(std::make_shared<MatchAnimation>(*grid_.get(), matches));
+        animations.push_back(std::make_shared<MatchAnimation>(renderer_, *grid_.get(), matches, asset_manager_));
       }
+      score_ += matches.size();
     } else {
       grid_->At(selected_).Unselect();
     }
@@ -102,37 +103,35 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
   if (active_animations_.empty() && !queued_animations_.empty()) {
     auto animation = queued_animations_.front();
     queued_animations_.erase(std::begin(queued_animations_));
-    animation->Start(renderer_);
+    animation->Start();
     active_animations_.push_back(animation);
   }
   auto it = std::begin(active_animations_);
 
   while (it != std::end(active_animations_)) {
     (*it)->Update();
-    if ((*it)->End()) {
+    if ((*it)->IsDone()) {
       it = active_animations_.erase(it);
     } else {
       ++it;
     }
   }
   if (active_animations_.empty() && queued_animations_.empty()) {
-    int new_score;
     std::vector<Position> moved_objects;
     std::set<Position> matches;
 
-    std::tie(moved_objects, matches, new_score) = grid_->Collaps();
-    score_ += new_score;
+    std::tie(moved_objects, matches) = grid_->Collaps();
+    score_ += matches.size();
 
     for (auto& obj:moved_objects) {
-      auto animation = std::make_shared<MoveDownAnimation>(*grid_.get(), obj, asset_manager_);
+      auto animation = std::make_shared<MoveDownAnimation>(renderer_, *grid_.get(), obj, asset_manager_);
 
-      animation->Start(renderer_);
+      animation->Start();
       active_animations_.push_back(animation);
     }
     if (!matches.empty()) {
-      auto animation = std::make_shared<MatchAnimation>(*grid_.get(), matches);
-
-      animation->Start(renderer_);
+      auto animation = std::make_shared<MatchAnimation>(renderer_, *grid_.get(), matches, asset_manager_);
+      animation->Start();
       active_animations_.push_back(animation);
     }
   }
