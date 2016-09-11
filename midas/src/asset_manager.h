@@ -76,9 +76,14 @@ class AssetManager : public AssetManagerInterface {
 
   virtual SDL_Texture *GetBackgroundTexture() override { return background_texture_; }
 
-  virtual std::shared_ptr<Sprite> GetSprite(SpriteID id) override { return sprites_.at(id); }
+  virtual std::shared_ptr<Sprite> GetSprite(SpriteID id) override {
+    if (id > SpriteID::Empty) {
+      std::cout << "Invalid ID - " + std::to_string(id) << "\n";
+      return sprites_[SpriteID::Empty];
+    }
+    return sprites_.at(id); }
 
-  virtual SDL_Texture * GetSpriteAsTexture(SpriteID id) override { return sprites_.at(id)->sprite(); }
+  virtual SDL_Texture * GetSpriteAsTexture(SpriteID id) override { return (*GetSprite(id))(); }
 
   virtual TTF_Font *GetFont(int id) override { return fonts_[id]; }
 

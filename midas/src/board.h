@@ -1,11 +1,10 @@
 #pragma once
 
+#include "animation.h"
+#include "timer.h"
+
 #include <vector>
 #include <memory>
-
-#include "animation.h"
-#include "element.h"
-#include "timer.h"
 
 class Board {
  public:
@@ -29,7 +28,7 @@ class Board {
   void UpdateStatus(int x, int y);
 
  private:
-  std::pair<int, int> selected_;
+  Position first_selected_;
   int score_ = 0;
   Timer timer_ = Timer(kGameTime);
   std::unique_ptr<Grid> grid_;

@@ -1,10 +1,6 @@
-#include <SDL2/SDL.h>
-#include <sstream>
-
-#include "constants.h"
 #include "board.h"
 
-const int kFrameDelay = 1000 / kFPS;
+#include <sstream>
 
 class MidasMiner {
  public:

@@ -1,13 +1,12 @@
 #pragma once
 
+#include "element.h"
+
 #include <iostream>
 #include <cassert>
 #include <set>
 #include <random>
 #include <functional>
-
-#include "constants.h"
-#include "element.h"
 
 class Grid {
  public:
@@ -197,7 +196,7 @@ class Grid {
   int rows_;
   int cols_;
   std::mt19937 engine_ {std::random_device{}()};
-  std::uniform_int_distribution<int> distribution_{0, kNumObjects - 1};
+  std::uniform_int_distribution<int> distribution_{ 0, kNumSprites - 1 };
   std::vector<std::vector<Element>> grid_;
   AssetManagerInterface *asset_manager_ = nullptr;
 };

@@ -1,9 +1,6 @@
 #pragma once
 
-#include <iostream>
-
 #include "asset_manager.h"
-#include "constants.h"
 #include "coordinates.h"
 
 class Element {

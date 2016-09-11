@@ -3,11 +3,25 @@
 #include "board.h"
 #include "coordinates.h"
 
+namespace {
+
 const int kWidth = 755;
 const int kHeight = 600;
-const std::pair<int, int> kNothingSelected{-1, -1};
+const Position kNothingSelected{-1, -1};
 
-Board::Board() : selected_(kNothingSelected) {
+inline bool ValidateMove(const Position& old_pos, const Position& new_pos) {
+  int c = (std::make_pair(old_pos.first + 1, old_pos.second) == new_pos);
+
+  c += (std::make_pair(old_pos.first - 1, old_pos.second) == new_pos);
+  c += (std::make_pair(old_pos.first, old_pos.second + 1) == new_pos);
+  c += (std::make_pair(old_pos.first, old_pos.second - 1) == new_pos);
+
+  return (c > 0);
+}
+
+}
+
+Board::Board() {
   window_ = SDL_CreateWindow("Yet Another Midas Clone", SDL_WINDOWPOS_UNDEFINED,
                              SDL_WINDOWPOS_UNDEFINED, kWidth, kHeight, SDL_WINDOW_OPENGL);
   if (nullptr == window_) {
@@ -35,21 +49,10 @@ void Board::Restart() {
   score_ = 0;
   timer_ = Timer(kGameTime);
 
-  selected_ = kNothingSelected;
+  first_selected_ = kNothingSelected;
   grid_ = std::make_unique<Grid>(kRows, kCols, asset_manager_.get());
   active_animations_.clear();
   queued_animations_.clear();
-}
-
-inline bool valid_second_choice(const std::pair<int, int>& old_pos,
-                                const std::pair<int, int>& new_pos) {
-  int c = (std::make_pair(old_pos.first + 1, old_pos.second) == new_pos);
-
-  c += (std::make_pair(old_pos.first - 1, old_pos.second) == new_pos);
-  c += (std::make_pair(old_pos.first, old_pos.second + 1) == new_pos);
-  c += (std::make_pair(old_pos.first, old_pos.second - 1) == new_pos);
-
-  return (c > 0);
 }
 
 std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(int row, int col) {
@@ -58,25 +61,25 @@ std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(int row, int col) {
   if (!timer_() || row == -1 || col == -1) {
     return animations;
   }
-  auto new_pos = std::make_pair(row, col);
+  auto selected = std::make_pair(row, col);
 
-  if (kNothingSelected == selected_) {
-    selected_ = new_pos;
-    grid_->At(selected_).Select();
+  if (kNothingSelected == first_selected_) {
+    grid_->At(selected).Select();
+    first_selected_ = selected;
   } else {
-    if (valid_second_choice(selected_, new_pos)) {
-      auto matches = grid_->Switch(selected_, new_pos);
+    if (ValidateMove(first_selected_, selected)) {
+      auto matches = grid_->Switch(first_selected_, selected);
 
-      animations.push_back(std::make_shared<SwitchAnimation>(renderer_, row, col, *grid_.get(), selected_, new_pos, !matches.empty(), asset_manager_));
+      animations.push_back(std::make_shared<SwitchAnimation>(renderer_, *grid_.get(), first_selected_, selected, !matches.empty(), asset_manager_));
 
       if (!matches.empty()) {
         animations.push_back(std::make_shared<MatchAnimation>(renderer_, *grid_.get(), matches, asset_manager_));
       }
       score_ += matches.size();
     } else {
-      grid_->At(selected_).Unselect();
+      grid_->At(first_selected_).Unselect();
     }
-    selected_ = kNothingSelected;
+    first_selected_ = kNothingSelected;
   }
   return animations;
 }
