@@ -2,7 +2,7 @@
 
 const size_t kBoardStartX = 340;
 const size_t kBoardEndX = 655;
-const size_t kBoardStartY = 110;
+const size_t kBoardStartY = 95;
 const size_t kBoardEndY = 425;
 
 inline int row_to_pixel(size_t row) { return (row * 40) + kBoardStartY; }

@@ -1,7 +1,7 @@
 #pragma once
 
 const int kFPS = 60;
-const int kRows = 8;
+const int kRows = 9;
 const int kCols = 8;
 const int kGameTime = 60;
 const int kFontSize = 25;

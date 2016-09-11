@@ -15,7 +15,7 @@ class Grid {
     Generate();
   }
 
-  // This constructor is only used by the test suitx
+  // This constructor is only used by the test suit
   Grid(const std::vector<std::vector<int>>& grid, AssetManagerInterface *am)
       : rows_(grid.size()), cols_(grid.at(0).size()), asset_manager_(am) {
     grid_.resize(grid.size());
