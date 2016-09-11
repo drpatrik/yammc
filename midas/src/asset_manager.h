@@ -2,7 +2,6 @@
 
 #include <string>
 #include <vector>
-#include <iostream>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_TTF.h>
@@ -78,7 +77,6 @@ class AssetManager : public AssetManagerInterface {
 
   virtual std::shared_ptr<Sprite> GetSprite(SpriteID id) override {
     if (id > SpriteID::Empty) {
-      std::cout << "Invalid ID - " + std::to_string(id) << "\n";
       return sprites_[SpriteID::Empty];
     }
     return sprites_.at(id); }

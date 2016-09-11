@@ -99,6 +99,9 @@ TEST(MidasTest, FindSolutionAfterSwich) {
   ASSERT_TRUE(!grid.Switch(std::make_pair(4, 4), std::make_pair(4, 5)).empty());
 }
 
+// The logic has changed and Collopase no longer
+// removes the matched elements. Need to add a function
+// to do that to make this test fly again
 TEST(MidasTest, DISABLED_CollapseTest) {
   std::vector<std::vector<int>> init_grid {
     { 0,  1,  2,  3,    4,  6,  7, 7}, // 0
