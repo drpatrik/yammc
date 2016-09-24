@@ -19,6 +19,7 @@ class MidasMiner {
   void Play() {
     Board board;
     bool quit = false;
+    DeltaTimer delta_timer;
     std::vector<std::shared_ptr<Animation>> animations;
 
     while (!quit) {
@@ -34,6 +35,7 @@ class MidasMiner {
           case SDL_KEYDOWN:
             if(event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
               board.Restart();
+              delta_timer.Reset();
               animations.clear();
             }
             break;
@@ -72,6 +74,8 @@ class MidasMiner {
       if (frame_rendering_time < kFrameDelay) {
         SDL_Delay(kFrameDelay - frame_rendering_time);
       }
+
+      std::cout << delta_timer.GetDelta() << std::endl;
     }
     SDL_Quit();
   }

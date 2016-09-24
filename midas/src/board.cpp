@@ -47,7 +47,7 @@ Board::~Board() noexcept {
 
 void Board::Restart() {
   score_ = 0;
-  timer_ = Timer(kGameTime);
+  timer_.Reset();
 
   first_selected_ = kNothingSelected;
   grid_ = std::make_unique<Grid>(kRows, kCols, asset_manager_.get());
@@ -58,7 +58,7 @@ void Board::Restart() {
 std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(int row, int col) {
   std::vector<std::shared_ptr<Animation>> animations;
 
-  if (!timer_() || row == -1 || col == -1) {
+  if (timer_.IsZero() || row == -1 || col == -1) {
     return animations;
   }
   auto selected = std::make_pair(row, col);
@@ -91,7 +91,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
   SDL_RenderClear(renderer_);
   SDL_RenderCopy(renderer_, asset_manager_->GetBackgroundTexture(), nullptr, &rc);
 
-  if (!timer_()) {
+  if (timer_.IsZero()) {
     RenderText(400, 233, Font::Bold, "G A M E  O V E R");
     UpdateStatus(10, 10);
     SDL_RenderPresent(renderer_);
@@ -146,15 +146,14 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
 void Board::RenderText(int x, int y, Font font, const std::string& text) {
   const SDL_Color color{255, 255, 255, 255};
 
-  SDL_Surface* surface = TTF_RenderText_Blended(asset_manager_->GetFont(font),
-                                                text.c_str(), color);
+  SDL_Surface* surface = TTF_RenderText_Blended(asset_manager_->GetFont(font), text.c_str(), color);
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer_, surface);
 
-  int iW, iH;
+  int width, height;
 
-  SDL_QueryTexture(texture, NULL, NULL, &iW, &iH);
+  SDL_QueryTexture(texture, nullptr, nullptr, &width, &height);
 
-  SDL_Rect rc{x, y, iW, iH};
+  SDL_Rect rc{x, y, width, height};
 
   SDL_RenderCopy(renderer_, texture, nullptr, &rc);
 
@@ -167,5 +166,5 @@ void Board::UpdateStatus(int x, int y) {
   RenderText(x, y + 40, Font::Normal, std::to_string(score_));
 
   RenderText(x, y + 75, Font::Bold, "Timer:");
-  RenderText(x, y + 105, Font::Normal, std::to_string(timer_()));
+  RenderText(x, y + 105, Font::Normal, std::to_string(timer_.GetTimeInSeconds()));
 }
