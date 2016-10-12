@@ -10,3 +10,13 @@
         I wrote was a Tetris clone for the Hercules graphic card back in 1989.
 
         Still plenty of work to do.
+
+        mkdir build
+
+        cd build
+
+        cmake -DCMAKE_BUILD_TYPE=Debug ..
+
+        or
+
+        cmake -DCMAKE_BUILD_TYPE=Release ..

@@ -17,7 +17,7 @@ class Board {
 
   void Restart();
 
-  std::vector<std::shared_ptr<Animation>> ButtonPressed(int row, int col);
+  std::vector<std::shared_ptr<Animation>> ButtonPressed(const Position& p);
 
   void Render(const std::vector<std::shared_ptr<Animation>>&);
 

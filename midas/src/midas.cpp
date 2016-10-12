@@ -14,6 +14,7 @@ class MidasMiner {
       exit(-1);
     }
   }
+
   ~MidasMiner() = default;
 
   void Play() {
@@ -60,7 +61,7 @@ class MidasMiner {
           case SDL_MOUSEBUTTONDOWN:
             switch (event.button.button) {
               case SDL_BUTTON_LEFT:
-                animations = board.ButtonPressed(pixel_to_row(event.motion.y), pixel_to_col(event.motion.x));
+                animations = board.ButtonPressed(Position(pixel_to_row(event.motion.y), pixel_to_col(event.motion.x)));
                 break;
             }
         }

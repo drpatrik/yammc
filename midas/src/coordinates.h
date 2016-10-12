@@ -24,6 +24,8 @@ class Position {
 
   bool operator==(const std::pair<int, int>& rhs) const { return std::make_pair(row_, col_) == rhs; }
 
+  bool IsValid() const { return (-1 != row_ && -1 != col_); }
+
  private:
   int row_;
   int col_;

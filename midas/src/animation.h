@@ -63,14 +63,15 @@ class SwitchAnimation : public Animation {
   }
 
   virtual void Update(double = 0.0) override {
+    const int kVelocity = 5;
     int sign = (ticks_ <= 8) ? 1 : -1;
 
     if (p1_.row() == p2_.row()) {
-      rc1_.x += -(5 * sign);
-      rc2_.x += -(5 * -sign);
+      rc1_.x += -(kVelocity * sign);
+      rc2_.x += -(kVelocity * -sign);
     } else {
-      rc1_.y += -(5 * sign);
-      rc2_.y += -(5 * -sign);
+      rc1_.y += -(kVelocity * sign);
+      rc2_.y += -(kVelocity * -sign);
     }
     RenderCopy(id1_, rc1_);
     RenderCopy(id2_, rc2_);
@@ -94,13 +95,13 @@ class SwitchAnimation : public Animation {
 
 private:
   Position p1_;
-  Position p2_;
   SDL_Rect rc1_;
+  Element id1_ = Element(OwnedByAnimation);
+  Position p2_;
   SDL_Rect rc2_;
+  Element id2_ = Element(OwnedByAnimation);
   bool has_match_;
   int ticks_ = 0;
-  Element id1_ = Element(OwnedByAnimation);
-  Element id2_ = Element(OwnedByAnimation);
 };
 
 class MatchAnimation : public Animation {
@@ -108,9 +109,7 @@ public:
   MatchAnimation(SDL_Renderer *renderer, Grid& grid,
                  const std::set<Position>& matches,
                  const std::shared_ptr<AssetManager>& asset_manager)
-      : Animation(renderer, grid, asset_manager), matches_(matches) {
-    scale_rc_ = { 0, 0, kSpriteWidth, kSpriteHeight };
-  }
+      : Animation(renderer, grid, asset_manager), matches_(matches) {}
 
   virtual void Start() override {
     size_t i = 0;
@@ -150,9 +149,9 @@ public:
   }
 
 private:
-  SDL_Rect scale_rc_;
-  std::set<Position> matches_;
+  const std::set<Position>& matches_;
   std::vector<Element> ids_;
+  SDL_Rect scale_rc_ = { 0, 0, kSpriteWidth, kSpriteHeight };
 };
 
 class MoveDownAnimation : public Animation {
@@ -169,9 +168,11 @@ public:
   }
 
   virtual void Update(double = 0.0) override {
+    const int kVelocity = 5;
+
     rc_.y = static_cast<int>(y_);
     RenderCopy(id_, rc_);
-    y_ += (8.0 * (static_cast<double>(kSpriteHeight) / kFPS));
+    y_ += (kVelocity * (static_cast<double>(kSpriteHeight) / kFPS));
   }
 
   virtual bool IsDone() override {
@@ -184,7 +185,7 @@ public:
   }
 
 private:
-  Position p_;
+  const Position& p_;
   SDL_Rect rc_;
   double end_pos_ = 0.0;
   Element id_ = Element(OwnedByAnimation);

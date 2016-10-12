@@ -7,9 +7,9 @@ namespace {
 
 const int kWidth = 755;
 const int kHeight = 600;
-const Position kNothingSelected{-1, -1};
+const Position kNothingSelected{ -1, -1 };
 
-inline bool IsValidMove(const Position& old_pos, const Position& new_pos) {
+bool IsValidMove(const Position& old_pos, const Position& new_pos) {
   int c = (new_pos == std::make_pair(old_pos.row() + 1, old_pos.col()));
 
   c += (new_pos == std::make_pair(old_pos.row() - 1, old_pos.col()));
@@ -55,13 +55,13 @@ void Board::Restart() {
   queued_animations_.clear();
 }
 
-std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(int row, int col) {
+std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) {
   std::vector<std::shared_ptr<Animation>> animations;
 
-  if (timer_.IsZero() || row == -1 || col == -1) {
+  if (timer_.IsZero() || !p.IsValid()) {
     return animations;
   }
-  auto selected = Position(row, col);
+  auto selected = p;
 
   if (kNothingSelected == first_selected_) {
     grid_->At(selected).Select();
@@ -70,10 +70,10 @@ std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(int row, int col) {
     if (IsValidMove(first_selected_, selected)) {
       auto matches = grid_->Switch(first_selected_, selected);
 
-      animations.push_back(std::make_shared<SwitchAnimation>(renderer_, *grid_.get(), first_selected_, selected, !matches.empty(), asset_manager_));
+      animations.push_back(std::make_shared<SwitchAnimation>(renderer_, *grid_, first_selected_, selected, !matches.empty(), asset_manager_));
 
       if (!matches.empty()) {
-        animations.push_back(std::make_shared<MatchAnimation>(renderer_, *grid_.get(), matches, asset_manager_));
+        animations.push_back(std::make_shared<MatchAnimation>(renderer_, *grid_, matches, asset_manager_));
       }
       score_ += matches.size();
     } else {
@@ -127,13 +127,13 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
     score_ += matches.size();
 
     for (const auto& obj:moved_objects) {
-      auto animation = std::make_shared<MoveDownAnimation>(renderer_, *grid_.get(), obj, asset_manager_);
+      auto animation = std::make_shared<MoveDownAnimation>(renderer_, *grid_, obj, asset_manager_);
 
       animation->Start();
       active_animations_.push_back(animation);
     }
     if (!matches.empty()) {
-      auto animation = std::make_shared<MatchAnimation>(renderer_, *grid_.get(), matches, asset_manager_);
+      auto animation = std::make_shared<MatchAnimation>(renderer_, *grid_, matches, asset_manager_);
       animation->Start();
       active_animations_.push_back(animation);
     }
