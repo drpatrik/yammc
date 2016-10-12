@@ -5,6 +5,8 @@
 
 class Element {
  public:
+  Element() : sprite_(std::make_shared<Sprite>(SpriteID::Empty)) {}
+
   explicit Element(SpriteID id) : sprite_(std::make_shared<Sprite>(id)) {}
 
   explicit Element(const std::shared_ptr<Sprite>& sprite) : sprite_(sprite) {}

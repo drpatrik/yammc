@@ -149,7 +149,7 @@ public:
   }
 
 private:
-  const std::set<Position>& matches_;
+  std::set<Position> matches_;
   std::vector<Element> ids_;
   SDL_Rect scale_rc_ = { 0, 0, kSpriteWidth, kSpriteHeight };
 };
@@ -168,11 +168,11 @@ public:
   }
 
   virtual void Update(double = 0.0) override {
-    const int kVelocity = 5;
+    const int velocity = GetGrid().IsFilling() ? 15 : 5;
 
     rc_.y = static_cast<int>(y_);
     RenderCopy(id_, rc_);
-    y_ += (kVelocity * (static_cast<double>(kSpriteHeight) / kFPS));
+    y_ += (velocity * (static_cast<double>(kSpriteHeight) / kFPS));
   }
 
   virtual bool IsDone() override {
@@ -185,7 +185,7 @@ public:
   }
 
 private:
-  const Position& p_;
+  Position p_;
   SDL_Rect rc_;
   double end_pos_ = 0.0;
   Element id_ = Element(OwnedByAnimation);

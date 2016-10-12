@@ -58,7 +58,7 @@ void Board::Restart() {
 std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) {
   std::vector<std::shared_ptr<Animation>> animations;
 
-  if (timer_.IsZero() || !p.IsValid()) {
+  if (timer_.IsZero() || !p.IsValid() || grid_->IsFilling()) {
     return animations;
   }
   auto selected = p;
@@ -144,7 +144,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
 }
 
 void Board::RenderText(int x, int y, Font font, const std::string& text) {
-  const SDL_Color color{255, 255, 255, 255};
+  const SDL_Color color { 255, 255, 255, 255 };
 
   SDL_Surface* surface = TTF_RenderText_Blended(asset_manager_->GetFont(font), text.c_str(), color);
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer_, surface);
@@ -153,7 +153,7 @@ void Board::RenderText(int x, int y, Font font, const std::string& text) {
 
   SDL_QueryTexture(texture, nullptr, nullptr, &width, &height);
 
-  SDL_Rect rc{x, y, width, height};
+  SDL_Rect rc { x, y, width, height };
 
   SDL_RenderCopy(renderer_, texture, nullptr, &rc);
 
