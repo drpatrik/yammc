@@ -56,9 +56,9 @@ class SwitchAnimation : public Animation {
     } else if (p2_.row() > p1_.row()) {
       std::swap(p1_, p2_);
     }
-    std::swap(id1_, GetGrid().At(p1_));
+    std::swap(element1_, GetGrid().At(p1_));
     rc1_ = { p1_.x(), p1_.y(), kSpriteWidth, kSpriteWidth };
-    std::swap(id2_, GetGrid().At(p2_));
+    std::swap(element2_, GetGrid().At(p2_));
     rc2_ = { p2_.x(), p2_.y(), kSpriteWidth, kSpriteHeight };
   }
 
@@ -73,8 +73,8 @@ class SwitchAnimation : public Animation {
       rc1_.y += -(kVelocity * sign);
       rc2_.y += -(kVelocity * -sign);
     }
-    RenderCopy(id1_, rc1_);
-    RenderCopy(id2_, rc2_);
+    RenderCopy(element1_, rc1_);
+    RenderCopy(element2_, rc2_);
     ticks_++;
   }
 
@@ -82,13 +82,13 @@ class SwitchAnimation : public Animation {
     if (ticks_ <= ((has_match_) ? 8 : 16)) {
       return false;
     }
-    RenderCopy(id1_, rc1_);
-    RenderCopy(id2_, rc2_);
+    RenderCopy(element1_, rc1_);
+    RenderCopy(element2_, rc2_);
     if (has_match_) {
-      std::swap(id1_, id2_);
+      std::swap(element1_, element2_);
     }
-    std::swap(id1_, GetGrid().At(p1_));
-    std::swap(id2_, GetGrid().At(p2_));
+    std::swap(element1_, GetGrid().At(p1_));
+    std::swap(element2_, GetGrid().At(p2_));
 
     return true;
   }
@@ -96,10 +96,10 @@ class SwitchAnimation : public Animation {
 private:
   Position p1_;
   SDL_Rect rc1_;
-  Element id1_ = Element(OwnedByAnimation);
+  Element element1_ = Element(OwnedByAnimation);
   Position p2_;
   SDL_Rect rc2_;
-  Element id2_ = Element(OwnedByAnimation);
+  Element element2_ = Element(OwnedByAnimation);
   bool has_match_;
   int ticks_ = 0;
 };
@@ -114,9 +114,9 @@ public:
   virtual void Start() override {
     size_t i = 0;
 
-    ids_.resize(matches_.size(), Element(SpriteID::OwnedByAnimation));
+    elements_.resize(matches_.size(), Element(SpriteID::OwnedByAnimation));
     for (const auto& m : matches_) {
-      std::swap(ids_[i], GetGrid().At(m));
+      std::swap(elements_[i], GetGrid().At(m));
       i++;
     }
   }
@@ -129,7 +129,7 @@ public:
       int y = m.y() + scale_rc_.y;
 
       SDL_Rect rc = { x, y, scale_rc_.w, scale_rc_.h };
-      RenderCopy(ids_[i], rc);
+      RenderCopy(elements_[i], rc);
       i++;
     }
     scale_rc_.x += 2;
@@ -150,7 +150,7 @@ public:
 
 private:
   std::set<Position> matches_;
-  std::vector<Element> ids_;
+  std::vector<Element> elements_;
   SDL_Rect scale_rc_ = { 0, 0, kSpriteWidth, kSpriteHeight };
 };
 
@@ -161,17 +161,17 @@ public:
       : Animation(renderer, grid, asset_manager), p_(p) {}
 
   virtual void Start() override {
-    std::swap(id_, GetGrid().At(p_));
+    std::swap(element_, GetGrid().At(p_));
     rc_ = { p_.x(), p_.y() - kSpriteHeight, kSpriteWidth, kSpriteHeight };
     y_ = rc_.y;
     end_pos_ = y_ + kSpriteHeight;
   }
 
   virtual void Update(double = 0.0) override {
-    const int velocity = GetGrid().IsFilling() ? 15 : 5;
+    const double velocity = GetGrid().IsFilling() ? 15.0 : 5.0;
 
     rc_.y = static_cast<int>(y_);
-    RenderCopy(id_, rc_);
+    RenderCopy(element_, rc_);
     y_ += (velocity * (static_cast<double>(kSpriteHeight) / kFPS));
   }
 
@@ -179,7 +179,7 @@ public:
     if (y_ <= end_pos_) {
       return false;
     }
-    std::swap(id_, GetGrid().At(p_));
+    std::swap(element_, GetGrid().At(p_));
     RenderCopy(GetGrid().At(p_), rc_);
     return true;
   }
@@ -188,5 +188,5 @@ private:
   Position p_;
   SDL_Rect rc_;
   double end_pos_ = 0.0;
-  Element id_ = Element(OwnedByAnimation);
+  Element element_ = Element(OwnedByAnimation);
 };

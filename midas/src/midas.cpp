@@ -17,7 +17,7 @@ class MidasMiner {
 
   ~MidasMiner() = default;
 
-  void Play() {
+  static void Play() {
     Board board;
     bool quit = false;
     DeltaTimer delta_timer;

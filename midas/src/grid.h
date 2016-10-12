@@ -84,31 +84,28 @@ class Grid {
     bool found = false;
     std::vector<Position> moved_objects;
 
-    for (auto row = rows_ - 1;row >= 1; --row) {
-      for (auto col = 0; col < cols_; ++col) {
-        if (At(row, col).id() == SpriteID::Empty) {
+    for (int row = rows_ - 1;row >= 1; --row) {
+      for (int col = 0; col < cols_; ++col) {
+        if (At(row, col).IsEmpty()) {
           std::swap(At(row, col), At(row - 1, col));
-          moved_objects.push_back(Position(row, col));
+          if (!At(row, col).IsEmpty()) {
+            moved_objects.push_back(Position(row, col));
+          }
           found = true;
         }
       }
     }
-    for (auto col = 0;col < cols_; ++col) {
-      if (At(0, col) == SpriteID::Empty) {
-        Element element;
-
-        if (!fill_grid_.empty()) {
-          size_t row = fill_grid_.size() - 1;
-
-          element = fill_grid_.at(row).front();
-          fill_grid_.at(row).erase(fill_grid_.at(row).begin());
-          if (fill_grid_.at(row).empty()) {
+    for (int col = cols_ - 1;col >= 0; --col) {
+      if (At(0, col).IsEmpty()) {
+        if (fill_grid_.empty()) {
+          At(0, col) = Element(asset_manager_->GetSprite(static_cast<SpriteID>(distribution_(engine_))));
+        } else {
+          At(0, col) = fill_grid_.back().back();
+          fill_grid_.back().pop_back();
+          if (fill_grid_.back().empty()) {
             fill_grid_.pop_back();
           }
-        } else {
-          element = Element(asset_manager_->GetSprite(static_cast<SpriteID>(distribution_(engine_))));
         }
-        At(0, col) = element;
         moved_objects.push_back(Position(0, col));
       }
     }
