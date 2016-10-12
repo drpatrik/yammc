@@ -45,7 +45,7 @@ AssetManager::AssetManager(SDL_Renderer *renderer) {
   sprites_.push_back(std::make_shared<Sprite>(Empty, nullptr, nullptr));
   std::vector<std::string> fonts {"Cabin-Regular.ttf", "Cabin-Bold.ttf"};
 
-  for (auto& f:fonts) {
+  for (const auto& f:fonts) {
     fonts_.push_back(LoadFont(f, kFontSize));
   }
   background_texture_ = LoadTexture(renderer, "BackGround.bmp");

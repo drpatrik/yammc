@@ -19,7 +19,7 @@ class Sprite {
     SDL_QueryTexture(sprite, &format, &access, &width_, &height_);
   }
 
-  Sprite(const Sprite &s) : id_(s.id_), sprite_(s.sprite_), width_(s.width_), height_(s.height_), selected_(s.selected_) {}
+  Sprite(const Sprite& s) : id_(s.id_), sprite_(s.sprite_), width_(s.width_), height_(s.height_), selected_(s.selected_) {}
 
   ~Sprite() {
     if (sprite_) {
@@ -69,7 +69,7 @@ class AssetManager : public AssetManagerInterface {
  public:
   explicit AssetManager(SDL_Renderer *renderer);
 
-  AssetManager(const AssetManager &) = delete;
+  AssetManager(const AssetManager&) = delete;
 
   virtual ~AssetManager() noexcept;
 

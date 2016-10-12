@@ -10,12 +10,12 @@
 
 class Grid {
  public:
-  Grid(int rows, int cols, AssetManagerInterface *am) : rows_(rows), cols_(cols), asset_manager_(am) {
+  Grid(int rows, int cols, AssetManagerInterface* am) : rows_(rows), cols_(cols), asset_manager_(am) {
     Generate();
   }
 
   // This constructor is only used by the test suit
-  Grid(const std::vector<std::vector<int>>& grid, AssetManagerInterface *am)
+  Grid(const std::vector<std::vector<int>>& grid, AssetManagerInterface* am)
       : rows_(grid.size()), cols_(grid.at(0).size()), asset_manager_(am) {
     grid_.resize(grid.size());
     for (int row = 0; row < rows_; row++) {
@@ -39,10 +39,10 @@ class Grid {
   inline Element& At(int row, int col) { return grid_.at(row).at(col); }
 
   inline const Element& At(const Position& p) const {
-    return grid_.at(p.first).at(p.second);
+    return grid_.at(p.row()).at(p.col());
   }
 
-  inline Element& At(const Position& p) { return grid_.at(p.first).at(p.second); }
+  inline Element& At(const Position& p) { return grid_.at(p.row()).at(p.col()); }
 
   bool IsMatch(int row, int col) const {
     assert(kMatchNumber <= 3);
@@ -85,7 +85,7 @@ class Grid {
       for (auto col = 0; col < cols_; ++col) {
         if (At(row, col).id() == SpriteID::Empty) {
           std::swap(At(row, col), At(row - 1, col));
-          moved_objects.push_back(std::make_pair(row, col));
+          moved_objects.push_back(Position(row, col));
           found = true;
         }
       }
@@ -93,7 +93,7 @@ class Grid {
     for (auto col = 0;col < cols_; ++col) {
       if (At(0, col) == SpriteID::Empty) {
         At(0, col) = Element(asset_manager_->GetSprite(static_cast<SpriteID>(distribution_(engine_))));
-        moved_objects.push_back(std::make_pair(0, col));
+        moved_objects.push_back(Position(0, col));
       }
     }
     std::set<Position> matches;
@@ -157,7 +157,7 @@ class Grid {
 
     matches.emplace(row, col);
     // check lower bounds
-    auto& value = At(row, col);
+    const auto& value = At(row, col);
 
     for (int i = start - 1; i >= 0; i--) {
       if (value_at(i) != value || value_at(i).IsEmpty()) {
@@ -179,15 +179,15 @@ class Grid {
   }
 
   std::set<Position> GetVerticalMatches(int row, int col) const {
-    auto value_at = [this, col](int i) { return At(i, col); };
-    auto pos = [col](int i) { return std::make_pair(i, col); };
+    auto value_at = [this, col](int row) { return At(row, col); };
+    auto pos = [col](int row) { return Position(row, col); };
 
     return Matches(row, col, row, rows_, value_at, pos);
   }
 
   std::set<Position> GetHorizontalMatches(int row, int col) const {
-    auto value_at = [this, row](int i) { return At(row, i); };
-    auto pos = [row](int i) { return std::make_pair(row, i); };
+    auto value_at = [this, row](int col) { return At(row, col); };
+    auto pos = [row](int col) { return Position(row, col); };
 
     return Matches(row, col, col, cols_, value_at, pos);
   }
@@ -198,5 +198,5 @@ class Grid {
   std::mt19937 engine_ {std::random_device{}()};
   std::uniform_int_distribution<int> distribution_{ 0, kNumSprites - 1 };
   std::vector<std::vector<Element>> grid_;
-  AssetManagerInterface *asset_manager_ = nullptr;
+  AssetManagerInterface* asset_manager_ = nullptr;
 };

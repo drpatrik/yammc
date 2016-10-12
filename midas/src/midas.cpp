@@ -74,8 +74,6 @@ class MidasMiner {
       if (frame_rendering_time < kFrameDelay) {
         SDL_Delay(kFrameDelay - frame_rendering_time);
       }
-
-      std::cout << delta_timer.GetDelta() << std::endl;
     }
     SDL_Quit();
   }

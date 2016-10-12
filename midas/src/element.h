@@ -9,11 +9,11 @@ class Element {
 
   explicit Element(const std::shared_ptr<Sprite>& sprite) : sprite_(sprite) {}
 
-  Element(const Element &e) : sprite_(e.sprite_) {}
+  Element(const Element& e) : sprite_(e.sprite_) {}
 
-  Element(Element &&rhs) noexcept : sprite_(std::move(rhs.sprite_)) {}
+  Element(Element&& rhs) noexcept : sprite_(std::move(rhs.sprite_)) {}
 
-  Element& operator=(const Element &rhs) {
+  Element& operator=(const Element& rhs) {
     Element tmp(rhs);
 
     std::swap(*this, tmp);
@@ -21,7 +21,7 @@ class Element {
     return *this;
   }
 
-  Element& operator=(Element &&rhs) noexcept {
+  Element& operator=(Element&& rhs) noexcept {
     sprite_ = std::move(rhs.sprite_);
 
     return *this;

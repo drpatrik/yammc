@@ -96,7 +96,7 @@ TEST(MidasTest, FindSolutionAfterSwich) {
 
   ASSERT_EQ(matches.size(), 0ul);
 
-  ASSERT_TRUE(!grid.Switch(std::make_pair(4, 4), std::make_pair(4, 5)).empty());
+  ASSERT_TRUE(!grid.Switch(Position(4, 4), Position(4, 5)).empty());
 }
 
 // The logic has changed and Collopase no longer

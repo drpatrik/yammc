@@ -4,7 +4,7 @@
 
 class Animation {
  public:
-  Animation(SDL_Renderer *renderer, Grid &grid, const std::shared_ptr<AssetManager>& asset_manager) : renderer_(renderer), grid_(grid), asset_manager_(asset_manager) {}
+  Animation(SDL_Renderer *renderer, Grid& grid, const std::shared_ptr<AssetManager>& asset_manager) : renderer_(renderer), grid_(grid), asset_manager_(asset_manager) {}
 
   virtual ~Animation() noexcept = default;
 
@@ -33,15 +33,15 @@ class Animation {
 
  private:
   SDL_Renderer *renderer_;
-  Grid &grid_;
+  Grid& grid_;
   std::shared_ptr<AssetManager> asset_manager_;
 };
 
 class SwitchAnimation : public Animation {
  public:
-  SwitchAnimation(SDL_Renderer *renderer, Grid &grid,
-                  const Position &p1, const Position &p2, bool has_match,
-                  const std::shared_ptr<AssetManager> &asset_manager)
+  SwitchAnimation(SDL_Renderer *renderer, Grid& grid,
+                  const Position& p1, const Position& p2, bool has_match,
+                  const std::shared_ptr<AssetManager>& asset_manager)
       : Animation(renderer, grid, asset_manager), p1_(p1), p2_(p2),
         has_match_(has_match) {}
 
@@ -49,23 +49,23 @@ class SwitchAnimation : public Animation {
     GetGrid().At(p1_).Unselect();
     GetGrid().At(p2_).Unselect();
 
-    if (p1_.first == p2_.first) {
-      if (p2_.second > p1_.second) {
+    if (p1_.row() == p2_.row()) {
+      if (p2_.col() > p1_.col()) {
         std::swap(p1_, p2_);
       }
-    } else if (p2_.first > p1_.first) {
+    } else if (p2_.row() > p1_.row()) {
       std::swap(p1_, p2_);
     }
     std::swap(id1_, GetGrid().At(p1_));
-    rc1_ = {col_to_pixel(p1_.second), row_to_pixel(p1_.first), kSpriteWidth, kSpriteWidth};
+    rc1_ = { p1_.x(), p1_.y(), kSpriteWidth, kSpriteWidth };
     std::swap(id2_, GetGrid().At(p2_));
-    rc2_ = {col_to_pixel(p2_.second), row_to_pixel(p2_.first), kSpriteWidth, kSpriteHeight};
+    rc2_ = { p2_.x(), p2_.y(), kSpriteWidth, kSpriteHeight };
   }
 
   virtual void Update(double = 0.0) override {
     int sign = (ticks_ <= 8) ? 1 : -1;
 
-    if (p1_.first == p2_.first) {
+    if (p1_.row() == p2_.row()) {
       rc1_.x += -(5 * sign);
       rc2_.x += -(5 * -sign);
     } else {
@@ -105,18 +105,18 @@ private:
 
 class MatchAnimation : public Animation {
 public:
-  MatchAnimation(SDL_Renderer *renderer, Grid &grid,
-                 const std::set<Position> &matches,
-                 const std::shared_ptr<AssetManager> &asset_manager)
+  MatchAnimation(SDL_Renderer *renderer, Grid& grid,
+                 const std::set<Position>& matches,
+                 const std::shared_ptr<AssetManager>& asset_manager)
       : Animation(renderer, grid, asset_manager), matches_(matches) {
-    scale_rc_ = {0, 0, kSpriteWidth, kSpriteHeight};
+    scale_rc_ = { 0, 0, kSpriteWidth, kSpriteHeight };
   }
 
   virtual void Start() override {
     size_t i = 0;
 
     ids_.resize(matches_.size(), Element(SpriteID::OwnedByAnimation));
-    for (auto &m : matches_) {
+    for (const auto& m : matches_) {
       std::swap(ids_[i], GetGrid().At(m));
       i++;
     }
@@ -125,11 +125,11 @@ public:
   virtual void Update(double = 0.0) override {
     size_t i = 0;
 
-    for (auto &m : matches_) {
-      int x = col_to_pixel(m.second) + scale_rc_.x;
-      int y = row_to_pixel(m.first) + scale_rc_.y;
+    for (const auto& m : matches_) {
+      int x = m.x() + scale_rc_.x;
+      int y = m.y() + scale_rc_.y;
 
-      SDL_Rect rc = {x, y, scale_rc_.w, scale_rc_.h};
+      SDL_Rect rc = { x, y, scale_rc_.w, scale_rc_.h };
       RenderCopy(ids_[i], rc);
       i++;
     }
@@ -141,7 +141,7 @@ public:
 
   virtual bool IsDone() override {
     if (scale_rc_.w <= 0 || scale_rc_.h <= 0) {
-      for (auto &m : matches_) {
+      for (const auto& m : matches_) {
         GetGrid().At(m) = Element(SpriteID::Empty);
       }
       return true;
@@ -157,14 +157,13 @@ private:
 
 class MoveDownAnimation : public Animation {
 public:
-  MoveDownAnimation(SDL_Renderer *renderer, Grid &grid, const Position &p,
+  MoveDownAnimation(SDL_Renderer *renderer, Grid& grid, const Position& p,
                     const std::shared_ptr<AssetManager> &asset_manager)
       : Animation(renderer, grid, asset_manager), p_(p) {}
 
   virtual void Start() override {
     std::swap(id_, GetGrid().At(p_));
-    rc_ = {col_to_pixel(p_.second), row_to_pixel(p_.first) - kSpriteHeight,
-           kSpriteWidth, kSpriteHeight};
+    rc_ = { p_.x(), p_.y() - kSpriteHeight, kSpriteWidth, kSpriteHeight };
     y_ = rc_.y;
     end_pos_ = y_ + kSpriteHeight;
   }

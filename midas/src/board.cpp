@@ -1,7 +1,7 @@
-#include <algorithm>
-
 #include "board.h"
 #include "coordinates.h"
+
+#include <algorithm>
 
 namespace {
 
@@ -9,12 +9,12 @@ const int kWidth = 755;
 const int kHeight = 600;
 const Position kNothingSelected{-1, -1};
 
-inline bool ValidateMove(const Position& old_pos, const Position& new_pos) {
-  int c = (std::make_pair(old_pos.first + 1, old_pos.second) == new_pos);
+inline bool IsValidMove(const Position& old_pos, const Position& new_pos) {
+  int c = (new_pos == std::make_pair(old_pos.row() + 1, old_pos.col()));
 
-  c += (std::make_pair(old_pos.first - 1, old_pos.second) == new_pos);
-  c += (std::make_pair(old_pos.first, old_pos.second + 1) == new_pos);
-  c += (std::make_pair(old_pos.first, old_pos.second - 1) == new_pos);
+  c += (new_pos == std::make_pair(old_pos.row() - 1, old_pos.col()));
+  c += (new_pos == std::make_pair(old_pos.row(), old_pos.col() + 1));
+  c += (new_pos == std::make_pair(old_pos.row(), old_pos.col() - 1));
 
   return (c > 0);
 }
@@ -61,13 +61,13 @@ std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(int row, int col) {
   if (timer_.IsZero() || row == -1 || col == -1) {
     return animations;
   }
-  auto selected = std::make_pair(row, col);
+  auto selected = Position(row, col);
 
   if (kNothingSelected == first_selected_) {
     grid_->At(selected).Select();
     first_selected_ = selected;
   } else {
-    if (ValidateMove(first_selected_, selected)) {
+    if (IsValidMove(first_selected_, selected)) {
       auto matches = grid_->Switch(first_selected_, selected);
 
       animations.push_back(std::make_shared<SwitchAnimation>(renderer_, *grid_.get(), first_selected_, selected, !matches.empty(), asset_manager_));
@@ -100,7 +100,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
   grid_->Render(renderer_);
   SDL_RenderSetClipRect(renderer_, &clip_rc);
 
-  for (auto& a:animations) {
+  for (const auto& a:animations) {
     queued_animations_.push_back(a);
   }
   if (active_animations_.empty() && !queued_animations_.empty()) {
@@ -126,7 +126,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
     std::tie(moved_objects, matches) = grid_->Collaps();
     score_ += matches.size();
 
-    for (auto& obj:moved_objects) {
+    for (const auto& obj:moved_objects) {
       auto animation = std::make_shared<MoveDownAnimation>(renderer_, *grid_.get(), obj, asset_manager_);
 
       animation->Start();
