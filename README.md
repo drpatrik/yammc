@@ -9,7 +9,10 @@
         I have spent the last 30 years developing software but the last game
         I wrote was a Tetris clone for the Hercules graphic card back in 1989.
 
-        Still plenty of work to do.
+        Still plenty of work to do. Next updates will include:
+
+        - new animation for time
+        - delta update instead of xx frame / s
 
         mkdir build
 
