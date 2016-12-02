@@ -21,11 +21,11 @@ class Board {
 
   void Render(const std::vector<std::shared_ptr<Animation>>&);
 
-  auto operator()(int row, int col) { return grid_->At(row, col); }
+  const Element& operator()(int row, int col) const { return grid_->At(row, col); }
 
  protected:
-  void RenderText(int x, int y, Font font, const std::string& text);
   void UpdateStatus(int x, int y);
+  void RenderText(int x, int y, Font font, const std::string& text) const;
 
  private:
   Position first_selected_;

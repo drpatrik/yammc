@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 project(midas)
 
-# Use our modified FindSDL2* modules
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${midas_SOURCE_DIR}/cmake")
 # Set an output directory for our binaries
 set(BIN_DIR ${midas_BUILD_DIR}/)
 
@@ -21,8 +19,11 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 	endif()
 endif()
 
+# Use our modified FindSDL2* modules
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${midas_SOURCE_DIR}/cmake")
 find_package(SDL2 REQUIRED)
-include_directories(${SDL2_INCLUDE_DIR})
+find_package(SDL2_ttf REQUIRED)
+include_directories(${SDL2_INCLUDE_DIR} ${SDL2_TTF_INCLUDE_DIR})
 
 find_package(GTest)
 include_directories(${GTEST_INCLUDE_DIRS})

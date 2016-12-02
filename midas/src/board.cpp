@@ -25,12 +25,12 @@ Board::Board() {
   window_ = SDL_CreateWindow("Yet Another Midas Clone", SDL_WINDOWPOS_UNDEFINED,
                              SDL_WINDOWPOS_UNDEFINED, kWidth, kHeight, SDL_WINDOW_OPENGL);
   if (nullptr == window_) {
-    std::cout << "Failed to create window : " << SDL_GetError();
+    std::cout << "Failed to create window : " << SDL_GetError() << std::endl;
     exit(-1);
   }
   renderer_ = SDL_CreateRenderer(window_, -1, 0);
   if (nullptr == renderer_) {
-    std::cout << "Failed to create renderer : " << SDL_GetError();
+    std::cout << "Failed to create renderer : " << SDL_GetError() << std::endl;
     exit(-1);
   }
   SDL_RenderSetLogicalSize(renderer_, kWidth, kHeight);
@@ -143,7 +143,15 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
   SDL_RenderPresent(renderer_);
 }
 
-void Board::RenderText(int x, int y, Font font, const std::string& text) {
+void Board::UpdateStatus(int x, int y) {
+  RenderText(x, y + 10, Font::Bold, "Score:");
+  RenderText(x, y + 40, Font::Normal, std::to_string(score_));
+
+  RenderText(x, y + 75, Font::Bold, "Timer:");
+  RenderText(x, y + 105, Font::Normal, std::to_string(timer_.GetTimeInSeconds()));
+}
+
+void Board::RenderText(int x, int y, Font font, const std::string& text) const {
   const SDL_Color color { 255, 255, 255, 255 };
 
   SDL_Surface* surface = TTF_RenderText_Blended(asset_manager_->GetFont(font), text.c_str(), color);
@@ -159,12 +167,4 @@ void Board::RenderText(int x, int y, Font font, const std::string& text) {
 
   SDL_FreeSurface(surface);
   SDL_DestroyTexture(texture);
-}
-
-void Board::UpdateStatus(int x, int y) {
-  RenderText(x, y + 10, Font::Bold, "Score:");
-  RenderText(x, y + 40, Font::Normal, std::to_string(score_));
-
-  RenderText(x, y + 75, Font::Bold, "Timer:");
-  RenderText(x, y + 105, Font::Normal, std::to_string(timer_.GetTimeInSeconds()));
 }

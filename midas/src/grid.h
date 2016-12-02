@@ -32,7 +32,16 @@ class Grid {
 
   inline int cols() const { return cols_; }
 
-  inline bool IsFilling() const { return !fill_grid_.empty(); }
+  bool IsFilling() const {
+    if (!is_filling_) {
+      return false;
+    }
+    const auto& last_row = grid_.at(rows_ - 1);
+
+    is_filling_ = (std::count_if(std::begin(last_row), std::end(last_row), [](const Element &v) { return v == SpriteID::Empty; }) == cols_);
+
+    return is_filling_;
+  }
 
   inline const Element& At(int row, int col) const { return grid_.at(row).at(col); }
 
@@ -70,6 +79,7 @@ class Grid {
         } while(IsMatch(row, col));
       }
     }
+    is_filling_ = true;
     fill_grid_ = std::move(grid_);
 
     grid_.clear();
@@ -208,6 +218,7 @@ class Grid {
  private:
   int rows_;
   int cols_;
+  mutable bool is_filling_ = true;
   std::mt19937 engine_ {std::random_device{}()};
   std::uniform_int_distribution<int> distribution_{ 0, kNumSprites - 1 };
   std::vector<std::vector<Element>> grid_;

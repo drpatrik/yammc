@@ -168,7 +168,7 @@ public:
   }
 
   virtual void Update(double = 0.0) override {
-    const double velocity = GetGrid().IsFilling() ? 15.0 : 5.0;
+    double velocity = GetGrid().IsFilling() ? 16.0 : 8.0;
 
     rc_.y = static_cast<int>(y_);
     RenderCopy(element_, rc_);

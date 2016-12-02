@@ -3,8 +3,8 @@
 #include <string>
 #include <vector>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_TTF.h>
+#include <SDL.h>
+#include <SDL_TTF.h>
 
 enum SpriteID { Blue, Green, Red, Yellow, Purple, Empty, OwnedByAnimation };
 

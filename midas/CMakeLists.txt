@@ -2,10 +2,10 @@ project(midas)
 
 add_definitions(-DASSETS_FOLDER="${midas_SOURCE_DIR}/assets/" )
 
-# midas
 add_executable(midas src/midas.cpp src/board.cpp src/asset_manager.cpp)
+
 target_link_libraries(midas ${SDL2_LIBRARY})
-target_link_libraries(midas -lSDL2_ttf)
+target_link_libraries(midas ${SDL2_TTF_LIBRARIES})
 install(TARGETS midas RUNTIME DESTINATION ${BIN_DIR})
 
 # midas_test

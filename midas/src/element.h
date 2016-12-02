@@ -45,7 +45,7 @@ class Element {
     return sprite_->id() != id;
   }
 
-  operator SpriteID() { return sprite_->id(); }
+  operator SpriteID() const { return sprite_->id(); }
 
   SpriteID id() const { return sprite_->id(); }
 
