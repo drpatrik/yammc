@@ -77,7 +77,7 @@ TEST(MidasTest, FindNoSolution) {
   ASSERT_EQ(matches.size(), 0ul);
 }
 
-TEST(MidasTest, FindSolutionAfterSwitch) {
+TEST(MidasTest, FindSolutionAfterSwap) {
   std::vector<std::vector<int>> init_grid {
     {0,   1,  2,  3,  4,  5,  7, 7}, // 0
     { 8,  9, 10, 11, 12, 13,  7, 15}, // 1
@@ -96,7 +96,7 @@ TEST(MidasTest, FindSolutionAfterSwitch) {
 
   ASSERT_EQ(matches.size(), 0ul);
 
-  ASSERT_TRUE(!grid.Switch(Position(4, 4), Position(4, 5)).empty());
+  ASSERT_TRUE(!grid.GetMatchesFromSwap(Position(4, 4), Position(4, 5)).empty());
 }
 
 // The logic has changed and Collopase no longer

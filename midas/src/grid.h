@@ -127,7 +127,7 @@ class Grid {
     return std::make_pair(moved_objects, matches);
   }
 
-  std::set<Position> Switch(const Position& p1, const Position& p2) {
+  std::set<Position> GetMatchesFromSwap(const Position& p1, const Position& p2) {
     std::swap(At(p1), At(p2));
 
     auto matches = GetAllMatches();

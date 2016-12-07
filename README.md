@@ -15,17 +15,21 @@
         - delta update instead of xx frame / s
         - Wiggle potential matches if player is idle
 
-        The project requires cmake 2.6 or higher, SDL2 and SDL2_ttf and C++11 compliant compiler. I might use
-        some C++14 features but I have done my best to removed them in the latest update.
+        The project requires cmake 2.6 or higher, SDL2 and SDL2_ttf and C++11 compliant compiler.
+        The test suit requires gtest. I might use some C++14 features but I have done my best to
+        removed them in the latest update.
 
         Only tested under OSX
 
         make
 
-        will build the project, default is a release build
-        Ninja is used if available
+        will build the project, default is a release build. Ninja is used if available
 
         Executables found here:
 
         ./build/midas/midas
         ./build/midas/midas_test
+
+        or just type
+
+        ./run

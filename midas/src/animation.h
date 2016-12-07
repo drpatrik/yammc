@@ -12,7 +12,7 @@ class Animation {
 
   virtual void Update(double = 0.0) = 0;
 
-  virtual bool IsDone() = 0;
+  virtual bool IsReady() = 0;
 
   operator SDL_Renderer *() {
     assert(renderer_);
@@ -37,9 +37,9 @@ class Animation {
   std::shared_ptr<AssetManager> asset_manager_;
 };
 
-class SwitchAnimation : public Animation {
+class SwapAnimation : public Animation {
  public:
-  SwitchAnimation(SDL_Renderer *renderer, Grid& grid,
+  SwapAnimation(SDL_Renderer *renderer, Grid& grid,
                   const Position& p1, const Position& p2, bool has_match,
                   const std::shared_ptr<AssetManager>& asset_manager)
       : Animation(renderer, grid, asset_manager), p1_(p1), p2_(p2),
@@ -78,7 +78,7 @@ class SwitchAnimation : public Animation {
     ticks_++;
   }
 
-  virtual bool IsDone() override {
+  virtual bool IsReady() override {
     if (ticks_ <= ((has_match_) ? 8 : 16)) {
       return false;
     }
@@ -138,7 +138,7 @@ public:
     scale_rc_.h -= 4;
   }
 
-  virtual bool IsDone() override {
+  virtual bool IsReady() override {
     if (scale_rc_.w <= 0 || scale_rc_.h <= 0) {
       for (const auto& m : matches_) {
         GetGrid().At(m) = Element(SpriteID::Empty);
@@ -175,7 +175,7 @@ public:
     y_ += (velocity * (static_cast<double>(kSpriteHeight) / kFPS));
   }
 
-  virtual bool IsDone() override {
+  virtual bool IsReady() override {
     if (y_ <= end_pos_) {
       return false;
     }

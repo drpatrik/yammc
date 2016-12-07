@@ -9,7 +9,7 @@ const int kWidth = 755;
 const int kHeight = 600;
 const Position kNothingSelected{ -1, -1 };
 
-bool IsValidMove(const Position& old_pos, const Position& new_pos) {
+bool IsSwapValid(const Position& old_pos, const Position& new_pos) {
   int c = (new_pos == std::make_pair(old_pos.row() + 1, old_pos.col()));
 
   c += (new_pos == std::make_pair(old_pos.row() - 1, old_pos.col()));
@@ -47,12 +47,11 @@ Board::~Board() noexcept {
 
 void Board::Restart() {
   score_ = 0;
-  timer_.Reset();
-
   first_selected_ = kNothingSelected;
   grid_ = std::make_unique<Grid>(kRows, kCols, asset_manager_.get());
   active_animations_.clear();
   queued_animations_.clear();
+  timer_.Reset();
 }
 
 std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) {
@@ -67,10 +66,10 @@ std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) 
     grid_->At(selected).Select();
     first_selected_ = selected;
   } else {
-    if (IsValidMove(first_selected_, selected)) {
-      auto matches = grid_->Switch(first_selected_, selected);
+    if (IsSwapValid(first_selected_, selected)) {
+      auto matches = grid_->GetMatchesFromSwap(first_selected_, selected);
 
-      animations.push_back(std::make_shared<SwitchAnimation>(renderer_, *grid_, first_selected_, selected, !matches.empty(), asset_manager_));
+      animations.push_back(std::make_shared<SwapAnimation>(renderer_, *grid_, first_selected_, selected, !matches.empty(), asset_manager_));
 
       if (!matches.empty()) {
         animations.push_back(std::make_shared<MatchAnimation>(renderer_, *grid_, matches, asset_manager_));
@@ -113,7 +112,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
 
   while (it != std::end(active_animations_)) {
     (*it)->Update();
-    if ((*it)->IsDone()) {
+    if ((*it)->IsReady()) {
       it = active_animations_.erase(it);
     } else {
       ++it;
