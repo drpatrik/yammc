@@ -11,11 +11,13 @@
 
         Still plenty of work. Next major update might include:
 
-        - new animation for passing time
+        - new animation for passing time (fuse)
         - delta update instead of xx frame / s
         - Wiggle potential matches if player is idle
+        - Animation when times up
+        - Use Catch instead of gtest
 
-        The project requires cmake 2.6 or higher, SDL2 and SDL2_ttf and C++11 compliant compiler.
+        The project requires cmake 2.6 or higher, SDL2 and SDL2_ttf and a C++11 compliant compiler.
         The test suit requires gtest. I might use some C++14 features but I have done my best to
         removed them in the latest update.
 
