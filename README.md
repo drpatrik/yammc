@@ -17,8 +17,7 @@
         - Use Catch instead of gtest
 
         The project requires cmake 2.6 or higher, SDL2 and SDL2_ttf and a C++11 compliant compiler.
-        The test suit requires gtest. I might use some C++14 features but I have done my best to
-        removed them in the latest update.
+        The test suit requires gtest.
 
         Only tested under OSX
 
