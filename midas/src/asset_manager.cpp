@@ -1,6 +1,6 @@
-#include <iostream>
-#include "constants.h"
 #include "asset_manager.h"
+
+#include <iostream>
 
 const std::string kAssetFolder = "../../assets/";
 
@@ -43,6 +43,11 @@ AssetManager::AssetManager(SDL_Renderer *renderer) {
     sprites_.push_back(std::make_shared<Sprite>(ids_[i], LoadTexture(renderer, sprites[i]), LoadTexture(renderer, selected[i])));
   }
   sprites_.push_back(std::make_shared<Sprite>(Empty, nullptr, nullptr));
+
+  for (size_t i = 1; i <= 12; ++i) {
+    std::string name = "star_" + std::to_string(i) + ".bmp";
+    star_textures_.push_back(LoadTexture(renderer, name));
+  }
   std::vector<std::string> fonts {"Cabin-Regular.ttf", "Cabin-Bold.ttf"};
 
   for (const auto& f:fonts) {
@@ -53,5 +58,6 @@ AssetManager::AssetManager(SDL_Renderer *renderer) {
 
 AssetManager::~AssetManager() noexcept {
   std::for_each(std::begin(fonts_), std::end(fonts_), [] (auto font) { TTF_CloseFont(font); });
+  std::for_each(std::begin(star_textures_), std::end(star_textures_), [] (auto t) { SDL_DestroyTexture(t); });
   SDL_DestroyTexture(background_texture_);
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "animation.h"
-#include "timer.h"
 
 #include <vector>
 #include <memory>
@@ -30,12 +29,11 @@ class Board {
  private:
   Position first_selected_;
   int score_ = 0;
-  Timer timer_ = Timer(kGameTime);
   std::unique_ptr<Grid> grid_;
   std::shared_ptr<AssetManager> asset_manager_;
-
   SDL_Window *window_ = nullptr;
   SDL_Renderer *renderer_ = nullptr;
   std::vector<std::shared_ptr<Animation>> queued_animations_;
   std::vector<std::shared_ptr<Animation>> active_animations_;
+  std::shared_ptr<CountDownAnimation> countdown_animation_;
 };

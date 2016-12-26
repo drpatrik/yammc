@@ -2,6 +2,8 @@
 
 #include "grid.h"
 
+#include <cassert>
+
 class Animation {
  public:
   Animation(SDL_Renderer *renderer, Grid& grid, const std::shared_ptr<AssetManager>& asset_manager) : renderer_(renderer), grid_(grid), asset_manager_(asset_manager) {}
@@ -14,14 +16,9 @@ class Animation {
 
   virtual bool IsReady() = 0;
 
-  operator SDL_Renderer *() {
-    assert(renderer_);
-    return renderer_;
-  }
+  operator SDL_Renderer *() { return renderer_; }
 
   Grid& GetGrid() { return grid_; }
-
-  const AssetManager& GetAsset() const { return *asset_manager_.get(); }
 
   void RenderCopy(SpriteID id, const SDL_Rect& rc) {
     SDL_RenderCopy(*this, asset_manager_->GetSpriteAsTexture(id), nullptr, &rc);
@@ -189,4 +186,103 @@ private:
   SDL_Rect rc_;
   double end_pos_ = 0.0;
   Element element_ = Element(OwnedByAnimation);
+};
+
+class CountDownAnimation : public Animation {
+public:
+  CountDownAnimation(SDL_Renderer *renderer, Grid &grid, std::shared_ptr<AssetManager> &asset_manager)
+      : Animation(renderer, grid, asset_manager), star_textures_(asset_manager->GetStarTextures()) {
+    assert(coordinates_.size() == kGameTime);
+  }
+
+  virtual void Start() override {}
+
+  virtual void Update(double = 0.0) override {
+    int x, y;
+    std::tie(x, y) = coordinates_[timer_];
+    SDL_Rect rc {x - 15, y - 15, 30, 30 };
+
+    SDL_RenderCopy(*this, star_textures_.at(frame_), nullptr, &rc);
+    if (animation_ticks_++ > 4) {
+      frame_ = (++frame_ % 12);
+      animation_ticks_ = 0;
+    }
+    if (movement_ticks_++ > 60) {
+      timer_++;
+      movement_ticks_ = 0;
+    }
+  }
+
+  virtual bool IsReady() override { return timer_ == coordinates_.size(); }
+
+  int GetTimeLeft() const { return kGameTime - timer_; }
+
+ private:
+  int frame_ = 0;
+  int animation_ticks_ = 0;
+  int movement_ticks_ = 0;
+  size_t timer_ = 0;
+  std::vector<SDL_Texture *> star_textures_;
+  const std::vector<std::pair<int, int>> coordinates_ = {
+    std::make_pair(262, 555),
+    std::make_pair(258, 552),
+    std::make_pair(256, 548),
+    std::make_pair(253, 545),
+    std::make_pair(252, 540),
+    std::make_pair(254, 535),
+    std::make_pair(251, 530),
+    std::make_pair(253, 525),
+    std::make_pair(251, 522),
+    std::make_pair(254, 520),
+    std::make_pair(250, 518),
+    std::make_pair(245, 513),
+    std::make_pair(240, 513),
+    std::make_pair(235, 514),
+    std::make_pair(230, 511),
+    std::make_pair(228, 509),
+    std::make_pair(225, 511),
+    std::make_pair(220, 512),
+    std::make_pair(217, 510),
+    std::make_pair(218, 508),
+    std::make_pair(216, 507),
+    std::make_pair(215, 506),
+    std::make_pair(213, 505),
+    std::make_pair(212, 504),
+    std::make_pair(210, 503),
+    std::make_pair(212, 502),
+    std::make_pair(214, 500),
+    std::make_pair(210, 495),
+    std::make_pair(212, 490),
+    std::make_pair(211, 485),
+    std::make_pair(212, 480),
+    std::make_pair(210, 475),
+    std::make_pair(212, 470),
+    std::make_pair(210, 465),
+    std::make_pair(211, 460),
+    std::make_pair(212, 455),
+    std::make_pair(213, 450),
+    std::make_pair(210, 445),
+    std::make_pair(211, 440),
+    std::make_pair(212, 435),
+    std::make_pair(210, 430),
+    std::make_pair(208, 425),
+    std::make_pair(210, 420),
+    std::make_pair(208, 415),
+    std::make_pair(210, 410),
+    std::make_pair(208, 405),
+    std::make_pair(210, 400),
+    std::make_pair(208, 395),
+    std::make_pair(210, 390),
+    std::make_pair(210, 385),
+    std::make_pair(209, 380),
+    std::make_pair(207, 375),
+    std::make_pair(200, 372),
+    std::make_pair(196, 372),
+    std::make_pair(192, 372),
+    std::make_pair(188, 372),
+    std::make_pair(185, 372),
+    std::make_pair(183, 372),
+    std::make_pair(181, 372),
+    std::make_pair(179, 372),
+  };
 };

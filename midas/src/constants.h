@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 const int kFPS = 60;
 const int kFrameDelay = 1000 / kFPS;
 const int kGameTime = 60;

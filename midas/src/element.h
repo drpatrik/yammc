@@ -1,7 +1,6 @@
 #pragma once
 
 #include "asset_manager.h"
-#include "coordinates.h"
 
 class Element {
  public:

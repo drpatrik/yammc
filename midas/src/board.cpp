@@ -1,24 +1,35 @@
 #include "board.h"
-#include "coordinates.h"
 
 #include <algorithm>
 
 namespace {
 
-const int kWidth = 755;
-const int kHeight = 600;
-const Position kNothingSelected{ -1, -1 };
+  const int kWidth = 755;
+  const int kHeight = 600;
+  const Position kNothingSelected{ -1, -1 };
 
-bool IsSwapValid(const Position& old_pos, const Position& new_pos) {
-  int c = (new_pos == std::make_pair(old_pos.row() + 1, old_pos.col()));
+  bool IsSwapValid(const Position& old_pos, const Position& new_pos) {
+    int c = (new_pos == std::make_pair(old_pos.row() + 1, old_pos.col()));
 
-  c += (new_pos == std::make_pair(old_pos.row() - 1, old_pos.col()));
-  c += (new_pos == std::make_pair(old_pos.row(), old_pos.col() + 1));
-  c += (new_pos == std::make_pair(old_pos.row(), old_pos.col() - 1));
+    c += (new_pos == std::make_pair(old_pos.row() - 1, old_pos.col()));
+    c += (new_pos == std::make_pair(old_pos.row(), old_pos.col() + 1));
+    c += (new_pos == std::make_pair(old_pos.row(), old_pos.col() - 1));
 
-  return (c > 0);
-}
+    return (c > 0);
+  }
 
+  void RunAnimation(std::vector<std::shared_ptr<Animation>>& animations) {
+    auto it = std::begin(animations);
+
+    while (it != std::end(animations)) {
+      (*it)->Update();
+      if ((*it)->IsReady()) {
+        it = animations.erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
 }
 
 Board::Board() {
@@ -49,15 +60,15 @@ void Board::Restart() {
   score_ = 0;
   first_selected_ = kNothingSelected;
   grid_ = std::make_unique<Grid>(kRows, kCols, asset_manager_.get());
+  countdown_animation_ = std::make_shared<CountDownAnimation>(renderer_, *grid_.get(), asset_manager_);
   active_animations_.clear();
   queued_animations_.clear();
-  timer_.Reset();
 }
 
 std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) {
   std::vector<std::shared_ptr<Animation>> animations;
 
-  if (timer_.IsZero() || !p.IsValid() || grid_->IsFilling()) {
+  if (countdown_animation_->IsReady() || !p.IsValid() || grid_->IsFilling()) {
     return animations;
   }
   auto selected = p;
@@ -90,12 +101,14 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
   SDL_RenderClear(renderer_);
   SDL_RenderCopy(renderer_, asset_manager_->GetBackgroundTexture(), nullptr, &rc);
 
-  if (timer_.IsZero()) {
+  if (countdown_animation_->IsReady()) {
     RenderText(400, 233, Font::Bold, "G A M E  O V E R");
     UpdateStatus(10, 10);
     SDL_RenderPresent(renderer_);
     return;
   }
+  countdown_animation_->Update();
+
   grid_->Render(renderer_);
   SDL_RenderSetClipRect(renderer_, &clip_rc);
 
@@ -108,16 +121,9 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
     animation->Start();
     active_animations_.push_back(animation);
   }
-  auto it = std::begin(active_animations_);
 
-  while (it != std::end(active_animations_)) {
-    (*it)->Update();
-    if ((*it)->IsReady()) {
-      it = active_animations_.erase(it);
-    } else {
-      ++it;
-    }
-  }
+  RunAnimation(active_animations_);
+
   if (active_animations_.empty() && queued_animations_.empty()) {
     std::vector<Position> moved_objects;
     std::set<Position> matches;
@@ -143,11 +149,10 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
 }
 
 void Board::UpdateStatus(int x, int y) {
-  RenderText(x, y + 10, Font::Bold, "Score:");
-  RenderText(x, y + 40, Font::Normal, std::to_string(score_));
-
-  RenderText(x, y + 75, Font::Bold, "Timer:");
-  RenderText(x, y + 105, Font::Normal, std::to_string(timer_.GetTimeInSeconds()));
+  RenderText(x, y + 10, Font::Bold, "Time left:");
+  RenderText(x, y + 40, Font::Normal, std::to_string(countdown_animation_->GetTimeLeft()));
+  RenderText(x, y + 75, Font::Bold, "Score:");
+  RenderText(x, y + 105, Font::Normal, std::to_string(score_));
 }
 
 void Board::RenderText(int x, int y, Font font, const std::string& text) const {

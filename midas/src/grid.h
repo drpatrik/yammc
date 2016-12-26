@@ -1,11 +1,10 @@
 #pragma once
 
 #include "element.h"
+#include "coordinates.h"
 
 #include <iostream>
-#include <cassert>
 #include <set>
-#include <random>
 #include <functional>
 
 class Grid {
@@ -52,7 +51,7 @@ class Grid {
   inline Element& At(const Position& p) { return grid_.at(p.row()).at(p.col()); }
 
   bool IsMatch(int row, int col) const {
-    assert(kMatchNumber <= 3);
+    static_assert(kMatchNumber <= 3, "IsMatch assumes that a match is exactly 3");
     // Look behind
     int match_row = (row - 1 >= 0) && At(row - 1, col) == At(row, col);
     match_row += (row - 2 >= 0) && At(row - 2, col) == At(row, col);
@@ -75,7 +74,7 @@ class Grid {
     for (int row = 0; row < rows_; ++row) {
       for (int col = 0; col < cols_; ++col) {
         do {
-          At(row, col) = Element(asset_manager_->GetSprite(static_cast<SpriteID>(distribution_(engine_))));
+          At(row, col) = Element(asset_manager_->GetSprite());
         } while(IsMatch(row, col));
       }
     }
@@ -107,10 +106,10 @@ class Grid {
     }
     for (int col = cols_ - 1;col >= 0; --col) {
       if (At(0, col).IsEmpty()) {
-        if (fill_grid_.empty()) {
-          At(0, col) = Element(asset_manager_->GetSprite(static_cast<SpriteID>(distribution_(engine_))));
-        } else {
-          At(0, col) = fill_grid_.back().back();
+        bool filling = !fill_grid_.empty();
+
+        At(0, col) = (filling) ? fill_grid_.back().back() : Element(asset_manager_->GetSprite());
+        if (filling) {
           fill_grid_.back().pop_back();
           if (fill_grid_.back().empty()) {
             fill_grid_.pop_back();
@@ -219,8 +218,6 @@ class Grid {
   int rows_;
   int cols_;
   mutable bool is_filling_ = true;
-  std::mt19937 engine_ {std::random_device{}()};
-  std::uniform_int_distribution<int> distribution_{ 0, kNumSprites - 1 };
   std::vector<std::vector<Element>> grid_;
   std::vector<std::vector<Element>> fill_grid_;
   AssetManagerInterface* asset_manager_ = nullptr;

@@ -11,7 +11,6 @@
 
         Still plenty of work. Next major update might include:
 
-        - new animation for passing time (fuse)
         - delta update instead of xx frame / s
         - Wiggle potential matches if player is idle
         - Animation when times up

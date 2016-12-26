@@ -2,31 +2,6 @@
 
 #include <chrono>
 
-class Timer {
- public:
-  using SystemClock = std::chrono::system_clock;
-  using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
-
-  explicit Timer(int value) : initial_value_(value), count_down_(value), start_(SystemClock::now()) {}
-
-  int GetTimeInSeconds() {
-    if (std::chrono::duration_cast<std::chrono::milliseconds>(SystemClock::now() - start_).count() >= 1000) {
-      start_ = SystemClock::now();
-      count_down_ = std::max(--count_down_, 0);
-    }
-    return count_down_;
-  }
-
-  void Reset() { count_down_ = initial_value_; start_ = SystemClock::now(); }
-
-  bool IsZero() const { return count_down_ == 0; }
-
- private:
-  int initial_value_;
-  int count_down_;
-  TimePoint start_;
-};
-
 // Adapted from http://headerphile.com/sdl2/sdl2-part-9-no-more-delays/
 class DeltaTimer {
  public:

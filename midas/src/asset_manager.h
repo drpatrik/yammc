@@ -1,7 +1,10 @@
 #pragma once
 
+#include <constants.h>
+
 #include <string>
 #include <vector>
+#include <random>
 
 #include <SDL.h>
 #include <SDL_TTF.h>
@@ -60,7 +63,9 @@ class AssetManagerInterface {
  public:
   virtual ~AssetManagerInterface() {}
   virtual SDL_Texture *GetBackgroundTexture() = 0;
+  virtual std::shared_ptr<Sprite> GetSprite() = 0;
   virtual std::shared_ptr<Sprite> GetSprite(SpriteID id) = 0;
+  virtual std::vector<SDL_Texture *> GetStarTextures() = 0;
   virtual SDL_Texture *GetSpriteAsTexture(SpriteID id) = 0;
   virtual TTF_Font *GetFont(int id) = 0;
 };
@@ -75,11 +80,18 @@ class AssetManager : public AssetManagerInterface {
 
   virtual SDL_Texture *GetBackgroundTexture() override { return background_texture_; }
 
+  virtual std::shared_ptr<Sprite> GetSprite() override { return sprites_.at(distribution_(engine_)); }
+
   virtual std::shared_ptr<Sprite> GetSprite(SpriteID id) override {
     if (id > SpriteID::Empty) {
       return sprites_[SpriteID::Empty];
     }
-    return sprites_.at(id); }
+    return sprites_.at(id);
+  }
+
+  virtual std::vector<SDL_Texture *> GetStarTextures() override {
+    return star_textures_;
+  }
 
   virtual SDL_Texture * GetSpriteAsTexture(SpriteID id) override { return (*GetSprite(id))(); }
 
@@ -88,5 +100,8 @@ class AssetManager : public AssetManagerInterface {
  private:
   std::vector<TTF_Font *> fonts_;
   std::vector<std::shared_ptr<Sprite>> sprites_;
+  std::vector<SDL_Texture *> star_textures_;
   SDL_Texture *background_texture_;
+  std::mt19937 engine_ {std::random_device{}()};
+  std::uniform_int_distribution<int> distribution_{ 0, kNumSprites - 1 };
 };
