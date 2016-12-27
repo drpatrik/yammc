@@ -102,7 +102,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
   SDL_RenderCopy(renderer_, asset_manager_->GetBackgroundTexture(), nullptr, &rc);
 
   if (countdown_animation_->IsReady()) {
-    RenderText(400, 233, Font::Bold, "G A M E  O V E R");
+    RenderText(400, 233, Font::Bold, "G A M E  O V E R", TextColor::Red);
     UpdateStatus(10, 10);
     SDL_RenderPresent(renderer_);
     return;
@@ -149,15 +149,21 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
 }
 
 void Board::UpdateStatus(int x, int y) {
-  RenderText(x, y + 10, Font::Bold, "Time left:");
-  RenderText(x, y + 40, Font::Normal, std::to_string(countdown_animation_->GetTimeLeft()));
-  RenderText(x, y + 75, Font::Bold, "Score:");
-  RenderText(x, y + 105, Font::Normal, std::to_string(score_));
+  RenderText(x, y + 10, Font::Bold, "Score:", TextColor::White);
+  RenderText(x, y + 40, Font::Normal, std::to_string(score_), TextColor::White);
+  RenderText(x + 92, y + 430, Font::Bold, std::to_string(countdown_animation_->GetTimeLeft()), TextColor::Blue);
 }
 
-void Board::RenderText(int x, int y, Font font, const std::string& text) const {
-  const SDL_Color color { 255, 255, 255, 255 };
+void Board::RenderText(int x, int y, Font font, const std::string& text, TextColor text_color) const {
+  SDL_Color color { 255, 255, 255, 255 };
 
+  if (text_color == TextColor::Blue) {
+    color = { 0, 0, 255 };
+  } else if (text_color == TextColor::Red) {
+    color = { 255, 0, 0 };
+  } else if (text_color == TextColor::Green) {
+    color = { 0, 255, 0 };
+  }
   SDL_Surface* surface = TTF_RenderText_Blended(asset_manager_->GetFont(font), text.c_str(), color);
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer_, surface);
 

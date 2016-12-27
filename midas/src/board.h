@@ -23,8 +23,9 @@ class Board {
   const Element& operator()(int row, int col) const { return grid_->At(row, col); }
 
  protected:
+  enum class TextColor { White, Blue, Red, Green };
   void UpdateStatus(int x, int y);
-  void RenderText(int x, int y, Font font, const std::string& text) const;
+  void RenderText(int x, int y, Font font, const std::string& text, TextColor text_color) const;
 
  private:
   Position first_selected_;
