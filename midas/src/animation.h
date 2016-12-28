@@ -16,12 +16,20 @@ class Animation {
 
   virtual bool IsReady() = 0;
 
+  virtual void Abort() {}
+
+  virtual bool  LockBoard() const { return true; }
+
   operator SDL_Renderer *() { return renderer_; }
 
   Grid& GetGrid() { return grid_; }
 
   void RenderCopy(SpriteID id, const SDL_Rect& rc) {
     SDL_RenderCopy(*this, asset_manager_->GetSpriteAsTexture(id), nullptr, &rc);
+  }
+
+  void RenderCopy(SDL_Texture *texture, const SDL_Rect& rc) {
+    SDL_RenderCopy(*this, texture, nullptr, &rc);
   }
 
  protected:
@@ -72,11 +80,10 @@ class SwapAnimation : public Animation {
     }
     RenderCopy(element1_, rc1_);
     RenderCopy(element2_, rc2_);
-    ticks_++;
   }
 
   virtual bool IsReady() override {
-    if (ticks_ <= ((has_match_) ? 8 : 16)) {
+    if (++ticks_ <= ((has_match_) ? 8 : 16)) {
       return false;
     }
     RenderCopy(element1_, rc1_);
@@ -188,6 +195,56 @@ private:
   Element element_ = Element(OwnedByAnimation);
 };
 
+class WiggleAnimation : public Animation {
+public:
+  WiggleAnimation(SDL_Renderer *renderer, Grid &grid, const Position& p1, const Position& p2, std::shared_ptr<AssetManager> &asset_manager) : Animation(renderer, grid, asset_manager), p1_(p1), p2_(p2) {}
+
+  virtual void Start() override {
+    std::swap(e1_, GetGrid().At(p1_));
+    std::swap(e2_, GetGrid().At(p2_));
+  }
+
+  virtual void Update(double = 0.0) override {
+    int offset_x,offset_y;
+    std::tie(offset_x, offset_y) = frames_[frame_];
+
+    e1_.Render(*this, p1_.x() + offset_x, p1_.y() + offset_y, true);
+    e2_.Render(*this, p2_.x() + offset_x, p2_.y() + offset_y, true);
+
+    if ((++animation_ticks_ % 2) == 0) {
+      frame_ = (++frame_ % frames_.size());
+    }
+  }
+
+  virtual bool IsReady() override {
+    if (++ticks_ > kFPS) {
+      std::swap(e1_, GetGrid().At(p1_));
+      std::swap(e2_, GetGrid().At(p2_));
+      return true;
+    }
+    return false;
+  }
+
+  virtual void Abort() override { ticks_ = kFPS; }
+
+ private:
+  Position p1_;
+  Position p2_;
+  Element e1_ = Element(SpriteID::OwnedByAnimation);
+  Element e2_ = Element(SpriteID::OwnedByAnimation);
+  size_t ticks_ = 0;
+  size_t frame_ = 0;
+  size_t animation_ticks_ = 0;
+  const std::vector<std::pair<int, int>> frames_ = {
+    std::make_pair(3, 0),
+    std::make_pair(3, 3),
+    std::make_pair(0, 3),
+    std::make_pair(-3, 0),
+    std::make_pair(-3, -3),
+    std::make_pair(0, -3),
+  };
+};
+
 class CountDownAnimation : public Animation {
 public:
   CountDownAnimation(SDL_Renderer *renderer, Grid &grid, std::shared_ptr<AssetManager> &asset_manager)
@@ -200,20 +257,19 @@ public:
   virtual void Update(double = 0.0) override {
     int x, y;
     std::tie(x, y) = coordinates_[timer_];
-    SDL_Rect rc {x - 15, y - 15, 30, 30 };
 
-    SDL_RenderCopy(*this, star_textures_.at(frame_), nullptr, &rc);
-    if (animation_ticks_++ > 4) {
-      frame_ = (++frame_ % 12);
-      animation_ticks_ = 0;
+    RenderCopy(star_textures_.at(frame_), {x - 15, y - 15, 30, 30 });
+    if ((++animation_ticks_ % 4) == 0) {
+      frame_ = (++frame_ % star_textures_.size());
     }
-    if (movement_ticks_++ > 60) {
+    if ((++movement_ticks_ % kFPS) == 0) {
       timer_++;
-      movement_ticks_ = 0;
     }
   }
 
   virtual bool IsReady() override { return timer_ == coordinates_.size(); }
+
+  virtual bool LockBoard() const override { return false; }
 
   int GetTimeLeft() const { return kGameTime - timer_; }
 
