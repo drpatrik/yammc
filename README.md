@@ -11,10 +11,10 @@
 
         Still plenty of work. Next major update might include:
 
-        - delta update instead of xx frame / s
         - Wiggle potential matches if player is idle
-        - Improved score system with point animation
         - Prevent updates that contains matches
+        - Improved score system with point animation
+        - delta update instead of xx frame / s
         - Use Catch instead of gtest
 
         The project requires cmake 2.6 or higher, SDL2 and SDL2_ttf and a C++11 compliant compiler.
