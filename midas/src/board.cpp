@@ -36,7 +36,6 @@ namespace {
 
     while (it != std::end(animations)) {
       if ((*it)->RemoveIfAsked())
-        std::cout << "Removed" << std::endl;
         it = animations.erase(it);
         break;
       }
