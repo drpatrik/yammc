@@ -2,7 +2,6 @@
 
 #include "animation.h"
 
-#include <vector>
 #include <memory>
 
 class Board {
@@ -15,6 +14,10 @@ class Board {
   operator SDL_Window*() const { return window_; }
 
   void Restart();
+
+  std::vector<std::shared_ptr<Animation>> BoardIsIdle();
+
+  void BoardIsNotIdle();
 
   std::vector<std::shared_ptr<Animation>> ButtonPressed(const Position& p);
 

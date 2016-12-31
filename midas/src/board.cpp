@@ -30,7 +30,18 @@ namespace {
       }
     }
   }
-}
+
+  void RemoveAnimation(std::vector<std::shared_ptr<Animation>>& animations) {
+    auto it = std::begin(animations);
+
+    while (it != std::end(animations)) {
+      if ((*it)->RemoveIfAsked())
+        std::cout << "Removed" << std::endl;
+        it = animations.erase(it);
+        break;
+      }
+    }
+  }
 
 Board::Board() {
   window_ = SDL_CreateWindow("Yet Another Midas Clone", SDL_WINDOWPOS_UNDEFINED,
@@ -65,6 +76,25 @@ void Board::Restart() {
   queued_animations_.clear();
 }
 
+std::vector<std::shared_ptr<Animation>> Board::BoardIsIdle() {
+  bool matches_found;
+  std::pair<Position, Position> match_pos;
+  std::vector<std::shared_ptr<Animation>> animations;
+
+  std::tie(matches_found, match_pos) = grid_->FindPotentialMatches();
+
+  if (matches_found) {
+    animations.push_back(std::make_shared<WiggleAnimation>(renderer_, *grid_, match_pos.first, match_pos.second, asset_manager_));
+  }
+
+  return animations;
+}
+
+void Board::BoardIsNotIdle() {
+  RemoveAnimation(active_animations_);
+  RemoveAnimation(queued_animations_);
+}
+
 std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) {
   std::vector<std::shared_ptr<Animation>> animations;
 
@@ -85,7 +115,7 @@ std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) 
       if (!matches.empty()) {
         animations.push_back(std::make_shared<MatchAnimation>(renderer_, *grid_, matches, asset_manager_));
       }
-      score_ += matches.size();
+      score_ += matches.size() * 3;
     } else {
       grid_->At(first_selected_).Unselect();
     }
@@ -171,7 +201,7 @@ void Board::RenderText(int x, int y, Font font, const std::string& text, TextCol
 
   SDL_QueryTexture(texture, nullptr, nullptr, &width, &height);
 
-  SDL_Rect rc { x, y, width, height };
+  SDL_Rect rc{ x, y, width, height };
 
   SDL_RenderCopy(renderer_, texture, nullptr, &rc);
 

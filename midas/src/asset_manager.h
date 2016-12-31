@@ -63,11 +63,13 @@ class AssetManagerInterface {
  public:
   virtual ~AssetManagerInterface() {}
   virtual SDL_Texture *GetBackgroundTexture() = 0;
+  virtual std::shared_ptr<Sprite> GetSprite(int col) = 0;
   virtual std::shared_ptr<Sprite> GetSprite() = 0;
   virtual std::shared_ptr<Sprite> GetSprite(SpriteID id) = 0;
   virtual std::vector<SDL_Texture *> GetStarTextures() = 0;
   virtual SDL_Texture *GetSpriteAsTexture(SpriteID id) = 0;
   virtual TTF_Font *GetFont(int id) = 0;
+  virtual void ResetPreviousIds() = 0;
 };
 
 class AssetManager : public AssetManagerInterface {
@@ -81,6 +83,16 @@ class AssetManager : public AssetManagerInterface {
   virtual SDL_Texture *GetBackgroundTexture() override { return background_texture_; }
 
   virtual std::shared_ptr<Sprite> GetSprite() override { return sprites_.at(distribution_(engine_)); }
+
+  virtual std::shared_ptr<Sprite> GetSprite(int col) override {
+    int id;
+
+    do {
+      id = distribution_(engine_);
+    } while (previous_ids_.at(col) == id || (col > 0 && previous_ids_.at(col - 1) == id));
+    previous_ids_[col] = static_cast<SpriteID>(id);
+    return sprites_.at(id);
+  }
 
   virtual std::shared_ptr<Sprite> GetSprite(SpriteID id) override {
     if (id > SpriteID::Empty) {
@@ -97,7 +109,12 @@ class AssetManager : public AssetManagerInterface {
 
   virtual TTF_Font *GetFont(int id) override { return fonts_[id]; }
 
+  virtual void ResetPreviousIds() override {
+    previous_ids_ = std::vector<SpriteID>(kCols, SpriteID::Empty);
+  }
+
  private:
+  std::vector<SpriteID> previous_ids_ = std::vector<SpriteID>(kCols, SpriteID::Empty);
   std::vector<TTF_Font *> fonts_;
   std::vector<std::shared_ptr<Sprite>> sprites_;
   std::vector<SDL_Texture *> star_textures_;

@@ -9,10 +9,11 @@
         I have spent the last 30 years developing software but the last game
         I wrote was a Tetris clone for the Hercules graphic card back in 1989.
 
+        The game is pretty complete in comparison to the midas miner version that
+        is available in flash.
+
         Still plenty of work. Next major update might include:
 
-        - Wiggle potential matches if player is idle
-        - Prevent updates that contains matches
         - Improved score system with point animation
         - delta update instead of xx frame / s
         - Use Catch instead of gtest

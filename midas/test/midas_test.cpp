@@ -5,6 +5,9 @@
 class AssetManagerMock : public AssetManagerInterface {
  public:
   virtual SDL_Texture *GetBackgroundTexture() override { return nullptr; }
+  virtual std::shared_ptr<Sprite> GetSprite(int) override {
+    return std::make_shared<Sprite>(SpriteID::Blue);
+  }
   virtual std::shared_ptr<Sprite> GetSprite() override {
     return std::make_shared<Sprite>(SpriteID::Blue);
   }
@@ -16,6 +19,7 @@ class AssetManagerMock : public AssetManagerInterface {
   }
   virtual SDL_Texture * GetSpriteAsTexture(SpriteID) override { return nullptr; }
   virtual TTF_Font *GetFont(int id) override { return nullptr; }
+  virtual void ResetPreviousIds() override {}
 };
 
 AssetManagerMock kAssetManagerMock;

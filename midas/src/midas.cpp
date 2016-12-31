@@ -1,9 +1,13 @@
 #include "board.h"
+#include "timer.h"
 
+#include <thread>
 #include <sstream>
 
 class MidasMiner {
  public:
+  using HighResClock = std::chrono::high_resolution_clock;
+
   MidasMiner() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
       std::cout << "SDL_Init Error: " << SDL_GetError() << std::endl;
@@ -20,6 +24,7 @@ class MidasMiner {
   static void Play() {
     Board board;
     bool quit = false;
+    Timer idle_timer(kIdleTimer);
     std::vector<std::shared_ptr<Animation>> animations;
 
     while (!quit) {
@@ -36,6 +41,7 @@ class MidasMiner {
             if(event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
               board.Restart();
               animations.clear();
+              idle_timer.Reset();
             }
             break;
 #if !defined(NDEBUG)
@@ -59,20 +65,23 @@ class MidasMiner {
           case SDL_MOUSEBUTTONDOWN:
             switch (event.button.button) {
               case SDL_BUTTON_LEFT:
+                board.BoardIsNotIdle();
+                idle_timer.Reset();
                 animations = board.ButtonPressed(Position(pixel_to_row(event.motion.y), pixel_to_col(event.motion.x)));
                 break;
             }
         }
       }
-      int frame_start_rendering = SDL_GetTicks();
-
-      board.Render(animations);
-
-      int frame_rendering_time = (SDL_GetTicks() - frame_start_rendering);
-
-      if (frame_rendering_time < kFrameDelay) {
-        SDL_Delay(kFrameDelay - frame_rendering_time);
+      if (idle_timer.IsZero()) {
+        animations = board.BoardIsIdle();
+        idle_timer.Reset();
       }
+      using namespace std::chrono;
+
+      auto start = HighResClock::now();
+      board.Render(animations);
+      auto duration = duration_cast<microseconds>(HighResClock::now() - start);
+      std::this_thread::sleep_for(microseconds(std::max(static_cast<int64_t>(0), static_cast<int64_t>(kFrameDelay - duration.count()))));
     }
     SDL_Quit();
   }

@@ -108,7 +108,7 @@ class Grid {
       if (At(0, col).IsEmpty()) {
         bool filling = !fill_grid_.empty();
 
-        At(0, col) = (filling) ? fill_grid_.back().back() : Element(asset_manager_->GetSprite());
+        At(0, col) = (filling) ? fill_grid_.back().back() : Element(asset_manager_->GetSprite(col));
         if (filling) {
           fill_grid_.back().pop_back();
           if (fill_grid_.back().empty()) {
@@ -121,6 +121,7 @@ class Grid {
     std::set<Position> matches;
 
     if (!found) {
+      asset_manager_->ResetPreviousIds();
       matches = GetAllMatches();
     }
     return std::make_pair(moved_objects, matches);
@@ -133,6 +134,32 @@ class Grid {
 
     std::swap(At(p1), At(p2));
     return matches;
+  }
+
+  std::pair<bool, std::pair<Position, Position>> FindPotentialMatches() {
+    std::set<Position> matches;
+    std::pair<Position, Position> positions;
+
+    for (int row = 0; row < rows_; ++row) {
+      for (int col = 0; col < cols_; ++col) {
+        if (row + 1 < rows_) {
+          positions.first = Position(row, col);
+          positions.second =  Position(row + 1, col);
+
+          matches = GetMatchesFromSwap(positions.first, positions.second);
+        }
+        if (matches.empty() && col + 1 < cols_) {
+          positions.first = Position(row, col);
+          positions.second =  Position(row, col + 1);
+
+          matches = GetMatchesFromSwap(positions.first, positions.second);
+        }
+        if (!matches.empty()) {
+          return std::make_pair(true, positions);
+        }
+      }
+    }
+    return std::make_pair(false, positions);
   }
 
   void Render(SDL_Renderer *renderer) const {

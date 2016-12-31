@@ -16,9 +16,7 @@ class Animation {
 
   virtual bool IsReady() = 0;
 
-  virtual void Abort() {}
-
-  virtual bool  LockBoard() const { return true; }
+  virtual bool RemoveIfAsked() const { return false; }
 
   operator SDL_Renderer *() { return renderer_; }
 
@@ -172,7 +170,7 @@ public:
   }
 
   virtual void Update(double = 0.0) override {
-    double velocity = GetGrid().IsFilling() ? 16.0 : 8.0;
+    double velocity = 16.0;
 
     rc_.y = static_cast<int>(y_);
     RenderCopy(element_, rc_);
@@ -199,6 +197,11 @@ class WiggleAnimation : public Animation {
 public:
   WiggleAnimation(SDL_Renderer *renderer, Grid &grid, const Position& p1, const Position& p2, std::shared_ptr<AssetManager> &asset_manager) : Animation(renderer, grid, asset_manager), p1_(p1), p2_(p2) {}
 
+  ~WiggleAnimation() {
+    std::swap(e1_, GetGrid().At(p1_));
+    std::swap(e2_, GetGrid().At(p2_));
+  }
+
   virtual void Start() override {
     std::swap(e1_, GetGrid().At(p1_));
     std::swap(e2_, GetGrid().At(p2_));
@@ -218,14 +221,12 @@ public:
 
   virtual bool IsReady() override {
     if (++ticks_ > kFPS) {
-      std::swap(e1_, GetGrid().At(p1_));
-      std::swap(e2_, GetGrid().At(p2_));
       return true;
     }
     return false;
   }
 
-  virtual void Abort() override { ticks_ = kFPS; }
+  virtual bool RemoveIfAsked() const override { return true; }
 
  private:
   Position p1_;
@@ -268,8 +269,6 @@ public:
   }
 
   virtual bool IsReady() override { return timer_ == coordinates_.size(); }
-
-  virtual bool LockBoard() const override { return false; }
 
   int GetTimeLeft() const { return kGameTime - timer_; }
 
