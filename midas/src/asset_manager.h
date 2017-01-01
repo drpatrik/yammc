@@ -85,12 +85,12 @@ class AssetManager : public AssetManagerInterface {
   virtual std::shared_ptr<Sprite> GetSprite() override { return sprites_.at(distribution_(engine_)); }
 
   virtual std::shared_ptr<Sprite> GetSprite(int col) override {
-    int id;
+    SpriteID id;
 
     do {
-      id = distribution_(engine_);
-    } while (previous_ids_.at(col) == id || (col > 0 && previous_ids_.at(col - 1) == id));
-    previous_ids_[col] = static_cast<SpriteID>(id);
+      id = static_cast<SpriteID>(distribution_(engine_));
+    } while (previous_ids_.at(col) == id || (col < kCols - 1 && previous_ids_.at(col + 1) == id));
+    previous_ids_[col] = id;
     return sprites_.at(id);
   }
 

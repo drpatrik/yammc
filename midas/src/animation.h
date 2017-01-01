@@ -66,7 +66,7 @@ class SwapAnimation : public Animation {
   }
 
   virtual void Update(double = 0.0) override {
-    const int kVelocity = 5;
+    const int kVelocity = 4;
     int sign = (ticks_ <= 8) ? 1 : -1;
 
     if (p1_.row() == p2_.row()) {

@@ -90,7 +90,7 @@ class Grid {
   }
 
   std::pair<std::vector<Position>, std::set<Position>> Collaps() {
-    bool found = false;
+    bool grid_is_unstable = false;
     std::vector<Position> moved_objects;
 
     for (int row = rows_ - 1;row >= 1; --row) {
@@ -100,7 +100,7 @@ class Grid {
           if (!At(row, col).IsEmpty()) {
             moved_objects.push_back(Position(row, col));
           }
-          found = true;
+          grid_is_unstable = true;
         }
       }
     }
@@ -115,14 +115,17 @@ class Grid {
             fill_grid_.pop_back();
           }
         }
+        grid_is_unstable = true;
+        grid_is_dirty_ = !filling;
         moved_objects.push_back(Position(0, col));
       }
     }
     std::set<Position> matches;
 
-    if (!found) {
+    if (!grid_is_unstable && grid_is_dirty_) {
       asset_manager_->ResetPreviousIds();
       matches = GetAllMatches();
+      grid_is_dirty_ = false;
     }
     return std::make_pair(moved_objects, matches);
   }
@@ -245,6 +248,7 @@ class Grid {
   int rows_;
   int cols_;
   mutable bool is_filling_ = true;
+  bool grid_is_dirty_ = false;
   std::vector<std::vector<Element>> grid_;
   std::vector<std::vector<Element>> fill_grid_;
   AssetManagerInterface* asset_manager_ = nullptr;
