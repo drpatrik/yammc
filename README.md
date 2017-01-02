@@ -17,11 +17,12 @@
         - Improved score system with point animation
         - delta update instead of xx frame / s
         - Use Catch instead of gtest
+        - Sound
 
         The project requires cmake 2.6 or higher, SDL2 and SDL2_ttf and a C++11 compliant compiler.
         The test suit requires gtest.
 
-        Only tested under OSX
+        Only tested under OSX. All my development machines are either OSX and Linux these days.
 
         make
 
@@ -35,3 +36,6 @@
         or just type
 
         ./run
+
+        If someone want to do a Windows port I would appriticate a pull request. The same goes
+        for other modifications. I am an utter novice in the land of game development.

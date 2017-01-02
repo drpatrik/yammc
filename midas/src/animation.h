@@ -18,7 +18,7 @@ class Animation {
 
   virtual bool RemoveIfAsked() const { return false; }
 
-  operator SDL_Renderer *() { return renderer_; }
+  operator SDL_Renderer *() const { return renderer_; }
 
   Grid& GetGrid() { return grid_; }
 
@@ -260,7 +260,7 @@ public:
     std::tie(x, y) = coordinates_[timer_];
 
     RenderCopy(star_textures_.at(frame_), {x - 15, y - 15, 30, 30 });
-    if ((++animation_ticks_ % 4) == 0) {
+    if ((++animation_ticks_ % 5) == 0) {
       frame_ = (++frame_ % star_textures_.size());
     }
     if ((++movement_ticks_ % kFPS) == 0) {
@@ -353,7 +353,7 @@ public:
     const SDL_Rect rc { 100, 278, 71, 100 };
 
     RenderCopy(explosion_texture_.at(frame_), rc);
-    if ((++animation_ticks_ % 4) == 0) {
+    if ((++animation_ticks_ % 5) == 0) {
       frame_++;
     }
   }

@@ -40,10 +40,10 @@ class Sprite {
 
  private:
   const SpriteID id_;
-  SDL_Texture* sprite_;
+  SDL_Texture* sprite_ = nullptr;
   int width_ = 0;
   int height_ = 0;
-  SDL_Texture* selected_;
+  SDL_Texture* selected_ = nullptr;
 };
 
 enum Font { Normal, Bold };

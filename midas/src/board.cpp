@@ -134,6 +134,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
   SDL_RenderCopy(renderer_, asset_manager_->GetBackgroundTexture(), nullptr, &rc);
 
   if (countdown_animation_->IsReady()) {
+    RemoveAnimation(active_animations_);
     if (active_animations_.size() == 0) {
       active_animations_.push_back(std::make_shared<ExplosionAnimation>(renderer_, *grid_, asset_manager_));
     }
