@@ -71,11 +71,11 @@ Board::~Board() noexcept {
 
 void Board::Restart() {
   score_ = 0;
+  active_animations_.clear();
+  queued_animations_.clear();
   first_selected_ = kNothingSelected;
   grid_ = std::make_unique<Grid>(kRows, kCols, asset_manager_.get());
   countdown_animation_ = std::make_shared<CountDownAnimation>(renderer_, *grid_.get(), asset_manager_);
-  active_animations_.clear();
-  queued_animations_.clear();
 }
 
 std::vector<std::shared_ptr<Animation>> Board::BoardIsIdle() {

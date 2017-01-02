@@ -60,8 +60,8 @@ class MidasMiner {
         animations = board.BoardIsIdle();
         idle_timer.Reset();
       }
-      // When we move over to using an delta update instead of timer based
-      // the delay can be removed and we should have much smoother animations.
+      // When we use delta update instead of timer based frame rate
+      // the delay can be removed and we should have smoother animations.
       //
       // If your monitor is running at 60hz then you can enable VSYNC in
       // Board::Board() and remove the delay.
