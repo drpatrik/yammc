@@ -4,43 +4,46 @@
 
 namespace {
 
-  const int kWidth = 755;
-  const int kHeight = 600;
-  const Position kNothingSelected{ -1, -1 };
+const int kWidth = 755;
+const int kHeight = 600;
+const Position kNothingSelected{ -1, -1 };
 
-  bool IsSwapValid(const Position& old_pos, const Position& new_pos) {
-    int c = (new_pos == std::make_pair(old_pos.row() + 1, old_pos.col()));
+bool IsSwapValid(const Position& old_pos, const Position& new_pos) {
+  int c = (new_pos == std::make_pair(old_pos.row() + 1, old_pos.col()));
 
-    c += (new_pos == std::make_pair(old_pos.row() - 1, old_pos.col()));
-    c += (new_pos == std::make_pair(old_pos.row(), old_pos.col() + 1));
-    c += (new_pos == std::make_pair(old_pos.row(), old_pos.col() - 1));
+  c += (new_pos == std::make_pair(old_pos.row() - 1, old_pos.col()));
+  c += (new_pos == std::make_pair(old_pos.row(), old_pos.col() + 1));
+  c += (new_pos == std::make_pair(old_pos.row(), old_pos.col() - 1));
 
-    return (c > 0);
-  }
+  return (c > 0);
+}
 
-  void RunAnimation(std::vector<std::shared_ptr<Animation>>& animations) {
-    auto it = std::begin(animations);
+bool RunAnimation(std::vector<std::shared_ptr<Animation>>& animations) {
+  auto it = std::begin(animations);
 
-    while (it != std::end(animations)) {
-      (*it)->Update();
-      if ((*it)->IsReady()) {
-        it = animations.erase(it);
-      } else {
-        ++it;
-      }
+  while (it != std::end(animations)) {
+    (*it)->Update();
+    if ((*it)->IsReady()) {
+      it = animations.erase(it);
+    } else {
+      ++it;
     }
   }
 
-  void RemoveAnimation(std::vector<std::shared_ptr<Animation>>& animations) {
-    auto it = std::begin(animations);
+  return (animations.size() == 0);
+}
 
-    while (it != std::end(animations)) {
-      if ((*it)->RemoveIfAsked())
-        it = animations.erase(it);
-        break;
-      }
-    }
+void RemoveAnimation(std::vector<std::shared_ptr<Animation>>& animations) {
+  auto it = std::begin(animations);
+
+  while (it != std::end(animations)) {
+    if ((*it)->RemoveIfAsked())
+      it = animations.erase(it);
+    break;
   }
+}
+
+}
 
 Board::Board() {
   window_ = SDL_CreateWindow("Yet Another Midas Clone", SDL_WINDOWPOS_UNDEFINED,
@@ -131,8 +134,12 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
   SDL_RenderCopy(renderer_, asset_manager_->GetBackgroundTexture(), nullptr, &rc);
 
   if (countdown_animation_->IsReady()) {
+    if (active_animations_.size() == 0) {
+      active_animations_.push_back(std::make_shared<ExplosionAnimation>(renderer_, *grid_, asset_manager_));
+    }
     RenderText(400, 233, Font::Bold, "G A M E  O V E R", TextColor::Red);
     UpdateStatus(10, 10);
+    RunAnimation(active_animations_);
     SDL_RenderPresent(renderer_);
     return;
   }

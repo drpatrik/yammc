@@ -24,24 +24,13 @@ class Sprite {
 
   Sprite(const Sprite& s) : id_(s.id_), sprite_(s.sprite_), width_(s.width_), height_(s.height_), selected_(s.selected_) {}
 
-  ~Sprite() {
-    if (sprite_) {
-      SDL_DestroyTexture(sprite_);
-      sprite_ = nullptr;
-    }
-    if (selected_) {
-      SDL_DestroyTexture(selected_);
-      selected_ = nullptr;
-    }
-  }
-
   auto id() const { return id_; }
 
-  auto operator()() const { return sprite_; }
+  SDL_Texture* operator()() const { return sprite_; }
 
-  auto sprite() const { return sprite_; }
+  SDL_Texture* sprite() const { return sprite_; }
 
-  auto selected_sprite() const { return selected_; }
+  SDL_Texture* selected_sprite() const { return selected_; }
 
   int width() const { return width_; }
 
@@ -51,10 +40,10 @@ class Sprite {
 
  private:
   const SpriteID id_;
-  SDL_Texture *sprite_ = nullptr;
+  SDL_Texture* sprite_;
   int width_ = 0;
   int height_ = 0;
-  SDL_Texture *selected_ = nullptr;
+  SDL_Texture* selected_;
 };
 
 enum Font { Normal, Bold };
@@ -66,7 +55,8 @@ class AssetManagerInterface {
   virtual std::shared_ptr<Sprite> GetSprite(int col) = 0;
   virtual std::shared_ptr<Sprite> GetSprite() = 0;
   virtual std::shared_ptr<Sprite> GetSprite(SpriteID id) = 0;
-  virtual std::vector<SDL_Texture *> GetStarTextures() = 0;
+  virtual std::vector<SDL_Texture*> GetStarTextures() = 0;
+  virtual std::vector<SDL_Texture*> GetExplosionTextures() = 0;
   virtual SDL_Texture *GetSpriteAsTexture(SpriteID id) = 0;
   virtual TTF_Font *GetFont(int id) = 0;
   virtual void ResetPreviousIds() = 0;
@@ -101,8 +91,12 @@ class AssetManager : public AssetManagerInterface {
     return sprites_.at(id);
   }
 
-  virtual std::vector<SDL_Texture *> GetStarTextures() override {
+  virtual std::vector<SDL_Texture*> GetStarTextures() override {
     return star_textures_;
+  }
+
+  virtual std::vector<SDL_Texture*> GetExplosionTextures() override {
+    return explosion_texture_;
   }
 
   virtual SDL_Texture * GetSpriteAsTexture(SpriteID id) override { return (*GetSprite(id))(); }
@@ -117,8 +111,9 @@ class AssetManager : public AssetManagerInterface {
   std::vector<SpriteID> previous_ids_ = std::vector<SpriteID>(kCols, SpriteID::Empty);
   std::vector<TTF_Font *> fonts_;
   std::vector<std::shared_ptr<Sprite>> sprites_;
-  std::vector<SDL_Texture *> star_textures_;
-  SDL_Texture *background_texture_;
+  std::vector<SDL_Texture*> star_textures_;
+  std::vector<SDL_Texture*> explosion_texture_;
+  SDL_Texture* background_texture_;
   std::mt19937 engine_ {std::random_device{}()};
   std::uniform_int_distribution<int> distribution_{ 0, kNumSprites - 1 };
 };

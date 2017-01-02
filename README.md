@@ -12,7 +12,7 @@
         The game is pretty complete in comparison to the midas miner version that
         is available in flash.
 
-        Still plenty of work. Next major update might include:
+        Still plenty of work. Next update might include:
 
         - Improved score system with point animation
         - delta update instead of xx frame / s

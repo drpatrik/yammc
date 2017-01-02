@@ -277,7 +277,7 @@ public:
   int animation_ticks_ = 0;
   int movement_ticks_ = 0;
   size_t timer_ = 0;
-  std::vector<SDL_Texture *> star_textures_;
+  std::vector<SDL_Texture*> star_textures_;
   const std::vector<std::pair<int, int>> coordinates_ = {
     std::make_pair(262, 555),
     std::make_pair(258, 552),
@@ -340,4 +340,28 @@ public:
     std::make_pair(181, 372),
     std::make_pair(179, 372),
   };
+};
+
+class ExplosionAnimation : public Animation {
+public:
+  ExplosionAnimation(SDL_Renderer *renderer, Grid &grid, std::shared_ptr<AssetManager> &asset_manager)
+      : Animation(renderer, grid, asset_manager), explosion_texture_(asset_manager->GetExplosionTextures()) {}
+
+  virtual void Start() override {}
+
+  virtual void Update(double = 0.0) override {
+    const SDL_Rect rc { 100, 278, 71, 100 };
+
+    RenderCopy(explosion_texture_.at(frame_), rc);
+    if ((++animation_ticks_ % 4) == 0) {
+      frame_++;
+    }
+  }
+
+  virtual bool IsReady() override { return (static_cast<size_t>(frame_) >= explosion_texture_.size()); }
+
+ private:
+  int frame_ = 0;
+  int animation_ticks_ = 0;
+  std::vector<SDL_Texture*> explosion_texture_;
 };
