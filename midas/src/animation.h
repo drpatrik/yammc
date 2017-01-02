@@ -170,11 +170,11 @@ public:
   }
 
   virtual void Update(double = 0.0) override {
-    double velocity = 16.0;
+    const double kIncY = (12.631 * (static_cast<double>(kSpriteHeight) / kFPS));
 
     rc_.y = static_cast<int>(y_);
     RenderCopy(element_, rc_);
-    y_ += (velocity * (static_cast<double>(kSpriteHeight) / kFPS));
+    y_ += kIncY;
   }
 
   virtual bool IsReady() override {

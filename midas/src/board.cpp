@@ -52,7 +52,7 @@ Board::Board() {
     std::cout << "Failed to create window : " << SDL_GetError() << std::endl;
     exit(-1);
   }
-  renderer_ = SDL_CreateRenderer(window_, -1, 0);
+  renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED/* | SDL_RENDERER_PRESENTVSYNC*/);
   if (nullptr == renderer_) {
     std::cout << "Failed to create renderer : " << SDL_GetError() << std::endl;
     exit(-1);

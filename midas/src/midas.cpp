@@ -25,6 +25,8 @@ class MidasMiner {
     Board board;
     bool quit = false;
     Timer idle_timer(kIdleTimer);
+    Timer frame_timer(1);
+    int frame_counter = 0;
     std::vector<std::shared_ptr<Animation>> animations;
 
     while (!quit) {
@@ -44,24 +46,6 @@ class MidasMiner {
               idle_timer.Reset();
             }
             break;
-#if !defined(NDEBUG)
-          case SDL_MOUSEMOTION: {
-
-            int mouseX = event.motion.x;
-            int mouseY = event.motion.y;
-            int row = pixel_to_row(mouseY);
-            int col = pixel_to_col(mouseX);
-            int id = -1;
-
-            if (row != -1 && col != -1) {
-              id = board(row, col);
-            }
-            std::stringstream ss;
-            ss << "X: " << mouseX << " Y: " << mouseY << " Row: " <<  row << " Col: " << col << " Id: " << id;
-
-            SDL_SetWindowTitle(board, ss.str().c_str());
-          } break;
-#endif
           case SDL_MOUSEBUTTONDOWN:
             switch (event.button.button) {
               case SDL_BUTTON_LEFT:
@@ -76,12 +60,25 @@ class MidasMiner {
         animations = board.BoardIsIdle();
         idle_timer.Reset();
       }
+      // When we move over to using an delta update instead of timer based
+      // the delay can be removed and we should have much smoother animations.
+      //
+      // If your monitor is running at 60hz then you can enable VSYNC in
+      // Board::Board() and remove the delay.
       using namespace std::chrono;
 
       auto start = HighResClock::now();
       board.Render(animations);
-      auto duration = duration_cast<microseconds>(HighResClock::now() - start);
-      std::this_thread::sleep_for(microseconds(std::max(static_cast<int64_t>(0), static_cast<int64_t>(kFrameDelay - duration.count()))));
+      frame_counter++;
+      auto duration = duration_cast<milliseconds>(HighResClock::now() - start);
+      std::this_thread::sleep_for(milliseconds(std::max(static_cast<int64_t>(0), static_cast<int64_t>(kFrameDelay - duration.count()))));
+      if (frame_timer.IsZero()) {
+#if !defined(NDEBUG)
+        std::cout << frame_counter << std::endl;
+#endif
+        frame_timer.Reset();
+        frame_counter = 0;
+      }
     }
     SDL_Quit();
   }
