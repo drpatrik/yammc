@@ -18,11 +18,11 @@ bool IsSwapValid(const Position& old_pos, const Position& new_pos) {
   return (c > 0);
 }
 
-bool RunAnimation(std::vector<std::shared_ptr<Animation>>& animations) {
+bool RunAnimation(std::vector<std::shared_ptr<Animation>>& animations, double delta_time) {
   auto it = std::begin(animations);
 
   while (it != std::end(animations)) {
-    (*it)->Update();
+    (*it)->Update(delta_time);
     if ((*it)->IsReady()) {
       it = animations.erase(it);
     } else {
@@ -52,7 +52,7 @@ Board::Board() {
     std::cout << "Failed to create window : " << SDL_GetError() << std::endl;
     exit(-1);
   }
-  renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED/* | SDL_RENDERER_PRESENTVSYNC*/);
+  renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED);
   if (nullptr == renderer_) {
     std::cout << "Failed to create renderer : " << SDL_GetError() << std::endl;
     exit(-1);
@@ -78,7 +78,7 @@ void Board::Restart() {
   countdown_animation_ = std::make_shared<CountDownAnimation>(renderer_, *grid_.get(), asset_manager_);
 }
 
-std::vector<std::shared_ptr<Animation>> Board::BoardIsIdle() {
+std::vector<std::shared_ptr<Animation>> Board::ShowHint() {
   bool matches_found;
   std::pair<Position, Position> match_pos;
   std::vector<std::shared_ptr<Animation>> animations;
@@ -92,7 +92,7 @@ std::vector<std::shared_ptr<Animation>> Board::BoardIsIdle() {
   return animations;
 }
 
-void Board::BoardIsNotIdle() {
+void Board::BoardNotIdle() {
   RemoveAnimation(active_animations_);
   RemoveAnimation(queued_animations_);
 }
@@ -116,8 +116,20 @@ std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) 
 
       if (!matches.empty()) {
         animations.push_back(std::make_shared<MatchAnimation>(renderer_, *grid_, matches, asset_manager_));
+        switch (matches.size()) {
+          case 3:
+            score_ += 50;
+            break;
+          case 4:
+            score_ += 150;
+            break;
+          case 5:
+            score_ += 300;
+            break;
+          default:
+            score_ += 500;
+        }
       }
-      score_ += matches.size() * 3;
     } else {
       grid_->At(first_selected_).Unselect();
     }
@@ -126,7 +138,7 @@ std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) 
   return animations;
 }
 
-void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
+void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, double delta_time) {
   SDL_Rect rc{ 0, 0, kWidth, kHeight};
   SDL_Rect clip_rc{ kBoardStartX, kBoardStartY, kWidth, kHeight };
 
@@ -140,11 +152,11 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
     }
     RenderText(400, 233, Font::Bold, "G A M E  O V E R", TextColor::Red);
     UpdateStatus(10, 10);
-    RunAnimation(active_animations_);
+    RunAnimation(active_animations_, delta_time);
     SDL_RenderPresent(renderer_);
     return;
   }
-  countdown_animation_->Update();
+  countdown_animation_->Update(delta_time);
 
   grid_->Render(renderer_);
   SDL_RenderSetClipRect(renderer_, &clip_rc);
@@ -159,14 +171,14 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations) {
     active_animations_.push_back(animation);
   }
 
-  RunAnimation(active_animations_);
+  RunAnimation(active_animations_, delta_time);
 
   if (active_animations_.empty() && queued_animations_.empty()) {
     std::vector<Position> moved_objects;
     std::set<Position> matches;
 
     std::tie(moved_objects, matches) = grid_->Collaps();
-    score_ += matches.size();
+    score_ += (matches.size() * 25);
 
     for (const auto& obj:moved_objects) {
       auto animation = std::make_shared<MoveDownAnimation>(renderer_, *grid_, obj, asset_manager_);

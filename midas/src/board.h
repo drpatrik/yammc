@@ -15,15 +15,20 @@ class Board {
 
   void Restart();
 
-  std::vector<std::shared_ptr<Animation>> BoardIsIdle();
+  std::vector<std::shared_ptr<Animation>> ShowHint();
 
-  void BoardIsNotIdle();
+  void BoardNotIdle();
 
   std::vector<std::shared_ptr<Animation>> ButtonPressed(const Position& p);
 
-  void Render(const std::vector<std::shared_ptr<Animation>>&);
+  void Render(const std::vector<std::shared_ptr<Animation>>&, double delta_timer);
 
   const Element& operator()(int row, int col) const { return grid_->At(row, col); }
+
+  void DecreseScore() {
+    score_ -= 20;
+    score_ = std::max(score_, 0);
+  }
 
  protected:
   enum class TextColor { White, Blue, Red, Green };

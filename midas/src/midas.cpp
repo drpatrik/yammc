@@ -24,9 +24,9 @@ class MidasMiner {
   static void Play() {
     Board board;
     bool quit = false;
+    Timer hint_timer(kShowHintTimer);
     Timer idle_timer(kIdleTimer);
-    Timer frame_timer(1);
-    int frame_counter = 0;
+    DeltaTimer delta_timer;
     std::vector<std::shared_ptr<Animation>> animations;
 
     while (!quit) {
@@ -44,41 +44,30 @@ class MidasMiner {
               board.Restart();
               animations.clear();
               idle_timer.Reset();
+              hint_timer.Reset();
+              delta_timer.Reset();
             }
             break;
           case SDL_MOUSEBUTTONDOWN:
             switch (event.button.button) {
               case SDL_BUTTON_LEFT:
-                board.BoardIsNotIdle();
+                board.BoardNotIdle();
                 idle_timer.Reset();
+                hint_timer.Reset();
                 animations = board.ButtonPressed(Position(pixel_to_row(event.motion.y), pixel_to_col(event.motion.x)));
                 break;
             }
         }
       }
       if (idle_timer.IsZero()) {
-        animations = board.BoardIsIdle();
+        board.DecreseScore();
         idle_timer.Reset();
       }
-      // When we use delta update instead of timer based frame rate
-      // the delay can be removed and we should have smoother animations.
-      //
-      // If your monitor is running at 60hz then you can enable VSYNC in
-      // Board::Board() and remove the delay.
-      using namespace std::chrono;
-
-      auto start = HighResClock::now();
-      board.Render(animations);
-      frame_counter++;
-      auto duration = duration_cast<milliseconds>(HighResClock::now() - start);
-      std::this_thread::sleep_for(milliseconds(std::max(static_cast<int64_t>(0), static_cast<int64_t>(kFrameDelay - duration.count()))));
-      if (frame_timer.IsZero()) {
-#if !defined(NDEBUG)
-        std::cout << frame_counter << std::endl;
-#endif
-        frame_timer.Reset();
-        frame_counter = 0;
+      if (hint_timer.IsZero()) {
+        animations = board.ShowHint();
+        hint_timer.Reset();
       }
+      board.Render(animations, delta_timer.GetDelta());
     }
     SDL_Quit();
   }

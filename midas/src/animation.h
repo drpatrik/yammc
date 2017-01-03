@@ -6,6 +6,8 @@
 
 class Animation {
  public:
+  const double kTimeResolution = static_cast<double>(1.0 / kFPS);
+
   Animation(SDL_Renderer *renderer, Grid& grid, const std::shared_ptr<AssetManager>& asset_manager) : renderer_(renderer), grid_(grid), asset_manager_(asset_manager) {}
 
   virtual ~Animation() noexcept = default;
@@ -63,25 +65,39 @@ class SwapAnimation : public Animation {
     rc1_ = { p1_.x(), p1_.y(), kSpriteWidth, kSpriteWidth };
     std::swap(element2_, GetGrid().At(p2_));
     rc2_ = { p2_.x(), p2_.y(), kSpriteWidth, kSpriteHeight };
-  }
-
-  virtual void Update(double = 0.0) override {
-    const int kVelocity = 4;
-    int sign = (ticks_ <= 8) ? 1 : -1;
 
     if (p1_.row() == p2_.row()) {
-      rc1_.x += -(kVelocity * sign);
-      rc2_.x += -(kVelocity * -sign);
+      t1_ = &rc1_.x;
+      t2_ = &rc2_.x;
+      x_ = rc1_.x;
+      y_ = rc2_.x;
     } else {
-      rc1_.y += -(kVelocity * sign);
-      rc2_.y += -(kVelocity * -sign);
+      t1_ = &rc1_.y;
+      t2_ = &rc2_.y;
+      x_ = rc1_.y;
+      y_ = rc2_.y;
     }
+  }
+
+  virtual void Update(double delta) override {
+    const double sign = (pixels_moved_ < kSpriteWidth) ? 1.0 : -1.0;
+    const double kVelocity = delta * 300;
+
+    x_ += (kVelocity * -sign);
+    *t1_ = static_cast<int>(x_);
+
     RenderCopy(element1_, rc1_);
+
+    y_ += (kVelocity * sign);
+    *t2_ = static_cast<int>(y_);
+
     RenderCopy(element2_, rc2_);
+
+    pixels_moved_ += kVelocity;
   }
 
   virtual bool IsReady() override {
-    if (++ticks_ <= ((has_match_) ? 8 : 16)) {
+    if (pixels_moved_ < ((has_match_) ? kSpriteWidth : kSpriteWidth * 2.0)) {
       return false;
     }
     RenderCopy(element1_, rc1_);
@@ -96,6 +112,9 @@ class SwapAnimation : public Animation {
   }
 
 private:
+  int *t1_ = nullptr;
+  int *t2_ = nullptr;
+  double pixels_moved_ = 0.0;
   Position p1_;
   SDL_Rect rc1_;
   Element element1_ = Element(OwnedByAnimation);
@@ -103,7 +122,6 @@ private:
   SDL_Rect rc2_;
   Element element2_ = Element(OwnedByAnimation);
   bool has_match_;
-  int ticks_ = 0;
 };
 
 class MatchAnimation : public Animation {
@@ -123,25 +141,25 @@ public:
     }
   }
 
-  virtual void Update(double = 0.0) override {
+  virtual void Update(double delta) override {
     size_t i = 0;
 
     for (const auto& m : matches_) {
-      int x = m.x() + scale_rc_.x;
-      int y = m.y() + scale_rc_.y;
+      int x = static_cast<int>(m.x() + x_);
+      int y = static_cast<int>(m.y() + y_);
 
-      SDL_Rect rc = { x, y, scale_rc_.w, scale_rc_.h };
+      SDL_Rect rc = { x, y, static_cast<int>(scale_w_), static_cast<int>(scale_h_) };
       RenderCopy(elements_[i], rc);
       i++;
     }
-    scale_rc_.x += 2;
-    scale_rc_.y += 2;
-    scale_rc_.w -= 4;
-    scale_rc_.h -= 4;
+    x_ += (100 * delta);
+    y_ += (100 * delta);
+    scale_w_ -= (200 * delta);
+    scale_h_ -= (200 * delta);
   }
 
   virtual bool IsReady() override {
-    if (scale_rc_.w <= 0 || scale_rc_.h <= 0) {
+    if (scale_w_ <= 0.0 || scale_h_ <= 0.0) {
       for (const auto& m : matches_) {
         GetGrid().At(m) = Element(SpriteID::Empty);
       }
@@ -153,7 +171,8 @@ public:
 private:
   std::set<Position> matches_;
   std::vector<Element> elements_;
-  SDL_Rect scale_rc_ = { 0, 0, kSpriteWidth, kSpriteHeight };
+  double scale_w_ = kSpriteWidth;
+  double scale_h_ = kSpriteHeight;
 };
 
 class MoveDownAnimation : public Animation {
@@ -169,8 +188,8 @@ public:
     end_pos_ = y_ + kSpriteHeight;
   }
 
-  virtual void Update(double = 0.0) override {
-    const double kIncY = (12.631 * (static_cast<double>(kSpriteHeight) / kFPS));
+  virtual void Update(double delta) override {
+    const double kIncY = GetGrid().IsFilling() ? delta * 500 : delta * 300;
 
     rc_.y = static_cast<int>(y_);
     RenderCopy(element_, rc_);
@@ -207,20 +226,23 @@ public:
     std::swap(e2_, GetGrid().At(p2_));
   }
 
-  virtual void Update(double = 0.0) override {
+  virtual void Update(double delta) override {
     int offset_x,offset_y;
     std::tie(offset_x, offset_y) = frames_[frame_];
 
     e1_.Render(*this, p1_.x() + offset_x, p1_.y() + offset_y, true);
     e2_.Render(*this, p2_.x() + offset_x, p2_.y() + offset_y, true);
 
-    if ((++animation_ticks_ % 2) == 0) {
+    ticks_ += delta;
+    animation_ticks_ += delta;
+    if (animation_ticks_ >= (kTimeResolution * 2.0)) {
       frame_ = (++frame_ % frames_.size());
+      animation_ticks_ = 0.0;
     }
   }
 
   virtual bool IsReady() override {
-    if (++ticks_ > kFPS) {
+    if (ticks_ >= 1.0) {
       return true;
     }
     return false;
@@ -233,9 +255,9 @@ public:
   Position p2_;
   Element e1_ = Element(SpriteID::OwnedByAnimation);
   Element e2_ = Element(SpriteID::OwnedByAnimation);
-  size_t ticks_ = 0;
   size_t frame_ = 0;
-  size_t animation_ticks_ = 0;
+  double ticks_ = 0.0;
+  double animation_ticks_ = 0.0;
   const std::vector<std::pair<int, int>> frames_ = {
     std::make_pair(3, 0),
     std::make_pair(3, 3),
@@ -255,16 +277,21 @@ public:
 
   virtual void Start() override {}
 
-  virtual void Update(double = 0.0) override {
+  virtual void Update(double delta) override {
     int x, y;
     std::tie(x, y) = coordinates_[timer_];
 
     RenderCopy(star_textures_.at(frame_), {x - 15, y - 15, 30, 30 });
-    if ((++animation_ticks_ % 5) == 0) {
+
+    animation_ticks_ += delta;
+    if (animation_ticks_ > kTimeResolution) {
       frame_ = (++frame_ % star_textures_.size());
+      animation_ticks_ = 0.0;
     }
-    if ((++movement_ticks_ % kFPS) == 0) {
+    movement_ticks_ += delta;
+    if (movement_ticks_ > 1.0) {
       timer_++;
+      movement_ticks_ = 0.0;
     }
   }
 
@@ -274,8 +301,8 @@ public:
 
  private:
   int frame_ = 0;
-  int animation_ticks_ = 0;
-  int movement_ticks_ = 0;
+  double animation_ticks_ = 0.0;
+  double movement_ticks_ = 0.0;
   size_t timer_ = 0;
   std::vector<SDL_Texture*> star_textures_;
   const std::vector<std::pair<int, int>> coordinates_ = {
@@ -349,12 +376,14 @@ public:
 
   virtual void Start() override {}
 
-  virtual void Update(double = 0.0) override {
+  virtual void Update(double delta) override {
     const SDL_Rect rc { 100, 278, 71, 100 };
 
     RenderCopy(explosion_texture_.at(frame_), rc);
-    if ((++animation_ticks_ % 5) == 0) {
+    animation_ticks_ += delta;
+    if (animation_ticks_ > (kTimeResolution * 5)) {
       frame_++;
+      animation_ticks_ = 0.0;
     }
   }
 
@@ -362,6 +391,6 @@ public:
 
  private:
   int frame_ = 0;
-  int animation_ticks_ = 0;
+  double animation_ticks_ = 0.0;
   std::vector<SDL_Texture*> explosion_texture_;
 };

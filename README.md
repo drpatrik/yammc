@@ -10,19 +10,19 @@
         I wrote was a Tetris clone for the Hercules graphic card back in 1989.
 
         The game is pretty complete in comparison to the midas miner version that
-        is available in flash.
+        is available on-line.
 
-        Still plenty of work. Next update might include:
+        Next update might include:
 
-        - Improved score system with point animation
-        - delta update instead of xx frame / s
+        - Animation when you clear more then 3 diamonds
+        - Animation when you have been idle to long
         - Use Catch instead of gtest
         - Sound
 
         The project requires cmake 2.6 or higher, SDL2 and SDL2_ttf and a C++11 compliant compiler.
         The test suit requires gtest.
 
-        Only tested under OSX. All my development machines are either OSX and Linux these days.
+        Only tested under OSX. All my development machines are OSX and Linux these days.
 
         make
 

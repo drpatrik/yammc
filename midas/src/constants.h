@@ -4,8 +4,7 @@
 
 #include <cstddef>
 
-const int kFPS = 60;
-const double kFrameDelay(double(1000.0) / double(kFPS));
+const double kFPS = 60;
 const int kGameTime = 60;
 const int kFontSize = 25;
 const int kSpriteWidth = 38;
@@ -14,7 +13,8 @@ const size_t kNumSprites = 5; // Red, Blue, Green, Yellow and Purple
 const size_t kMatchNumber = 3;
 const int kRows = 9;
 const int kCols = 8;
-const int kIdleTimer = 5;
+const int kShowHintTimer = 10;
+const int kIdleTimer = 4;
 const size_t kBoardStartX = 340;
 const size_t kBoardEndX = kBoardStartX + (kCols * kSpriteWidth);
 const size_t kBoardStartY = 95;
