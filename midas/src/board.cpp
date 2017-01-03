@@ -1,7 +1,5 @@
 #include "board.h"
 
-#include <algorithm>
-
 namespace {
 
 const int kWidth = 755;
@@ -207,11 +205,11 @@ void Board::RenderText(int x, int y, Font font, const std::string& text, TextCol
   SDL_Color color { 255, 255, 255, 255 };
 
   if (text_color == TextColor::Blue) {
-    color = { 0, 0, 255 };
+    color = { 0, 0, 255, 0 };
   } else if (text_color == TextColor::Red) {
-    color = { 255, 0, 0 };
+    color = { 255, 0, 0, 0 };
   } else if (text_color == TextColor::Green) {
-    color = { 0, 255, 0 };
+    color = { 0, 255, 0, 0 };
   }
   SDL_Surface* surface = TTF_RenderText_Blended(asset_manager_->GetFont(font), text.c_str(), color);
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer_, surface);

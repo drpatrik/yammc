@@ -26,6 +26,9 @@ class Board {
   const Element& operator()(int row, int col) const { return grid_->At(row, col); }
 
   void DecreseScore() {
+    if (countdown_animation_->IsReady()) {
+      return;
+    }
     score_ -= 20;
     score_ = std::max(score_, 0);
   }
