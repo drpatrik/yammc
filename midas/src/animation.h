@@ -227,10 +227,10 @@ public:
   }
 
   virtual void Update(double delta) override {
-    const double kTwoTimesPi = 3.1415926535897932384626433 * 2.0;
+    const double kTwoTimesPi = 2.0 * 3.1415926535897932384626433;
     const double radius = kSpriteWidth / 10.0;
 
-    angle_ += (delta * 20);
+    angle_ += (delta * 30);
     if (angle_ > kTwoTimesPi) {
       angle_ = 0.0;
       revolution_++;
@@ -242,7 +242,7 @@ public:
     e2_.Render(*this, x_ + p2_.x(),y_ + p2_.y(), true);
   }
 
-  virtual bool IsReady() override { return  (revolution_ >= 2) ? true : false; }
+  virtual bool IsReady() override { return  (revolution_ >= 3) ? true : false; }
 
   virtual bool RemoveIfAsked() const override { return true; }
 
