@@ -212,11 +212,11 @@ private:
   Element element_ = Element(OwnedByAnimation);
 };
 
-class WiggleAnimation : public Animation {
+class HintAnimation : public Animation {
 public:
-  WiggleAnimation(SDL_Renderer *renderer, Grid &grid, const Position& p1, const Position& p2, std::shared_ptr<AssetManager> &asset_manager) : Animation(renderer, grid, asset_manager), p1_(p1), p2_(p2) {}
+  HintAnimation(SDL_Renderer *renderer, Grid &grid, const Position& p1, const Position& p2, std::shared_ptr<AssetManager> &asset_manager) : Animation(renderer, grid, asset_manager), p1_(p1), p2_(p2) {}
 
-  ~WiggleAnimation() {
+  ~HintAnimation() {
     std::swap(e1_, GetGrid().At(p1_));
     std::swap(e2_, GetGrid().At(p2_));
   }
@@ -227,26 +227,22 @@ public:
   }
 
   virtual void Update(double delta) override {
-    int offset_x,offset_y;
-    std::tie(offset_x, offset_y) = frames_[frame_];
+    const double kTwoTimesPi = 3.1415926535897932384626433 * 2.0;
+    const double radius = kSpriteWidth / 10.0;
 
-    e1_.Render(*this, p1_.x() + offset_x, p1_.y() + offset_y, true);
-    e2_.Render(*this, p2_.x() + offset_x, p2_.y() + offset_y, true);
-
-    ticks_ += delta;
-    animation_ticks_ += delta;
-    if (animation_ticks_ >= (kTimeResolution * 2.0)) {
-      frame_ = (++frame_ % frames_.size());
-      animation_ticks_ = 0.0;
+    angle_ += (delta * 20);
+    if (angle_ > kTwoTimesPi) {
+      angle_ = 0.0;
+      revolution_++;
     }
+    x_ = cos(angle_) * radius;
+    y_ = sin(angle_) * radius;
+
+    e1_.Render(*this, x_ + p1_.x(),y_ + p1_.y(), true);
+    e2_.Render(*this, x_ + p2_.x(),y_ + p2_.y(), true);
   }
 
-  virtual bool IsReady() override {
-    if (ticks_ >= 1.0) {
-      return true;
-    }
-    return false;
-  }
+  virtual bool IsReady() override { return  (revolution_ >= 2) ? true : false; }
 
   virtual bool RemoveIfAsked() const override { return true; }
 
@@ -255,22 +251,13 @@ public:
   Position p2_;
   Element e1_ = Element(SpriteID::OwnedByAnimation);
   Element e2_ = Element(SpriteID::OwnedByAnimation);
-  size_t frame_ = 0;
-  double ticks_ = 0.0;
-  double animation_ticks_ = 0.0;
-  const std::vector<std::pair<int, int>> frames_ = {
-    std::make_pair(3, 0),
-    std::make_pair(3, 3),
-    std::make_pair(0, 3),
-    std::make_pair(-3, 0),
-    std::make_pair(-3, -3),
-    std::make_pair(0, -3),
-  };
+  double angle_ = 0.0;
+  int revolution_ = 0;
 };
 
-class CountDownAnimation : public Animation {
+class TimerAnimation : public Animation {
 public:
-  CountDownAnimation(SDL_Renderer *renderer, Grid &grid, std::shared_ptr<AssetManager> &asset_manager)
+  TimerAnimation(SDL_Renderer *renderer, Grid &grid, std::shared_ptr<AssetManager> &asset_manager)
       : Animation(renderer, grid, asset_manager), star_textures_(asset_manager->GetStarTextures()) {
     assert(coordinates_.size() == kGameTime);
   }

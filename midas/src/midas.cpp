@@ -48,6 +48,24 @@ class MidasMiner {
               delta_timer.Reset();
             }
             break;
+#if !defined(NDEBUG)
+          case SDL_MOUSEMOTION: {
+
+            int mouseX = event.motion.x;
+            int mouseY = event.motion.y;
+            int row = pixel_to_row(mouseY);
+            int col = pixel_to_col(mouseX);
+            int id = -1;
+
+            if (row != -1 && col != -1) {
+              id = board(row, col);
+            }
+            std::stringstream ss;
+            ss << "X: " << mouseX << " Y: " << mouseY << " Row: " <<  row << " Col: " << col << " Id: " << id;
+
+            SDL_SetWindowTitle(board, ss.str().c_str());
+          } break;
+#endif
           case SDL_MOUSEBUTTONDOWN:
             switch (event.button.button) {
               case SDL_BUTTON_LEFT:

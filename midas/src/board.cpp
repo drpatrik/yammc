@@ -73,7 +73,7 @@ void Board::Restart() {
   queued_animations_.clear();
   first_selected_ = kNothingSelected;
   grid_ = std::make_unique<Grid>(kRows, kCols, asset_manager_.get());
-  countdown_animation_ = std::make_shared<CountDownAnimation>(renderer_, *grid_.get(), asset_manager_);
+  timer_animation_ = std::make_shared<TimerAnimation>(renderer_, *grid_.get(), asset_manager_);
 }
 
 std::vector<std::shared_ptr<Animation>> Board::ShowHint() {
@@ -84,7 +84,7 @@ std::vector<std::shared_ptr<Animation>> Board::ShowHint() {
   std::tie(matches_found, match_pos) = grid_->FindPotentialMatches();
 
   if (matches_found) {
-    animations.push_back(std::make_shared<WiggleAnimation>(renderer_, *grid_, match_pos.first, match_pos.second, asset_manager_));
+    animations.push_back(std::make_shared<HintAnimation>(renderer_, *grid_, match_pos.first, match_pos.second, asset_manager_));
   }
 
   return animations;
@@ -98,7 +98,7 @@ void Board::BoardNotIdle() {
 std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) {
   std::vector<std::shared_ptr<Animation>> animations;
 
-  if (countdown_animation_->IsReady() || !p.IsValid() || grid_->IsFilling()) {
+  if (timer_animation_->IsReady() || !p.IsValid() || grid_->IsFilling()) {
     return animations;
   }
   auto selected = p;
@@ -143,7 +143,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
   SDL_RenderClear(renderer_);
   SDL_RenderCopy(renderer_, asset_manager_->GetBackgroundTexture(), nullptr, &rc);
 
-  if (countdown_animation_->IsReady()) {
+  if (timer_animation_->IsReady()) {
     RemoveAnimation(active_animations_);
     if (active_animations_.size() == 0) {
       active_animations_.push_back(std::make_shared<ExplosionAnimation>(renderer_, *grid_, asset_manager_));
@@ -154,7 +154,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
     SDL_RenderPresent(renderer_);
     return;
   }
-  countdown_animation_->Update(delta_time);
+  timer_animation_->Update(delta_time);
 
   grid_->Render(renderer_);
   SDL_RenderSetClipRect(renderer_, &clip_rc);
@@ -198,7 +198,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
 void Board::UpdateStatus(int x, int y) {
   RenderText(x, y + 10, Font::Bold, "Score:", TextColor::White);
   RenderText(x, y + 40, Font::Normal, std::to_string(score_), TextColor::White);
-  RenderText(x + 92, y + 430, Font::Bold, std::to_string(countdown_animation_->GetTimeLeft()), TextColor::Blue);
+  RenderText(x + 92, y + 430, Font::Bold, std::to_string(timer_animation_->GetTimeLeft()), TextColor::Blue);
 }
 
 void Board::RenderText(int x, int y, Font font, const std::string& text, TextColor text_color) const {

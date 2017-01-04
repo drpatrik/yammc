@@ -26,7 +26,7 @@ class Board {
   const Element& operator()(int row, int col) const { return grid_->At(row, col); }
 
   void DecreseScore() {
-    if (countdown_animation_->IsReady()) {
+    if (timer_animation_->IsReady()) {
       return;
     }
     score_ -= 20;
@@ -47,5 +47,5 @@ class Board {
   SDL_Renderer *renderer_ = nullptr;
   std::vector<std::shared_ptr<Animation>> queued_animations_;
   std::vector<std::shared_ptr<Animation>> active_animations_;
-  std::shared_ptr<CountDownAnimation> countdown_animation_;
+  std::shared_ptr<TimerAnimation> timer_animation_;
 };
