@@ -31,11 +31,11 @@ bool RunAnimation(std::vector<std::shared_ptr<Animation>>& animations, double de
   return (animations.size() == 0);
 }
 
-void RemoveAnimation(std::vector<std::shared_ptr<Animation>>& animations) {
+void RemoveIdleAnimations(std::vector<std::shared_ptr<Animation>>& animations) {
   auto it = std::begin(animations);
 
   while (it != std::end(animations)) {
-    if ((*it)->RemoveIfAsked())
+    if ((*it)->Idle())
       it = animations.erase(it);
     break;
   }
@@ -91,8 +91,8 @@ std::vector<std::shared_ptr<Animation>> Board::ShowHint() {
 }
 
 void Board::BoardNotIdle() {
-  RemoveAnimation(active_animations_);
-  RemoveAnimation(queued_animations_);
+  RemoveIdleAnimations(active_animations_);
+  RemoveIdleAnimations(queued_animations_);
 }
 
 std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) {
@@ -144,7 +144,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
   SDL_RenderCopy(renderer_, asset_manager_->GetBackgroundTexture(), nullptr, &rc);
 
   if (timer_animation_->IsReady()) {
-    RemoveAnimation(active_animations_);
+    RemoveIdleAnimations(active_animations_);
     if (active_animations_.size() == 0) {
       active_animations_.push_back(std::make_shared<ExplosionAnimation>(renderer_, *grid_, asset_manager_));
     }

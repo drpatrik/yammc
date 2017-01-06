@@ -18,7 +18,7 @@ class Animation {
 
   virtual bool IsReady() = 0;
 
-  virtual bool RemoveIfAsked() const { return false; }
+  virtual bool Idle() const { return false; }
 
   operator SDL_Renderer *() const { return renderer_; }
 
@@ -244,7 +244,7 @@ public:
 
   virtual bool IsReady() override { return  (revolution_ >= 3) ? true : false; }
 
-  virtual bool RemoveIfAsked() const override { return true; }
+  virtual bool Idle() const override { return true; }
 
  private:
   Position p1_;
