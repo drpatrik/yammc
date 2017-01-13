@@ -20,7 +20,8 @@
         - Sound
 
         The project requires cmake 2.6 or higher, SDL2 and SDL2_ttf and a C++11 compliant compiler.
-        The test suit requires gtest.
+        The test suit requires gtest - installation guide below. If you do not care about the test
+        suit just delete enable_testing and everything below from ./midas/CMakeLists.txt
 
         Only tested under OSX. All my development machines are OSX and Linux these days.
 
@@ -39,3 +40,14 @@
 
         If someone want to do a Windows port I would appriticate a pull request. The same goes
         for other modifications. I am an utter novice in the land of game development.
+
+        How to install gtest:
+
+        cd gtest-1.7.0
+        mkdir build
+        cd build
+        cmake ..
+        make
+
+        sudo cp libgtest.a /usr/local/lib
+        sudo cp libgtest_main.a /usr/local/lib
