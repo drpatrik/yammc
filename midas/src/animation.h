@@ -20,6 +20,8 @@ class Animation {
 
   virtual bool Idle() const { return false; }
 
+  virtual bool LockBoard() const { return true; }
+
   operator SDL_Renderer *() const { return renderer_; }
 
   Grid& GetGrid() { return grid_; }
@@ -142,6 +144,10 @@ public:
   }
 
   virtual void Update(double delta) override {
+    if (!lock_board_) {
+      tick_ += delta;
+      return;
+    }
     size_t i = 0;
 
     for (const auto& m : matches_) {
@@ -159,20 +165,30 @@ public:
   }
 
   virtual bool IsReady() override {
-    if (scale_w_ <= 0.0 || scale_h_ <= 0.0) {
-      for (const auto& m : matches_) {
-        GetGrid().At(m) = Element(SpriteID::Empty);
+    if (!lock_board_) {
+      if (tick_ >= 2.0) {
+        return true;
       }
-      return true;
+    } else {
+      if (scale_w_ <= 0.0 || scale_h_ <= 0.0) {
+        for (const auto& m : matches_) {
+          GetGrid().At(m) = Element(SpriteID::Empty);
+        }
+        lock_board_ = false;
+      }
     }
     return false;
   }
+
+  virtual bool LockBoard() const override { return lock_board_; }
 
 private:
   std::set<Position> matches_;
   std::vector<Element> elements_;
   double scale_w_ = kSpriteWidth;
   double scale_h_ = kSpriteHeight;
+  bool lock_board_ = true;
+  double tick_ = 0.0;
 };
 
 class MoveDownAnimation : public Animation {

@@ -192,13 +192,13 @@ class Grid {
 
     for (auto row = start_row; row < rows; ++row) {
       for (auto col = start_col; col < cols; ++col) {
-        auto vertical = GetVerticalMatches(row, col);
+        auto column_matches = GetColumnMatches(row, col);
 
-        matches.insert(std::begin(vertical), std::end(vertical));
+        matches.insert(std::begin(column_matches), std::end(column_matches));
 
-        auto horizontal = GetHorizontalMatches(row, col);
+        auto row_matches = GetRowMatches(row, col);
 
-        matches.insert(std::begin(horizontal), std::end(horizontal));
+        matches.insert(std::begin(row_matches), std::end(row_matches));
       }
     }
     return matches;
@@ -230,14 +230,14 @@ class Grid {
     return matches;
   }
 
-  std::set<Position> GetVerticalMatches(int row, int col) const {
+  std::set<Position> GetColumnMatches(int row, int col) const {
     auto value_at = [this, col](int row) { return At(row, col); };
     auto pos = [col](int row) { return Position(row, col); };
 
     return Matches(row, col, row, rows_, value_at, pos);
   }
 
-  std::set<Position> GetHorizontalMatches(int row, int col) const {
+  std::set<Position> GetRowMatches(int row, int col) const {
     auto value_at = [this, row](int col) { return At(row, col); };
     auto pos = [row](int col) { return Position(row, col); };
 

@@ -41,6 +41,40 @@ void RemoveIdleAnimations(std::vector<std::shared_ptr<Animation>>& animations) {
   }
 }
 
+bool CanUpdateBoard(const std::vector<std::shared_ptr<Animation>>& animations) {
+  auto c = std::count_if(std::begin(animations), std::end(animations), [] (const auto& a) { return a->LockBoard(); });
+
+  return animations.empty() || (c == 0);
+}
+
+int GetScoreForTotalMatches(int total_matches, int& current_threshold_step) {
+  int score = 0;
+
+  if (total_matches >= (current_threshold_step * kThresholdMultiplier)) {
+    score = (500 + ((current_threshold_step - kInitialThresholdStep) * 250));
+    current_threshold_step++;
+  }
+
+  return score;
+}
+
+int GetBasicScore(size_t matches, int& total_matches, int& current_threshold_step) {
+  std::vector<int> scores = { 0, 0, 0, 50, 100, 150, 250, 500 };
+
+  total_matches += matches;
+  int score = (matches >= 7) ? 500 : scores.at(matches);
+
+  score += GetScoreForTotalMatches(total_matches, current_threshold_step);
+
+  return score;
+}
+
+int GetScoreForConsecutiveMatches(size_t consecutive_matches) {
+  std::vector<int> scores = { 0, 0, 50, 100, 150, 250, 350, 500, 750 };
+
+  return (consecutive_matches >=9) ? 1000 : scores.at(consecutive_matches);
+}
+
 }
 
 Board::Board() {
@@ -69,6 +103,9 @@ Board::~Board() noexcept {
 
 void Board::Restart() {
   score_ = 0;
+  consecutive_matches_ = 0;
+  total_matches_ = 0;
+  current_threshold_step_ = kInitialThresholdStep;
   active_animations_.clear();
   queued_animations_.clear();
   first_selected_ = kNothingSelected;
@@ -114,19 +151,9 @@ std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) 
 
       if (!matches.empty()) {
         animations.push_back(std::make_shared<MatchAnimation>(renderer_, *grid_, matches, asset_manager_));
-        switch (matches.size()) {
-          case 3:
-            score_ += 50;
-            break;
-          case 4:
-            score_ += 150;
-            break;
-          case 5:
-            score_ += 300;
-            break;
-          default:
-            score_ += 500;
-        }
+        score_ += GetBasicScore(matches.size(), total_matches_, current_threshold_step_);
+        score_ += GetScoreForConsecutiveMatches(consecutive_matches_);
+        consecutive_matches_++;
       }
     } else {
       grid_->At(first_selected_).Unselect();
@@ -162,7 +189,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
   for (const auto& a:animations) {
     queued_animations_.push_back(a);
   }
-  if (active_animations_.empty() && !queued_animations_.empty()) {
+  if (CanUpdateBoard(active_animations_) && !queued_animations_.empty()) {
     auto animation = queued_animations_.front();
     queued_animations_.erase(std::begin(queued_animations_));
     animation->Start();
@@ -171,12 +198,12 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
 
   RunAnimation(active_animations_, delta_time);
 
-  if (active_animations_.empty() && queued_animations_.empty()) {
+  if (CanUpdateBoard(active_animations_) && CanUpdateBoard(queued_animations_)) {
     std::vector<Position> moved_objects;
     std::set<Position> matches;
 
     std::tie(moved_objects, matches) = grid_->Collaps();
-    score_ += (matches.size() * 25);
+    score_ += GetBasicScore(matches.size(), total_matches_, current_threshold_step_);
 
     for (const auto& obj:moved_objects) {
       auto animation = std::make_shared<MoveDownAnimation>(renderer_, *grid_, obj, asset_manager_);
@@ -196,32 +223,12 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
 }
 
 void Board::UpdateStatus(int x, int y) {
-  RenderText(x, y + 10, Font::Bold, "Score:", TextColor::White);
-  RenderText(x, y + 40, Font::Normal, std::to_string(score_), TextColor::White);
+  high_score_ = std::max(high_score_, score_);
+  RenderText(x, y, Font::Bold, "Score:", TextColor::White);
+  RenderText(x, y + 30, Font::Normal, std::to_string(score_), TextColor::White);
+
+  RenderText(x, y + 530, Font::Bold, "High Score:", TextColor::White);
+  RenderText(x, y + 560, Font::Normal, std::to_string(high_score_), TextColor::White);
+
   RenderText(x + 92, y + 430, Font::Bold, std::to_string(timer_animation_->GetTimeLeft()), TextColor::Blue);
-}
-
-void Board::RenderText(int x, int y, Font font, const std::string& text, TextColor text_color) const {
-  SDL_Color color { 255, 255, 255, 255 };
-
-  if (text_color == TextColor::Blue) {
-    color = { 0, 0, 255, 0 };
-  } else if (text_color == TextColor::Red) {
-    color = { 255, 0, 0, 0 };
-  } else if (text_color == TextColor::Green) {
-    color = { 0, 255, 0, 0 };
-  }
-  SDL_Surface* surface = TTF_RenderText_Blended(asset_manager_->GetFont(font), text.c_str(), color);
-  SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer_, surface);
-
-  int width, height;
-
-  SDL_QueryTexture(texture, nullptr, nullptr, &width, &height);
-
-  SDL_Rect rc{ x, y, width, height };
-
-  SDL_RenderCopy(renderer_, texture, nullptr, &rc);
-
-  SDL_FreeSurface(surface);
-  SDL_DestroyTexture(texture);
 }
