@@ -9,19 +9,22 @@
         I have spent the last 30 years developing software but the last game
         I wrote was a Tetris clone for the Hercules graphic card back in 1989.
 
-        The game is pretty complete in comparison to the midas miner version that
-        is available on-line.
+        My goal is to make the game as similar as possible to the original:
+        http://www.royalgames.com/games/puzzle-games/midas-miner
 
-        Next update might include:
+        Next update might include anything of the following:
 
-        - Animation when you clear more then 3 diamonds
-        - Animation when you have been idle to long
-        - Use Catch instead of gtest
+        - Score animations when you clear more then 3 diamonds
+        - Animation when you have been idle too long
+        - Use particle animations instead of a separate animation
+          for a match (as the original flash game)
         - Sound
+        - Use Catch instead of gtest
+        - Windows port
 
         The project requires cmake 2.6 or higher, SDL2 and SDL2_ttf and a C++11 compliant compiler.
         The test suit requires gtest - installation guide below. If you do not care about the test
-        suit just delete enable_testing and everything below from ./midas/CMakeLists.txt
+        suit just delete enable_testing and everything below in ./midas/CMakeLists.txt
 
         Only tested under OSX. All my development machines are OSX and Linux these days.
 
@@ -39,7 +42,7 @@
         ./run
 
         If someone want to do a Windows port I would appriticate a pull request. The same goes
-        for other modifications. I am an utter novice in the land of game development.
+        for any other modification. I am an utter novice in the land of game development.
 
         How to install gtest:
 
