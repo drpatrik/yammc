@@ -5,10 +5,12 @@
 #include <cassert>
 
 class Animation {
- public:
+public:
   const double kTimeResolution = static_cast<double>(1.0 / kFPS);
 
-  Animation(SDL_Renderer *renderer, Grid& grid, const std::shared_ptr<AssetManager>& asset_manager) : renderer_(renderer), grid_(grid), asset_manager_(asset_manager) {}
+  Animation(SDL_Renderer *renderer, Grid &grid,
+            const std::shared_ptr<AssetManager> &asset_manager)
+      : renderer_(renderer), grid_(grid), asset_manager_(asset_manager) {}
 
   virtual ~Animation() noexcept = default;
 
@@ -24,49 +26,44 @@ class Animation {
 
   operator SDL_Renderer *() const { return renderer_; }
 
-  Grid& GetGrid() { return grid_; }
+  Grid &GetGrid() { return grid_; }
 
-  void RenderCopy(SpriteID id, const SDL_Rect& rc) {
+  void RenderCopy(SpriteID id, const SDL_Rect &rc) {
     SDL_RenderCopy(*this, asset_manager_->GetSpriteAsTexture(id), nullptr, &rc);
   }
 
-  void RenderCopy(SDL_Texture *texture, const SDL_Rect& rc) {
+  void RenderCopy(SDL_Texture *texture, const SDL_Rect &rc) {
     SDL_RenderCopy(*this, texture, nullptr, &rc);
   }
 
- protected:
+protected:
   double x_ = 0.0;
   double y_ = 0.0;
 
- private:
+private:
   SDL_Renderer *renderer_;
-  Grid& grid_;
+  Grid &grid_;
   std::shared_ptr<AssetManager> asset_manager_;
 };
 
 class SwapAnimation : public Animation {
- public:
-  SwapAnimation(SDL_Renderer *renderer, Grid& grid,
-                  const Position& p1, const Position& p2, bool has_match,
-                  const std::shared_ptr<AssetManager>& asset_manager)
-      : Animation(renderer, grid, asset_manager), p1_(p1), p2_(p2),
-        has_match_(has_match) {}
+public:
+  SwapAnimation(SDL_Renderer *renderer, Grid &grid, const Position &p1,
+                const Position &p2, bool has_match,
+                const std::shared_ptr<AssetManager> &asset_manager)
+      : Animation(renderer, grid, asset_manager), p1_(p1), p2_(p2), has_match_(has_match) {}
 
   virtual void Start() override {
     GetGrid().At(p1_).Unselect();
     GetGrid().At(p2_).Unselect();
 
-    if (p1_.row() == p2_.row()) {
-      if (p2_.col() > p1_.col()) {
-        std::swap(p1_, p2_);
-      }
-    } else if (p2_.row() > p1_.row()) {
+    if (p2_.row() > p1_.row() || p2_.col() > p1_.col()) {
       std::swap(p1_, p2_);
     }
     std::swap(element1_, GetGrid().At(p1_));
-    rc1_ = { p1_.x(), p1_.y(), kSpriteWidth, kSpriteWidth };
+    rc1_ = {p1_.x(), p1_.y(), kSpriteWidth, kSpriteWidth};
     std::swap(element2_, GetGrid().At(p2_));
-    rc2_ = { p2_.x(), p2_.y(), kSpriteWidth, kSpriteHeight };
+    rc2_ = {p2_.x(), p2_.y(), kSpriteWidth, kSpriteHeight};
 
     if (p1_.row() == p2_.row()) {
       t1_ = &rc1_.x;
@@ -82,15 +79,15 @@ class SwapAnimation : public Animation {
   }
 
   virtual void Update(double delta) override {
-    const double sign = (pixels_moved_ < kSpriteWidth) ? 1.0 : -1.0;
+    const double kSign = (pixels_moved_ < kSpriteWidth) ? 1.0 : -1.0;
     const double kVelocity = delta * 300;
 
-    x_ += (kVelocity * -sign);
+    x_ += (kVelocity * -kSign);
     *t1_ = static_cast<int>(x_);
 
     RenderCopy(element1_, rc1_);
 
-    y_ += (kVelocity * sign);
+    y_ += (kVelocity * kSign);
     *t2_ = static_cast<int>(y_);
 
     RenderCopy(element2_, rc2_);
@@ -102,8 +99,6 @@ class SwapAnimation : public Animation {
     if (pixels_moved_ < ((has_match_) ? kSpriteWidth : kSpriteWidth * 2.0)) {
       return false;
     }
-    RenderCopy(element1_, rc1_);
-    RenderCopy(element2_, rc2_);
     if (has_match_) {
       std::swap(element1_, element2_);
     }
@@ -128,16 +123,16 @@ private:
 
 class MatchAnimation : public Animation {
 public:
-  MatchAnimation(SDL_Renderer *renderer, Grid& grid,
-                 const std::set<Position>& matches,
-                 const std::shared_ptr<AssetManager>& asset_manager)
+  MatchAnimation(SDL_Renderer *renderer, Grid &grid,
+                 const std::set<Position> &matches,
+                 const std::shared_ptr<AssetManager> &asset_manager)
       : Animation(renderer, grid, asset_manager), matches_(matches) {}
 
   virtual void Start() override {
     size_t i = 0;
 
     elements_.resize(matches_.size(), Element(SpriteID::OwnedByAnimation));
-    for (const auto& m : matches_) {
+    for (const auto &m : matches_) {
       std::swap(elements_[i], GetGrid().At(m));
       i++;
     }
@@ -150,11 +145,12 @@ public:
     }
     size_t i = 0;
 
-    for (const auto& m : matches_) {
+    for (const auto &m : matches_) {
       int x = static_cast<int>(m.x() + x_);
       int y = static_cast<int>(m.y() + y_);
 
-      SDL_Rect rc = { x, y, static_cast<int>(scale_w_), static_cast<int>(scale_h_) };
+      SDL_Rect rc = {x, y, static_cast<int>(scale_w_),
+                     static_cast<int>(scale_h_)};
       RenderCopy(elements_[i], rc);
       i++;
     }
@@ -171,7 +167,7 @@ public:
       }
     } else {
       if (scale_w_ <= 0.0 || scale_h_ <= 0.0) {
-        for (const auto& m : matches_) {
+        for (const auto &m : matches_) {
           GetGrid().At(m) = Element(SpriteID::Empty);
         }
         lock_board_ = false;
@@ -193,7 +189,7 @@ private:
 
 class MoveDownAnimation : public Animation {
 public:
-  MoveDownAnimation(SDL_Renderer *renderer, Grid& grid, const Position& p,
+  MoveDownAnimation(SDL_Renderer *renderer, Grid &grid, const Position &p,
                     const std::shared_ptr<AssetManager> &asset_manager)
       : Animation(renderer, grid, asset_manager), p_(p) {}
 
@@ -201,7 +197,6 @@ public:
     std::swap(element_, GetGrid().At(p_));
     rc_ = { p_.x(), p_.y() - kSpriteHeight, kSpriteWidth, kSpriteHeight };
     y_ = rc_.y;
-    end_pos_ = y_ + kSpriteHeight;
   }
 
   virtual void Update(double delta) override {
@@ -213,24 +208,25 @@ public:
   }
 
   virtual bool IsReady() override {
-    if (y_ <= end_pos_) {
+    if (y_ < p_.y()) {
       return false;
     }
     std::swap(element_, GetGrid().At(p_));
-    RenderCopy(GetGrid().At(p_), rc_);
     return true;
   }
 
 private:
   Position p_;
   SDL_Rect rc_;
-  double end_pos_ = 0.0;
   Element element_ = Element(OwnedByAnimation);
 };
 
 class HintAnimation : public Animation {
 public:
-  HintAnimation(SDL_Renderer *renderer, Grid &grid, const Position& p1, const Position& p2, std::shared_ptr<AssetManager> &asset_manager) : Animation(renderer, grid, asset_manager), p1_(p1), p2_(p2) {}
+  HintAnimation(SDL_Renderer *renderer, Grid &grid, const Position &p1,
+                const Position &p2,
+                std::shared_ptr<AssetManager> &asset_manager)
+      : Animation(renderer, grid, asset_manager), p1_(p1), p2_(p2) {}
 
   ~HintAnimation() {
     std::swap(e1_, GetGrid().At(p1_));
@@ -244,36 +240,37 @@ public:
 
   virtual void Update(double delta) override {
     const double kTwoTimesPi = 2.0 * 3.1415926535897932384626433;
-    const double radius = kSpriteWidth / 10.0;
+    const double kRadius = kSpriteWidth / 10.0;
 
     angle_ += (delta * 30);
     if (angle_ > kTwoTimesPi) {
       angle_ = 0.0;
-      revolution_++;
+      revolutions_++;
     }
-    x_ = cos(angle_) * radius;
-    y_ = sin(angle_) * radius;
+    x_ = cos(angle_) * kRadius;
+    y_ = sin(angle_) * kRadius;
 
-    e1_.Render(*this, x_ + p1_.x(),y_ + p1_.y(), true);
-    e2_.Render(*this, x_ + p2_.x(),y_ + p2_.y(), true);
+    e1_.Render(*this, x_ + p1_.x(), y_ + p1_.y(), true);
+    e2_.Render(*this, x_ + p2_.x(), y_ + p2_.y(), true);
   }
 
-  virtual bool IsReady() override { return  (revolution_ >= 3) ? true : false; }
+  virtual bool IsReady() override { return (revolutions_ >= 3) ? true : false; }
 
   virtual bool Idle() const override { return true; }
 
- private:
+private:
   Position p1_;
   Position p2_;
   Element e1_ = Element(SpriteID::OwnedByAnimation);
   Element e2_ = Element(SpriteID::OwnedByAnimation);
   double angle_ = 0.0;
-  int revolution_ = 0;
+  int revolutions_ = 0;
 };
 
 class TimerAnimation : public Animation {
 public:
-  TimerAnimation(SDL_Renderer *renderer, Grid &grid, std::shared_ptr<AssetManager> &asset_manager)
+  TimerAnimation(SDL_Renderer *renderer, Grid &grid,
+                 std::shared_ptr<AssetManager> &asset_manager)
       : Animation(renderer, grid, asset_manager), star_textures_(asset_manager->GetStarTextures()) {
     assert(coordinates_.size() == kGameTime);
   }
@@ -284,10 +281,10 @@ public:
     int x, y;
     std::tie(x, y) = coordinates_[timer_];
 
-    RenderCopy(star_textures_.at(frame_), {x - 15, y - 15, 30, 30 });
+    RenderCopy(star_textures_.at(frame_), {x - 15, y - 15, 30, 30});
 
     animation_ticks_ += delta;
-    if (animation_ticks_ > kTimeResolution) {
+    if (animation_ticks_ >= kTimeResolution) {
       frame_ = (++frame_ % star_textures_.size());
       animation_ticks_ = 0.0;
     }
@@ -302,98 +299,71 @@ public:
 
   int GetTimeLeft() const { return kGameTime - timer_; }
 
- private:
+private:
   int frame_ = 0;
   double animation_ticks_ = 0.0;
   double movement_ticks_ = 0.0;
   size_t timer_ = 0;
-  std::vector<SDL_Texture*> star_textures_;
+  std::vector<SDL_Texture *> star_textures_;
   const std::vector<std::pair<int, int>> coordinates_ = {
-    std::make_pair(262, 555),
-    std::make_pair(258, 552),
-    std::make_pair(256, 548),
-    std::make_pair(253, 545),
-    std::make_pair(252, 540),
-    std::make_pair(254, 535),
-    std::make_pair(251, 530),
-    std::make_pair(253, 525),
-    std::make_pair(251, 522),
-    std::make_pair(254, 520),
-    std::make_pair(250, 518),
-    std::make_pair(245, 513),
-    std::make_pair(240, 513),
-    std::make_pair(235, 514),
-    std::make_pair(230, 511),
-    std::make_pair(228, 509),
-    std::make_pair(225, 511),
-    std::make_pair(220, 512),
-    std::make_pair(217, 510),
-    std::make_pair(218, 508),
-    std::make_pair(216, 507),
-    std::make_pair(215, 506),
-    std::make_pair(213, 505),
-    std::make_pair(212, 504),
-    std::make_pair(210, 503),
-    std::make_pair(212, 502),
-    std::make_pair(214, 500),
-    std::make_pair(210, 495),
-    std::make_pair(212, 490),
-    std::make_pair(211, 485),
-    std::make_pair(212, 480),
-    std::make_pair(210, 475),
-    std::make_pair(212, 470),
-    std::make_pair(210, 465),
-    std::make_pair(211, 460),
-    std::make_pair(212, 455),
-    std::make_pair(213, 450),
-    std::make_pair(210, 445),
-    std::make_pair(211, 440),
-    std::make_pair(212, 435),
-    std::make_pair(210, 430),
-    std::make_pair(208, 425),
-    std::make_pair(210, 420),
-    std::make_pair(208, 415),
-    std::make_pair(210, 410),
-    std::make_pair(208, 405),
-    std::make_pair(210, 400),
-    std::make_pair(208, 395),
-    std::make_pair(210, 390),
-    std::make_pair(210, 385),
-    std::make_pair(209, 380),
-    std::make_pair(207, 375),
-    std::make_pair(200, 372),
-    std::make_pair(196, 372),
-    std::make_pair(192, 372),
-    std::make_pair(188, 372),
-    std::make_pair(185, 372),
-    std::make_pair(183, 372),
-    std::make_pair(181, 372),
-    std::make_pair(179, 372),
+      std::make_pair(262, 555), std::make_pair(258, 552),
+      std::make_pair(256, 548), std::make_pair(253, 545),
+      std::make_pair(252, 540), std::make_pair(254, 535),
+      std::make_pair(251, 530), std::make_pair(253, 525),
+      std::make_pair(251, 522), std::make_pair(254, 520),
+      std::make_pair(250, 518), std::make_pair(245, 513),
+      std::make_pair(240, 513), std::make_pair(235, 514),
+      std::make_pair(230, 511), std::make_pair(228, 509),
+      std::make_pair(225, 511), std::make_pair(220, 512),
+      std::make_pair(217, 510), std::make_pair(218, 508),
+      std::make_pair(216, 507), std::make_pair(215, 506),
+      std::make_pair(213, 505), std::make_pair(212, 504),
+      std::make_pair(210, 503), std::make_pair(212, 502),
+      std::make_pair(214, 500), std::make_pair(210, 495),
+      std::make_pair(212, 490), std::make_pair(211, 485),
+      std::make_pair(212, 480), std::make_pair(210, 475),
+      std::make_pair(212, 470), std::make_pair(210, 465),
+      std::make_pair(211, 460), std::make_pair(212, 455),
+      std::make_pair(213, 450), std::make_pair(210, 445),
+      std::make_pair(211, 440), std::make_pair(212, 435),
+      std::make_pair(210, 430), std::make_pair(208, 425),
+      std::make_pair(210, 420), std::make_pair(208, 415),
+      std::make_pair(210, 410), std::make_pair(208, 405),
+      std::make_pair(210, 400), std::make_pair(208, 395),
+      std::make_pair(210, 390), std::make_pair(210, 385),
+      std::make_pair(209, 380), std::make_pair(207, 375),
+      std::make_pair(200, 372), std::make_pair(196, 372),
+      std::make_pair(192, 372), std::make_pair(188, 372),
+      std::make_pair(185, 372), std::make_pair(183, 372),
+      std::make_pair(181, 372), std::make_pair(179, 372),
   };
 };
 
 class ExplosionAnimation : public Animation {
 public:
-  ExplosionAnimation(SDL_Renderer *renderer, Grid &grid, std::shared_ptr<AssetManager> &asset_manager)
+  ExplosionAnimation(SDL_Renderer *renderer, Grid &grid,
+                     std::shared_ptr<AssetManager> &asset_manager)
       : Animation(renderer, grid, asset_manager), explosion_texture_(asset_manager->GetExplosionTextures()) {}
 
   virtual void Start() override {}
 
   virtual void Update(double delta) override {
-    const SDL_Rect rc { 100, 278, 71, 100 };
+    const SDL_Rect rc{100, 278, 71, 100};
 
     RenderCopy(explosion_texture_.at(frame_), rc);
     animation_ticks_ += delta;
-    if (animation_ticks_ > (kTimeResolution * 5)) {
+    if (animation_ticks_ >= (kTimeResolution * 5)) {
       frame_++;
       animation_ticks_ = 0.0;
     }
   }
 
-  virtual bool IsReady() override { return (static_cast<size_t>(frame_) >= explosion_texture_.size()); }
+  virtual bool IsReady() override {
+    return (static_cast<size_t>(frame_) >= explosion_texture_.size());
+  }
 
- private:
+private:
   int frame_ = 0;
   double animation_ticks_ = 0.0;
-  std::vector<SDL_Texture*> explosion_texture_;
+  std::vector<SDL_Texture *> explosion_texture_;
 };

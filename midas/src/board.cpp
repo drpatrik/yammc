@@ -227,8 +227,8 @@ void Board::UpdateStatus(int x, int y) {
   RenderText(x, y, Font::Bold, "Score:", TextColor::White);
   RenderText(x, y + 30, Font::Normal, std::to_string(score_), TextColor::White);
 
-  RenderText(x, y + 530, Font::Bold, "High Score:", TextColor::White);
-  RenderText(x, y + 560, Font::Normal, std::to_string(high_score_), TextColor::White);
+  RenderText(x, y + 530, Font::Bold, "High Score:", TextColor::Black);
+  RenderText(x, y + 560, Font::Normal, std::to_string(high_score_), TextColor::Black);
 
   RenderText(x + 92, y + 430, Font::Bold, std::to_string(timer_animation_->GetTimeLeft()), TextColor::Blue);
 }
