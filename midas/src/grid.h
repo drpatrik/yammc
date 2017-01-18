@@ -69,8 +69,8 @@ class Grid {
   }
 
   void Generate() {
+    grid_.clear();
     grid_.resize(rows_, std::vector<Element>(cols_, Element(asset_manager_->GetSprite(SpriteID::Empty))));
-
     for (int row = 0; row < rows_; ++row) {
       for (int col = 0; col < cols_; ++col) {
         do {
@@ -79,8 +79,7 @@ class Grid {
       }
     }
     is_filling_ = true;
-    fill_grid_ = std::move(grid_);
-
+    fill_grid_ = grid_;
     grid_.clear();
     grid_.resize(rows_, std::vector<Element>(cols_, Element(asset_manager_->GetSprite(SpriteID::Empty))));
   }

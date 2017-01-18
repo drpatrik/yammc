@@ -18,6 +18,7 @@
         - Animation when you have been idle too long
         - Use particle animations instead of a separate animation
           for a match (as the original flash game)
+        - Verify that the board always contains at least one valid solution
         - Sound
         - Use Catch instead of gtest
         - Windows port
