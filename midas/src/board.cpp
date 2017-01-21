@@ -114,14 +114,21 @@ void Board::Restart() {
 }
 
 std::vector<std::shared_ptr<Animation>> Board::ShowHint() {
+  std::vector<std::shared_ptr<Animation>> animations;
+
+  if (timer_animation_->IsReady()) {
+    return animations;
+  }
   bool matches_found;
   std::pair<Position, Position> match_pos;
-  std::vector<std::shared_ptr<Animation>> animations;
 
   std::tie(matches_found, match_pos) = grid_->FindPotentialMatches();
 
   if (matches_found) {
     animations.push_back(std::make_shared<HintAnimation>(renderer_, *grid_, match_pos.first, match_pos.second, asset_manager_));
+  } else {
+    grid_->Generate(Grid::GenerateType::NoFill);
+    std::cout << "No solutions found, creating a new board" << std::endl;
   }
 
   return animations;
@@ -176,7 +183,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
       active_animations_.push_back(std::make_shared<ExplosionAnimation>(renderer_, *grid_, asset_manager_));
     }
     RenderText(400, 233, Font::Bold, "G A M E  O V E R", TextColor::Red);
-    UpdateStatus(10, 10);
+    UpdateStatus(10, 2);
     RunAnimation(active_animations_, delta_time);
     SDL_RenderPresent(renderer_);
     return;
@@ -218,17 +225,17 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
     }
   }
   SDL_RenderSetClipRect(renderer_, &rc);
-  UpdateStatus(10, 10);
+  UpdateStatus(10, 1);
   SDL_RenderPresent(renderer_);
 }
 
 void Board::UpdateStatus(int x, int y) {
   high_score_ = std::max(high_score_, score_);
-  RenderText(x, y, Font::Bold, "Score:", TextColor::White);
-  RenderText(x, y + 30, Font::Normal, std::to_string(score_), TextColor::White);
+  RenderText(x, y, Font::Normal, "Score:", TextColor::White);
+  RenderText(x + 74, y, Font::Normal, std::to_string(score_), TextColor::White);
 
-  RenderText(x, y + 530, Font::Bold, "High Score:", TextColor::Black);
-  RenderText(x, y + 560, Font::Normal, std::to_string(high_score_), TextColor::Black);
+  RenderText(x + 520, y, Font::Normal, "High Score:", TextColor::White);
+  RenderText(x + 650, y, Font::Normal, std::to_string(high_score_), TextColor::White);
 
   RenderText(x + 92, y + 430, Font::Bold, std::to_string(timer_animation_->GetTimeLeft()), TextColor::Blue);
 }

@@ -16,7 +16,7 @@ public:
 
   virtual void Start() = 0;
 
-  virtual void Update(double = 0.0) = 0;
+  virtual void Update(double) = 0;
 
   virtual bool IsReady() = 0;
 
@@ -57,6 +57,8 @@ public:
     GetGrid().At(p1_).Unselect();
     GetGrid().At(p2_).Unselect();
 
+    // Fix so the animation always move from
+    // p1 to p2.
     if (p2_.row() > p1_.row() || p2_.col() > p1_.col()) {
       std::swap(p1_, p2_);
     }
@@ -129,7 +131,7 @@ public:
       : Animation(renderer, grid, asset_manager), matches_(matches) {}
 
   virtual void Start() override {
-    size_t i = 0;
+    int i = 0;
 
     elements_.resize(matches_.size(), Element(SpriteID::OwnedByAnimation));
     for (const auto &m : matches_) {
@@ -140,17 +142,20 @@ public:
 
   virtual void Update(double delta) override {
     if (!lock_board_) {
+      // Place holder for new animation showing
+      // a score plaque.
       tick_ += delta;
       return;
     }
-    size_t i = 0;
+    int i, x, y;
 
+    i = 0;
     for (const auto &m : matches_) {
-      int x = static_cast<int>(m.x() + x_);
-      int y = static_cast<int>(m.y() + y_);
+      x = static_cast<int>(m.x() + x_);
+      y = static_cast<int>(m.y() + y_);
 
-      SDL_Rect rc = {x, y, static_cast<int>(scale_w_),
-                     static_cast<int>(scale_h_)};
+      SDL_Rect rc = { x, y, static_cast<int>(scale_w_),
+                     static_cast<int>(scale_h_) };
       RenderCopy(elements_[i], rc);
       i++;
     }
@@ -162,9 +167,9 @@ public:
 
   virtual bool IsReady() override {
     if (!lock_board_) {
-      if (tick_ >= 2.0) {
-        return true;
-      }
+      // Place holder for new animation showing
+      // a score plaque.
+      return true;
     } else {
       if (scale_w_ <= 0.0 || scale_h_ <= 0.0) {
         for (const auto &m : matches_) {
@@ -281,7 +286,7 @@ public:
     int x, y;
     std::tie(x, y) = coordinates_[timer_];
 
-    RenderCopy(star_textures_.at(frame_), {x - 15, y - 15, 30, 30});
+    RenderCopy(star_textures_.at(frame_), { x - 15, y - 15, 30, 30 });
 
     animation_ticks_ += delta;
     if (animation_ticks_ >= kTimeResolution) {

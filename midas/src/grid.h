@@ -9,6 +9,8 @@
 
 class Grid {
  public:
+  enum class GenerateType { Fill, NoFill };
+
   Grid(int rows, int cols, AssetManagerInterface* am) : rows_(rows), cols_(cols), asset_manager_(am) {
     Generate();
   }
@@ -68,20 +70,25 @@ class Grid {
     return (match_row >= 2) || (match_col >= 2);
   }
 
-  void Generate() {
-    grid_.clear();
-    grid_.resize(rows_, std::vector<Element>(cols_, Element(asset_manager_->GetSprite(SpriteID::Empty))));
-    for (int row = 0; row < rows_; ++row) {
-      for (int col = 0; col < cols_; ++col) {
-        do {
-          At(row, col) = Element(asset_manager_->GetSprite());
-        } while(IsMatch(row, col));
+  void Generate(GenerateType type = GenerateType::Fill) {
+    do {
+      grid_.clear();
+      grid_.resize(rows_, std::vector<Element>(cols_, Element(asset_manager_->GetSprite(SpriteID::Empty))));
+      for (int row = 0; row < rows_; ++row) {
+        for (int col = 0; col < cols_; ++col) {
+          do {
+            At(row, col) = Element(asset_manager_->GetSprite());
+          } while(IsMatch(row, col));
+        }
       }
+    } while (!FindPotentialMatches().first);
+
+    if (GenerateType::Fill == type) {
+        is_filling_ = true;
+        fill_grid_ = grid_;
+        grid_.clear();
+        grid_.resize(rows_, std::vector<Element>(cols_, Element(asset_manager_->GetSprite(SpriteID::Empty))));
     }
-    is_filling_ = true;
-    fill_grid_ = grid_;
-    grid_.clear();
-    grid_.resize(rows_, std::vector<Element>(cols_, Element(asset_manager_->GetSprite(SpriteID::Empty))));
   }
 
   inline std::set<Position> GetAllMatches() const {
@@ -161,6 +168,7 @@ class Grid {
         }
       }
     }
+
     return std::make_pair(false, positions);
   }
 

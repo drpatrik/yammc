@@ -21,7 +21,7 @@ class AssetManagerMock : public AssetManagerInterface {
     return std::vector<SDL_Texture*>();
   }
   virtual SDL_Texture * GetSpriteAsTexture(SpriteID) override { return nullptr; }
-  virtual TTF_Font *GetFont(int id) override { return nullptr; }
+  virtual TTF_Font *GetFont(int) override { return nullptr; }
   virtual void ResetPreviousIds() override {}
 };
 
