@@ -79,7 +79,7 @@ class AssetManager : public AssetManagerInterface {
 
     do {
       id = static_cast<SpriteID>(distribution_(engine_));
-    } while (previous_ids_.at(col) == id || (col < kCols - 1 && previous_ids_.at(col + 1) == id));
+    } while (previous_ids_.at(col) == id || (col < kCols - 1 && id == previous_ids_.at(col + 1)));
     previous_ids_[col] = id;
     return sprites_.at(id);
   }

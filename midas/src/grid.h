@@ -131,6 +131,10 @@ class Grid {
     if (!grid_is_unstable && grid_is_dirty_) {
       asset_manager_->ResetPreviousIds();
       matches = GetAllMatches();
+      if (matches.size() == 0 && !FindPotentialMatches().first) {
+        Generate(Grid::GenerateType::NoFill);
+        std::cout << "No solutions found, creating a new board" << std::endl;
+      }
       grid_is_dirty_ = false;
     }
     return std::make_pair(moved_objects, matches);

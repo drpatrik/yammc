@@ -127,8 +127,7 @@ std::vector<std::shared_ptr<Animation>> Board::ShowHint() {
   if (matches_found) {
     animations.push_back(std::make_shared<HintAnimation>(renderer_, *grid_, match_pos.first, match_pos.second, asset_manager_));
   } else {
-    grid_->Generate(Grid::GenerateType::NoFill);
-    std::cout << "No solutions found, creating a new board" << std::endl;
+    assert(false);
   }
 
   return animations;
