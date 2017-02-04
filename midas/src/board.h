@@ -32,11 +32,11 @@ class Board {
     }
     score_ -= 10;
     score_ = std::max(score_, 0);
-    consecutive_matches_ = 0;
   }
 
  protected:
-  void UpdateStatus(int x, int y);
+  void UpdateScore(const std::set<Position>& matches, int chains);
+  void UpdateStatus(int x, int y) const;
   void RenderText(int x, int y, Font font, const std::string& text, TextColor text_color) const {
     ::RenderText(renderer_, x, y, asset_manager_->GetFont(font), text, text_color);
   }
@@ -46,6 +46,7 @@ class Board {
   int score_ = 0;
   int high_score_ = 0;
   int consecutive_matches_ = 0;
+  int previous_consecutive_matches_ = 0;
   int total_matches_ = 0;
   int current_threshold_step_ = kInitialThresholdStep;
   std::unique_ptr<Grid> grid_;

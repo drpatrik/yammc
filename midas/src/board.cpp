@@ -1,4 +1,8 @@
 #include "board.h"
+#include "score.h"
+
+#include <sstream>
+#include <iomanip>
 
 namespace {
 
@@ -47,32 +51,25 @@ bool CanUpdateBoard(const std::vector<std::shared_ptr<Animation>>& animations) {
   return animations.empty() || (c == 0);
 }
 
-int GetScoreForTotalMatches(int total_matches, int& current_threshold_step) {
+int CalculateScore(size_t matches, int& total_matches, int& current_threshold_step, int consecutive_matches, int& previous_consecutive_matches) {
   int score = 0;
 
-  if (total_matches >= (current_threshold_step * kThresholdMultiplier)) {
-    score = (500 + ((current_threshold_step - kInitialThresholdStep) * 250));
-    current_threshold_step++;
-  }
-
-  return score;
-}
-
-int GetBasicScore(size_t matches, int& total_matches, int& current_threshold_step) {
-  std::vector<int> scores = { 0, 0, 0, 50, 100, 150, 250, 500 };
-
   total_matches += matches;
-  int score = (matches >= 7) ? 500 : scores.at(matches);
-
+  score += GetBasicScore(matches);
   score += GetScoreForTotalMatches(total_matches, current_threshold_step);
+  score += GetScoreForConsecutiveMatches(consecutive_matches, previous_consecutive_matches);
 
   return score;
 }
 
-int GetScoreForConsecutiveMatches(size_t consecutive_matches) {
-  std::vector<int> scores = { 0, 0, 50, 100, 150, 250, 350, 500, 750 };
+std::string FormatTime(size_t seconds) {
+  std::stringstream ss;
 
-  return (consecutive_matches >=9) ? 1000 : scores.at(consecutive_matches);
+  int minutes = static_cast<int>(seconds / 60.0);
+
+  ss << std::setfill('0') << std::setw(2) << minutes << ":" << std::setfill('0') << std::setw(2) << seconds % 60;
+
+  return ss.str();
 }
 
 }
@@ -104,6 +101,7 @@ Board::~Board() noexcept {
 void Board::Restart() {
   score_ = 0;
   consecutive_matches_ = 0;
+  previous_consecutive_matches_ = 0;
   total_matches_ = 0;
   current_threshold_step_ = kInitialThresholdStep;
   active_animations_.clear();
@@ -151,15 +149,15 @@ std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) 
     first_selected_ = selected;
   } else {
     if (IsSwapValid(first_selected_, selected)) {
-      auto matches = grid_->GetMatchesFromSwap(first_selected_, selected);
+      std::set<Position> matches;
+      int chains;
+      std::tie(matches, chains) = grid_->GetMatchesFromSwap(first_selected_, selected);
 
       animations.push_back(std::make_shared<SwapAnimation>(renderer_, *grid_, first_selected_, selected, !matches.empty(), asset_manager_));
 
       if (!matches.empty()) {
+        UpdateScore(matches, chains);
         animations.push_back(std::make_shared<MatchAnimation>(renderer_, *grid_, matches, asset_manager_));
-        score_ += GetBasicScore(matches.size(), total_matches_, current_threshold_step_);
-        score_ += GetScoreForConsecutiveMatches(consecutive_matches_);
-        consecutive_matches_++;
       }
     } else {
       grid_->At(first_selected_).Unselect();
@@ -207,9 +205,11 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
   if (CanUpdateBoard(active_animations_) && CanUpdateBoard(queued_animations_)) {
     std::vector<Position> moved_objects;
     std::set<Position> matches;
+    int chains;
 
-    std::tie(moved_objects, matches) = grid_->Collaps();
-    score_ += GetBasicScore(matches.size(), total_matches_, current_threshold_step_);
+    std::tie(moved_objects, matches, chains) = grid_->Collaps(consecutive_matches_, previous_consecutive_matches_);
+
+    UpdateScore(matches, chains);
 
     for (const auto& obj:moved_objects) {
       auto animation = std::make_shared<MoveDownAnimation>(renderer_, *grid_, obj, asset_manager_);
@@ -228,13 +228,18 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
   SDL_RenderPresent(renderer_);
 }
 
-void Board::UpdateStatus(int x, int y) {
+void Board::UpdateScore(const std::set<Position>& matches, int chains) {
   high_score_ = std::max(high_score_, score_);
+  consecutive_matches_ += chains;
+  score_ += CalculateScore(matches.size(), total_matches_, current_threshold_step_, consecutive_matches_, previous_consecutive_matches_);
+}
+
+void Board::UpdateStatus(int x, int y) const {
   RenderText(x, y, Font::Normal, "Score:", TextColor::White);
   RenderText(x + 74, y, Font::Normal, std::to_string(score_), TextColor::White);
 
   RenderText(x + 520, y, Font::Normal, "High Score:", TextColor::White);
   RenderText(x + 650, y, Font::Normal, std::to_string(high_score_), TextColor::White);
 
-  RenderText(x + 92, y + 430, Font::Bold, std::to_string(timer_animation_->GetTimeLeft()), TextColor::Blue);
+  RenderText(x + 72, y + 430, Font::Bold, FormatTime(timer_animation_->GetTimeLeft()), TextColor::Blue);
 }

@@ -5,7 +5,7 @@
 #include <cstddef>
 
 const double kFPS = 60;
-const int kGameTime = 60;
+const int kGameTime = 180;
 const int kFontSize = 25;
 const int kSpriteWidth = 38;
 const int kSpriteHeight = 38;

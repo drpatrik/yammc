@@ -283,8 +283,9 @@ public:
   virtual void Start() override {}
 
   virtual void Update(double delta) override {
+    const size_t kTimerStep = static_cast<size_t>(double(kGameTime) / coordinates_.size());
     int x, y;
-    std::tie(x, y) = coordinates_[timer_];
+    std::tie(x, y) = coordinates_[step_];
 
     RenderCopy(star_textures_.at(frame_), { x - 15, y - 15, 30, 30 });
 
@@ -296,11 +297,14 @@ public:
     movement_ticks_ += delta;
     if (movement_ticks_ > 1.0) {
       timer_++;
+      if (timer_ % kTimerStep == 0) {
+        step_ ++;
+      }
       movement_ticks_ = 0.0;
     }
   }
 
-  virtual bool IsReady() override { return timer_ == coordinates_.size(); }
+  virtual bool IsReady() override { return timer_ == kGameTime; }
 
   int GetTimeLeft() const { return kGameTime - timer_; }
 
@@ -309,6 +313,7 @@ private:
   double animation_ticks_ = 0.0;
   double movement_ticks_ = 0.0;
   size_t timer_ = 0;
+  size_t step_ = 0;
   std::vector<SDL_Texture *> star_textures_;
   const std::vector<std::pair<int, int>> coordinates_ = {
       std::make_pair(262, 555), std::make_pair(258, 552),

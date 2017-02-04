@@ -3,7 +3,6 @@
 #include "element.h"
 #include "coordinates.h"
 
-#include <iostream>
 #include <set>
 #include <functional>
 
@@ -91,11 +90,11 @@ class Grid {
     }
   }
 
-  inline std::set<Position> GetAllMatches() const {
+  inline std::pair<std::set<Position>, int> GetAllMatches() const {
     return Matches(0, 0, rows_, cols_);
   }
 
-  std::pair<std::vector<Position>, std::set<Position>> Collaps() {
+  std::tuple<std::vector<Position>, std::set<Position>, int> Collaps(int& consecutive_matches, int& previous_consecutive_matches) {
     bool grid_is_unstable = false;
     std::vector<Position> moved_objects;
 
@@ -126,31 +125,37 @@ class Grid {
         moved_objects.push_back(Position(0, col));
       }
     }
+    int chains = 0;
     std::set<Position> matches;
 
     if (!grid_is_unstable && grid_is_dirty_) {
       asset_manager_->ResetPreviousIds();
-      matches = GetAllMatches();
-      if (matches.size() == 0 && !FindPotentialMatches().first) {
-        Generate(Grid::GenerateType::NoFill);
-        std::cout << "No solutions found, creating a new board" << std::endl;
+      std::tie(matches, chains) = GetAllMatches();
+      if (matches.size() == 0) {
+        if (!FindPotentialMatches().first) {
+          Generate(Grid::GenerateType::NoFill);
+          std::cout << "No solutions found, creating a new board" << std::endl;
+        }
+        consecutive_matches = 0;
+        previous_consecutive_matches = 0;
       }
       grid_is_dirty_ = false;
     }
-    return std::make_pair(moved_objects, matches);
+    return std::make_tuple(moved_objects, matches, chains);
   }
 
-  std::set<Position> GetMatchesFromSwap(const Position& p1, const Position& p2) {
+  std::pair<std::set<Position>, int> GetMatchesFromSwap(const Position& p1, const Position& p2) {
     std::swap(At(p1), At(p2));
 
-    auto matches = GetAllMatches();
+    auto ret_value = GetAllMatches();
 
     std::swap(At(p1), At(p2));
-    return matches;
+
+    return ret_value;
   }
 
   std::pair<bool, std::pair<Position, Position>> FindPotentialMatches() {
-    std::set<Position> matches;
+    std::pair<std::set<Position>, int> matches_chains;
     std::pair<Position, Position> positions;
 
     for (int row = 0; row < rows_; ++row) {
@@ -159,15 +164,15 @@ class Grid {
           positions.first = Position(row, col);
           positions.second =  Position(row + 1, col);
 
-          matches = GetMatchesFromSwap(positions.first, positions.second);
+          matches_chains = GetMatchesFromSwap(positions.first, positions.second);
         }
-        if (matches.empty() && col + 1 < cols_) {
+        if (matches_chains.first.empty() && col + 1 < cols_) {
           positions.first = Position(row, col);
           positions.second =  Position(row, col + 1);
 
-          matches = GetMatchesFromSwap(positions.first, positions.second);
+          matches_chains = GetMatchesFromSwap(positions.first, positions.second);
         }
-        if (!matches.empty()) {
+        if (!matches_chains.first.empty()) {
           return std::make_pair(true, positions);
         }
       }
@@ -198,21 +203,37 @@ class Grid {
   using GetValue = std::function<Element(int i)>;
   using GetPosition = std::function<Position(int i)>;
 
-  std::set<Position> Matches(int start_row, int start_col, int rows, int cols) const {
+
+  template<class T, class InputIt>
+  int InsertUniqueElements(std::set<T>&s, InputIt first, InputIt last ) const {
+    int unique_chain = 0;
+
+    for (InputIt it = first; it != last; ++it) {
+      if(s.insert(*it).second) {
+        unique_chain = 1;
+      }
+    }
+
+    return unique_chain;
+  }
+
+  std::pair<std::set<Position>, int> Matches(int start_row, int start_col, int rows, int cols) const {
+    int chains = 0;
     std::set<Position> matches;
 
     for (auto row = start_row; row < rows; ++row) {
       for (auto col = start_col; col < cols; ++col) {
         auto column_matches = GetColumnMatches(row, col);
 
-        matches.insert(std::begin(column_matches), std::end(column_matches));
+        chains += InsertUniqueElements(matches, std::begin(column_matches), std::end(column_matches));
 
         auto row_matches = GetRowMatches(row, col);
 
-        matches.insert(std::begin(row_matches), std::end(row_matches));
+        chains += InsertUniqueElements(matches, std::begin(row_matches), std::end(row_matches));
       }
     }
-    return matches;
+
+    return std::make_pair(matches, chains);
   }
 
   std::set<Position> Matches(int row, int col, int start, int end, GetValue value_at, GetPosition pos) const {
