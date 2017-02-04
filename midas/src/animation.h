@@ -57,7 +57,7 @@ public:
     GetGrid().At(p1_).Unselect();
     GetGrid().At(p2_).Unselect();
 
-    // Fix so the animation always move from
+    // Ensure the animation always move from
     // p1 to p2.
     if (p2_.row() > p1_.row() || p2_.col() > p1_.col()) {
       std::swap(p1_, p2_);
@@ -147,15 +147,13 @@ public:
       tick_ += delta;
       return;
     }
-    int i, x, y;
+    int i = 0;
 
-    i = 0;
     for (const auto &m : matches_) {
-      x = static_cast<int>(m.x() + x_);
-      y = static_cast<int>(m.y() + y_);
+      int x = static_cast<int>(m.x() + x_);
+      int y = static_cast<int>(m.y() + y_);
 
-      SDL_Rect rc = { x, y, static_cast<int>(scale_w_),
-                     static_cast<int>(scale_h_) };
+      SDL_Rect rc = { x, y, static_cast<int>(scale_w_), static_cast<int>(scale_h_) };
       RenderCopy(elements_[i], rc);
       i++;
     }
@@ -205,7 +203,7 @@ public:
   }
 
   virtual void Update(double delta) override {
-    const double kIncY = GetGrid().IsFilling() ? delta * 500 : delta * 300;
+    const double kIncY = GetGrid().IsFilling() ? delta * 500 : delta * 350;
 
     rc_.y = static_cast<int>(y_);
     RenderCopy(element_, rc_);
