@@ -6,6 +6,21 @@
 #include <set>
 #include <functional>
 
+namespace {
+  template<class T, class InputIt>
+  int InsertUniqueElements(std::set<T>&s, InputIt first, InputIt last ) {
+    int unique_chain = 0;
+
+    for (InputIt it = first; it != last; ++it) {
+      if(s.insert(*it).second) {
+        unique_chain = 1;
+      }
+    }
+
+    return unique_chain;
+  }
+}
+
 class Grid {
  public:
   enum class GenerateType { Fill, NoFill };
@@ -202,20 +217,6 @@ class Grid {
  protected:
   using GetValue = std::function<Element(int i)>;
   using GetPosition = std::function<Position(int i)>;
-
-
-  template<class T, class InputIt>
-  int InsertUniqueElements(std::set<T>&s, InputIt first, InputIt last ) const {
-    int unique_chain = 0;
-
-    for (InputIt it = first; it != last; ++it) {
-      if(s.insert(*it).second) {
-        unique_chain = 1;
-      }
-    }
-
-    return unique_chain;
-  }
 
   std::pair<std::set<Position>, int> Matches(int start_row, int start_col, int rows, int cols) const {
     int chains = 0;

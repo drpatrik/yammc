@@ -28,7 +28,7 @@ class Position {
 
   bool IsValid() const { return (-1 != row_ && -1 != col_); }
 
-  void Print() { std::cout << "Row: " << row_ << " Col:" << col_ << std::endl; }
+  void Print() const { std::cout << "Row: " << row_ << " Col:" << col_ << std::endl; }
 
  private:
   int row_;
