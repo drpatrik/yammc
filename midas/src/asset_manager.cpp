@@ -65,10 +65,14 @@ AssetManager::AssetManager(SDL_Renderer *renderer) {
   star_textures_ = LoadTextures(renderer, "star", kStarTextures);
   explosion_texture_ = LoadTextures(renderer, "explosion", kExplosionTextures);
 
-  std::vector<std::string> fonts {"Cabin-Regular.ttf", "Cabin-Bold.ttf"};
+  std::vector<std::pair<std::string, int>> fonts {
+    std::make_pair("Cabin-Regular.ttf", kFontSize),
+    std::make_pair("Cabin-Bold.ttf", kFontSize),
+    std::make_pair("Cabin-Regular.ttf", kScoreFontSize)
+  };
 
   for (const auto& f:fonts) {
-    fonts_.push_back(LoadFont(f, kFontSize));
+    fonts_.push_back(LoadFont(f.first, f.second));
   }
   background_texture_ = LoadTexture(renderer, "BackGround.bmp");
 }

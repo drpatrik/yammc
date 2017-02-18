@@ -34,3 +34,7 @@ class Position {
   int row_;
   int col_;
 };
+
+inline int Center(int w1, int w2 ) {
+  return std::abs(w1 - w2) / 2;
+}

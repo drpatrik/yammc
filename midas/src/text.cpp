@@ -3,21 +3,26 @@
 #include <SDL.h>
 #include <SDL_TTF.h>
 
-void RenderText(SDL_Renderer *renderer, int x, int y, TTF_Font *font, const std::string& text, TextColor text_color, uint8_t alpha) {
-  SDL_Color color;
+namespace {
 
-  if (text_color == TextColor::Blue) {
-    color = { 0, 0, 255, alpha };
-  } else if (text_color == TextColor::Red) {
-    color = { 255, 0, 0, alpha };
-  } else if (text_color == TextColor::Green) {
-    color = { 0, 255, 0, alpha };
-  } else if (text_color == TextColor::Black) {
-    color = { 0, 0, 0, alpha };
+SDL_Color GetColor(TextColor color, uint8_t alpha = 0) {
+  if (color == TextColor::Blue) {
+    return { 0, 0, 255, alpha };
+  } else if (color == TextColor::Red) {
+    return { 255, 0, 0, alpha };
+  } else if (color == TextColor::Green) {
+    return  { 0, 255, 0, alpha };
+  } else if (color == TextColor::Black) {
+    return  { 0, 0, 0, alpha };
   } else {
-    color = { 255, 255, 255, alpha };
+    return  { 255, 255, 255, alpha };
   }
-  SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), color);
+}
+
+}
+
+void RenderText(SDL_Renderer *renderer, int x, int y, TTF_Font *font, const std::string& text, TextColor text_color, uint8_t alpha) {
+  SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), GetColor(text_color, alpha));
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 
   int width, height;
@@ -30,4 +35,13 @@ void RenderText(SDL_Renderer *renderer, int x, int y, TTF_Font *font, const std:
 
   SDL_FreeSurface(surface);
   SDL_DestroyTexture(texture);
+}
+
+SDL_Texture* CreateScoreSign(SDL_Renderer *renderer, TTF_Font *font, const std::string& text) {
+  SDL_Surface* surface = TTF_RenderText_Shaded(font, text.c_str(), GetColor(TextColor::White), GetColor(TextColor::Black));
+  SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+  SDL_FreeSurface(surface);
+
+  return texture;
 }

@@ -7,14 +7,15 @@
 const double kFPS = 60;
 const int kGameTime = 180;
 const int kFontSize = 25;
+const int kScoreFontSize = 15;
 const int kSpriteWidth = 38;
 const int kSpriteHeight = 38;
 const size_t kNumSprites = 5; // Red, Blue, Green, Yellow and Purple
 const size_t kMatchNumber = 3;
 const int kRows = 9;
 const int kCols = 8;
-const int kShowHintTimer = 5;
-const int kIdleTimer = 3;
+const int kShowHintTimer = 10;
+const int kIdleTimer = 5;
 const int kInitialThresholdStep= 1;
 const int kThresholdMultiplier = 100;
 const size_t kBoardStartX = 340;

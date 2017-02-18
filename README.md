@@ -14,13 +14,12 @@
 
         Next update might include anything of the following:
 
-        - Score animations when you clear more then 3 diamonds
         - Animation when you have been idle too long
         - Sound
         - Use Catch instead of gtest
         - Windows port
 
-        The project requires cmake 2.6 or higher, SDL2 and SDL2_ttf and a C++11 compliant compiler.
+        The project requires cmake 2.6 or higher, SDL2 and SDL2_ttf and a C++14 compliant compiler.
         The test suit requires gtest - installation guide below. If you do not care about the test
         suit just delete enable_testing and everything below in ./midas/CMakeLists.txt
 

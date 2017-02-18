@@ -1,8 +1,36 @@
 #pragma once
 
 #include "grid.h"
+#include "score.h"
+#include "text.h"
 
 #include <cassert>
+
+namespace {
+
+const Position& FindPositionForScoreAnimation(const std::vector<Position>& c_matches, int chains) {
+  if (chains == 1) {
+    return c_matches[(c_matches.size() / 2)];
+  }
+  auto matches = c_matches;
+
+  while (!matches.empty()) {
+    auto match = matches.back();
+    matches.pop_back();
+    auto it = std::find(std::begin(matches), std::end(matches), match);
+
+    if (it != std::end(matches)) {
+      return *it;
+    }
+  }
+  int chain_size = (c_matches.size() / 2);
+
+  bool is_vertical_chain = (c_matches[0].row() == c_matches[chain_size - 1].row());
+
+  return (is_vertical_chain) ? c_matches[(chain_size / 2)] : c_matches[(c_matches.size()) / 2];
+}
+
+}
 
 class Animation {
 public:
@@ -24,9 +52,13 @@ public:
 
   virtual bool LockBoard() const { return true; }
 
+  virtual int Z() const { return 0; }
+
   operator SDL_Renderer *() const { return renderer_; }
 
   Grid &GetGrid() { return grid_; }
+
+  const AssetManager& GetAsset() const { return *asset_manager_; }
 
   void RenderCopy(SpriteID id, const SDL_Rect &rc) {
     SDL_RenderCopy(*this, asset_manager_->GetSpriteAsTexture(id), nullptr, &rc);
@@ -57,8 +89,7 @@ public:
     GetGrid().At(p1_).Unselect();
     GetGrid().At(p2_).Unselect();
 
-    // Ensure the animation always move from
-    // p1 to p2.
+    // Ensure the animation always move from p1 to p2.
     if (p2_.row() > p1_.row() || p2_.col() > p1_.col()) {
       std::swap(p1_, p2_);
     }
@@ -123,12 +154,51 @@ private:
   bool has_match_;
 };
 
+class ScoreSignAnimation : public Animation {
+ public:
+  ScoreSignAnimation(SDL_Renderer *renderer, Grid &grid,
+                     const std::vector<Position> &matches, int chains,
+                     int score,
+                     const std::shared_ptr<AssetManager> &asset_manager)
+      : Animation(renderer, grid, asset_manager), score_(score) {
+    auto p = FindPositionForScoreAnimation(matches, chains);
+
+    int width, height;
+    texture_ = CreateScoreSign(*this, GetAsset().GetFont(Small), std::to_string(score_));
+    SDL_QueryTexture(texture_, nullptr, nullptr, &width, &height);
+    rc_ = { p.x() + Center(kSpriteWidth, width), p.y() + Center(kSpriteHeight, height), width, height };
+    y_ = rc_.y;
+    end_pos_ = y_ - kSpriteHeight;
+  }
+
+  virtual ~ScoreSignAnimation() { SDL_DestroyTexture(texture_); }
+
+  virtual void Start() override {}
+
+  virtual void Update(double delta) override {
+    rc_.y = static_cast<int>(y_);
+    RenderCopy(texture_, rc_);
+    y_ -= delta * 65.0;
+  }
+
+  virtual bool IsReady() override { return (y_ <= end_pos_); }
+
+  virtual int Z() const override { return 1; }
+
+ private:
+  int score_;
+  SDL_Rect rc_;
+  SDL_Texture *texture_ = nullptr;
+  double end_pos_;
+};
+
 class MatchAnimation : public Animation {
 public:
   MatchAnimation(SDL_Renderer *renderer, Grid &grid,
-                 const std::set<Position> &matches,
+                 const std::vector<Position> &matches, int chains,
                  const std::shared_ptr<AssetManager> &asset_manager)
-      : Animation(renderer, grid, asset_manager), matches_(matches) {}
+      : Animation(renderer, grid, asset_manager), matches_(matches.begin(), matches.end()),
+        score_sign_anim_(renderer, grid, matches, chains, GetBasicScore(matches_.size()), asset_manager) {}
 
   virtual void Start() override {
     int i = 0;
@@ -142,9 +212,7 @@ public:
 
   virtual void Update(double delta) override {
     if (!lock_board_) {
-      // Place holder for new animation showing
-      // a score plaque.
-      tick_ += delta;
+      score_sign_anim_.Update(delta);
       return;
     }
     int i = 0;
@@ -165,19 +233,20 @@ public:
 
   virtual bool IsReady() override {
     if (!lock_board_) {
-      // Place holder for new animation showing
-      // a score plaque.
-      return true;
+      return score_sign_anim_.IsReady();
     } else {
       if (scale_w_ <= 0.0 || scale_h_ <= 0.0) {
         for (const auto &m : matches_) {
           GetGrid().At(m) = Element(SpriteID::Empty);
         }
         lock_board_ = false;
+        score_sign_anim_.Start();
       }
     }
     return false;
   }
+
+  virtual int Z() const override { return lock_board_ ? 0 : score_sign_anim_.Z(); }
 
   virtual bool LockBoard() const override { return lock_board_; }
 
@@ -187,7 +256,7 @@ private:
   double scale_w_ = kSpriteWidth;
   double scale_h_ = kSpriteHeight;
   bool lock_board_ = true;
-  double tick_ = 0.0;
+  ScoreSignAnimation score_sign_anim_;
 };
 
 class MoveDownAnimation : public Animation {

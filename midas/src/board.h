@@ -1,6 +1,5 @@
 #pragma once
 
-#include "text.h"
 #include "animation.h"
 
 #include <memory>
@@ -35,7 +34,7 @@ class Board {
   }
 
  protected:
-  void UpdateScore(const std::set<Position>& matches, int chains);
+  void UpdateScore(const std::vector<Position>& matches, int chains);
   void UpdateStatus(int x, int y) const;
   void RenderText(int x, int y, Font font, const std::string& text, TextColor text_color) const {
     ::RenderText(renderer_, x, y, asset_manager_->GetFont(font), text, text_color);

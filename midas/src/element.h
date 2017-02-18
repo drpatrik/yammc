@@ -8,7 +8,7 @@ class Element {
 
   explicit Element(SpriteID id) : sprite_(std::make_shared<Sprite>(id)) {}
 
-  explicit Element(const std::shared_ptr<Sprite>& sprite) : sprite_(sprite) {}
+  explicit Element(const std::shared_ptr<const Sprite>& sprite) : sprite_(sprite) {}
 
   Element(const Element& e) : sprite_(e.sprite_) {}
 
@@ -72,7 +72,7 @@ class Element {
   }
 
  private:
-  std::shared_ptr<Sprite> sprite_;
+  std::shared_ptr<const Sprite> sprite_;
   bool is_selected_ = false;
   bool is_visible = true;
 };

@@ -1,27 +1,28 @@
 #include <gtest/gtest.h>
 #include <initializer_list>
+#include "animation.h"
 #include "grid.h"
 
 class AssetManagerMock : public AssetManagerInterface {
  public:
-  virtual SDL_Texture *GetBackgroundTexture() override { return nullptr; }
-  virtual std::shared_ptr<Sprite> GetSprite(int) override {
-    return std::make_shared<Sprite>(SpriteID::Blue);
+  virtual SDL_Texture *GetBackgroundTexture() const override { return nullptr; }
+  virtual std::shared_ptr<const Sprite> GetSprite(int) const override {
+    return std::make_shared<const Sprite>(SpriteID::Blue);
   }
-  virtual std::shared_ptr<Sprite> GetSprite() override {
-    return std::make_shared<Sprite>(SpriteID::Blue);
+  virtual std::shared_ptr<const Sprite> GetSprite() const override {
+    return std::make_shared<const Sprite>(SpriteID::Blue);
   }
-  virtual std::shared_ptr<Sprite> GetSprite(SpriteID id) override {
-    return std::make_shared<Sprite>(id);
+  virtual std::shared_ptr<const Sprite> GetSprite(SpriteID id) const override {
+    return std::make_shared<const Sprite>(id);
   }
-  virtual std::vector<SDL_Texture*> GetStarTextures() override {
+  virtual std::vector<SDL_Texture*> GetStarTextures() const override {
     return std::vector<SDL_Texture*>();
   }
-  virtual std::vector<SDL_Texture*> GetExplosionTextures() override {
+  virtual std::vector<SDL_Texture*> GetExplosionTextures() const override {
     return std::vector<SDL_Texture*>();
   }
-  virtual SDL_Texture * GetSpriteAsTexture(SpriteID) override { return nullptr; }
-  virtual TTF_Font *GetFont(int) override { return nullptr; }
+  virtual SDL_Texture * GetSpriteAsTexture(SpriteID) const override { return nullptr; }
+  virtual TTF_Font *GetFont(int) const override { return nullptr; }
   virtual void ResetPreviousIds() override {}
 };
 
@@ -33,8 +34,8 @@ int previous_consecutive_matches = -1;
 TEST(MidasTest, FindAllMatchesAndChains) {
   std::vector<std::vector<int>> init_grid {
     {0,   0,  0,  3,  4,  7,  7, 7},  // 0 // 1 chains (0H) 7(h)
-    { 8,  9, 10, 11, 12, 13, 7, 15}, // 1
-    {16, 17, 18, 19, 20, 21, 7, 23}, // 2 // chains (7V)
+    { 8,  9, 10, 11, 12, 13,  7, 15}, // 1
+    {16, 17, 18, 19, 20, 21,  7, 23}, // 2 // chains (7V)
     {24, 25, 26, 27, 28, 29, 30, 31}, // 3
     {32, 33, 34, 28, 28, 28, 38, 39}, // 4 // 1 chain (28H)
     {40, 41, 42, 43, 28, 45, 46, 47}, // 5 // 1 chain (28V)
@@ -44,12 +45,12 @@ TEST(MidasTest, FindAllMatchesAndChains) {
   };
   Grid grid(init_grid, &kAssetManagerMock);
 
-  std::set<Position> matches;
+  std::vector<Position> matches;
   int chains;
 
   std::tie(matches, chains) = grid.GetAllMatches();
 
-  ASSERT_EQ(matches.size(), 19ul);
+  ASSERT_EQ(matches.size(), 21ul);
   ASSERT_EQ(chains, 7);
 }
 
@@ -119,7 +120,7 @@ TEST(MidasTest, FindSolutionAfterSwap) {
   ASSERT_TRUE(!grid.GetMatchesFromSwap(Position(4, 4), Position(4, 5)).first.empty());
 }
 
-void RemoveMatches(Grid& grid, const std::set<Position>& matches) {
+void RemoveMatches(Grid& grid, const std::vector<Position>& matches) {
   for (const auto& match : matches) {
     grid.At(match) = Element(SpriteID::Empty);
   }
@@ -175,7 +176,7 @@ TEST(MidasTest, FindPotentialMatches) {
 
   auto matches = grid.GetMatchesFromSwap(swap_to_match.first, swap_to_match.second);
 
-  ASSERT_EQ(matches.first.size(), 8lu);
+  ASSERT_EQ(matches.first.size(), 9lu);
 
   std::vector<std::vector<int>> init_grid2 {
     {0, 1, 2, 3, 0, 1, 2, 3},
@@ -193,4 +194,29 @@ TEST(MidasTest, FindPotentialMatches) {
   std::tie(matches_found, swap_to_match) = grid_no_matches.FindPotentialMatches();
 
   ASSERT_FALSE(matches_found);
+}
+
+TEST(MidasTest, DISABLED_TestFindPositionForScoreAnimation) {
+  std::vector<std::vector<int>> init_grid {
+    {5, 5, 5, 5, 5, 5, 5, 5}, // 0
+    {5, 1, 1, 1, 5, 5, 5, 5}, // 1
+    {5, 5, 5, 1, 5, 5, 5, 5}, // 2
+    {5, 5, 5, 1, 5, 5, 5, 5}, // 3
+    {5, 5, 5, 5, 5, 5, 5, 5}, // 4
+    {5, 5, 5, 5, 5, 5, 5, 5}, // 5
+    {5, 5, 5, 5, 5, 5, 5, 5}, // 6
+    {5, 5, 5, 5, 5, 5, 5, 5}, // 7
+    {5, 5, 5, 5, 5, 5, 5, 5}, // 8
+
+  };
+  Grid grid(init_grid, &kAssetManagerMock);
+
+  std::vector<Position> matches;
+  int chains;
+
+  std::tie(matches, chains) = grid.GetAllMatches();
+
+  std::cout << matches.size() << std::endl;
+
+  FindPositionForScoreAnimation(matches, chains).Print();
 }

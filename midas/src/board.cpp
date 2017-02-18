@@ -149,7 +149,7 @@ std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) 
     first_selected_ = selected;
   } else {
     if (IsSwapValid(first_selected_, selected)) {
-      std::set<Position> matches;
+      std::vector<Position> matches;
       int chains;
       std::tie(matches, chains) = grid_->GetMatchesFromSwap(first_selected_, selected);
 
@@ -157,7 +157,7 @@ std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) 
 
       if (!matches.empty()) {
         UpdateScore(matches, chains);
-        animations.push_back(std::make_shared<MatchAnimation>(renderer_, *grid_, matches, asset_manager_));
+        animations.push_back(std::make_shared<MatchAnimation>(renderer_, *grid_, matches, chains, asset_manager_));
       }
     } else {
       grid_->At(first_selected_).Unselect();
@@ -199,12 +199,13 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
     animation->Start();
     active_animations_.push_back(animation);
   }
-
+  // Ensure Z-order
+  std::sort(active_animations_.begin(), active_animations_.end(), [](const auto& a, const auto& b) { return a->Z() < b->Z(); });
   RunAnimation(active_animations_, delta_time);
 
   if (CanUpdateBoard(active_animations_) && CanUpdateBoard(queued_animations_)) {
     std::vector<Position> moved_objects;
-    std::set<Position> matches;
+    std::vector<Position> matches;
     int chains;
 
     std::tie(moved_objects, matches, chains) = grid_->Collaps(consecutive_matches_, previous_consecutive_matches_);
@@ -218,7 +219,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
       active_animations_.push_back(animation);
     }
     if (!matches.empty()) {
-      auto animation = std::make_shared<MatchAnimation>(renderer_, *grid_, matches, asset_manager_);
+      auto animation = std::make_shared<MatchAnimation>(renderer_, *grid_, matches, chains, asset_manager_);
       animation->Start();
       active_animations_.push_back(animation);
     }
@@ -228,10 +229,16 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
   SDL_RenderPresent(renderer_);
 }
 
-void Board::UpdateScore(const std::set<Position>& matches, int chains) {
+void Board::UpdateScore(const std::vector<Position>& matches, int chains) {
   high_score_ = std::max(high_score_, score_);
   consecutive_matches_ += chains;
-  score_ += CalculateScore(matches.size(), total_matches_, current_threshold_step_, consecutive_matches_, previous_consecutive_matches_);
+
+  size_t unique_matches = 0;
+
+  if (matches.size() > 0) {
+    unique_matches = std::set<Position>(matches.begin(), matches.end()).size();
+  }
+  score_ += CalculateScore(unique_matches, total_matches_, current_threshold_step_, consecutive_matches_, previous_consecutive_matches_);
 }
 
 void Board::UpdateStatus(int x, int y) const {

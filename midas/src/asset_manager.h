@@ -46,19 +46,19 @@ class Sprite {
   SDL_Texture* selected_ = nullptr;
 };
 
-enum Font { Normal, Bold };
+enum Font { Normal, Bold, Small };
 
 class AssetManagerInterface {
  public:
   virtual ~AssetManagerInterface() {}
-  virtual SDL_Texture *GetBackgroundTexture() = 0;
-  virtual std::shared_ptr<Sprite> GetSprite(int col) = 0;
-  virtual std::shared_ptr<Sprite> GetSprite() = 0;
-  virtual std::shared_ptr<Sprite> GetSprite(SpriteID id) = 0;
-  virtual std::vector<SDL_Texture*> GetStarTextures() = 0;
-  virtual std::vector<SDL_Texture*> GetExplosionTextures() = 0;
-  virtual SDL_Texture *GetSpriteAsTexture(SpriteID id) = 0;
-  virtual TTF_Font *GetFont(int id) = 0;
+  virtual SDL_Texture *GetBackgroundTexture() const = 0;
+  virtual std::shared_ptr<const Sprite> GetSprite(int col) const = 0;
+  virtual std::shared_ptr<const Sprite> GetSprite() const = 0;
+  virtual std::shared_ptr<const Sprite> GetSprite(SpriteID id) const = 0;
+  virtual std::vector<SDL_Texture*> GetStarTextures() const = 0;
+  virtual std::vector<SDL_Texture*> GetExplosionTextures() const= 0;
+  virtual SDL_Texture *GetSpriteAsTexture(SpriteID id) const= 0;
+  virtual TTF_Font *GetFont(int id) const = 0;
   virtual void ResetPreviousIds() = 0;
 };
 
@@ -70,11 +70,11 @@ class AssetManager : public AssetManagerInterface {
 
   virtual ~AssetManager() noexcept;
 
-  virtual SDL_Texture *GetBackgroundTexture() override { return background_texture_; }
+  virtual SDL_Texture *GetBackgroundTexture() const override { return background_texture_; }
 
-  virtual std::shared_ptr<Sprite> GetSprite() override { return sprites_.at(distribution_(engine_)); }
+  virtual std::shared_ptr<const Sprite> GetSprite() const override { return sprites_.at(distribution_(engine_)); }
 
-  virtual std::shared_ptr<Sprite> GetSprite(int col) override {
+  virtual std::shared_ptr<const Sprite> GetSprite(int col) const override {
     SpriteID id;
 
     do {
@@ -84,36 +84,36 @@ class AssetManager : public AssetManagerInterface {
     return sprites_.at(id);
   }
 
-  virtual std::shared_ptr<Sprite> GetSprite(SpriteID id) override {
+  virtual std::shared_ptr<const Sprite> GetSprite(SpriteID id) const override {
     if (id > SpriteID::Empty) {
       return sprites_[SpriteID::Empty];
     }
     return sprites_.at(id);
   }
 
-  virtual std::vector<SDL_Texture*> GetStarTextures() override {
+  virtual std::vector<SDL_Texture*> GetStarTextures() const override {
     return star_textures_;
   }
 
-  virtual std::vector<SDL_Texture*> GetExplosionTextures() override {
+  virtual std::vector<SDL_Texture*> GetExplosionTextures() const override {
     return explosion_texture_;
   }
 
-  virtual SDL_Texture * GetSpriteAsTexture(SpriteID id) override { return (*GetSprite(id))(); }
+  virtual SDL_Texture * GetSpriteAsTexture(SpriteID id) const override { return (*GetSprite(id))(); }
 
-  virtual TTF_Font *GetFont(int id) override { return fonts_[id]; }
+  virtual TTF_Font *GetFont(int id) const override { return fonts_[id]; }
 
   virtual void ResetPreviousIds() override {
     previous_ids_ = std::vector<SpriteID>(kCols, SpriteID::Empty);
   }
 
  private:
-  std::vector<SpriteID> previous_ids_ = std::vector<SpriteID>(kCols, SpriteID::Empty);
   std::vector<TTF_Font *> fonts_;
-  std::vector<std::shared_ptr<Sprite>> sprites_;
+  std::vector<std::shared_ptr<const Sprite>> sprites_;
   std::vector<SDL_Texture*> star_textures_;
   std::vector<SDL_Texture*> explosion_texture_;
   SDL_Texture* background_texture_;
-  std::mt19937 engine_ {std::random_device{}()};
-  std::uniform_int_distribution<int> distribution_{ 0, kNumSprites - 1 };
+  mutable std::vector<SpriteID> previous_ids_ = std::vector<SpriteID>(kCols, SpriteID::Empty);
+  mutable std::mt19937 engine_ {std::random_device{}()};
+  mutable std::uniform_int_distribution<int> distribution_{ 0, kNumSprites - 1 };
 };
