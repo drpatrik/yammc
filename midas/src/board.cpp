@@ -3,12 +3,37 @@
 
 #include <sstream>
 #include <iomanip>
+#include <fstream>
 
 namespace {
 
 const int kWidth = 755;
 const int kHeight = 600;
 const Position kNothingSelected{ -1, -1 };
+const std::string kFilename("midas.shs");
+
+void SaveHighscore(int high_score) {
+  std::ofstream fs(kFilename);
+
+  if (!fs) {
+    std::cout << "Failed to save highscore to disk" << std::endl;
+    return;
+  }
+  fs << high_score << std::endl;
+}
+
+int ReadHighscore() {
+  std::ifstream fs(kFilename);
+
+  if (!fs) {
+    return 0.0;
+  }
+  int high_score;
+
+  fs >> high_score;
+
+  return high_score;
+}
 
 bool IsSwapValid(const Position& old_pos, const Position& new_pos) {
   int c = (new_pos == std::make_pair(old_pos.row() + 1, old_pos.col()));
@@ -20,7 +45,7 @@ bool IsSwapValid(const Position& old_pos, const Position& new_pos) {
   return (c > 0);
 }
 
-bool RunAnimation(std::vector<std::shared_ptr<Animation>>& animations, double delta_time) {
+bool RunAnimation(std::deque<std::shared_ptr<Animation>>& animations, double delta_time) {
   auto it = std::begin(animations);
 
   while (it != std::end(animations)) {
@@ -35,7 +60,7 @@ bool RunAnimation(std::vector<std::shared_ptr<Animation>>& animations, double de
   return (animations.size() == 0);
 }
 
-void RemoveIdleAnimations(std::vector<std::shared_ptr<Animation>>& animations) {
+void RemoveIdleAnimations(std::deque<std::shared_ptr<Animation>>& animations) {
   auto it = std::begin(animations);
 
   while (it != std::end(animations)) {
@@ -45,7 +70,7 @@ void RemoveIdleAnimations(std::vector<std::shared_ptr<Animation>>& animations) {
   }
 }
 
-bool CanUpdateBoard(const std::vector<std::shared_ptr<Animation>>& animations) {
+bool CanUpdateBoard(const std::deque<std::shared_ptr<Animation>>& animations) {
   auto c = std::count_if(std::begin(animations), std::end(animations), [] (const auto& a) { return a->LockBoard(); });
 
   return animations.empty() || (c == 0);
@@ -90,12 +115,15 @@ Board::Board() {
 
   asset_manager_ = std::make_shared<AssetManager>(renderer_);
 
+  high_score_ = ReadHighscore();
+
   Restart();
 }
 
 Board::~Board() noexcept {
   SDL_DestroyRenderer(renderer_);
   SDL_DestroyWindow(window_);
+  SaveHighscore(high_score_);
 }
 
 void Board::Restart() {
@@ -123,7 +151,7 @@ std::vector<std::shared_ptr<Animation>> Board::ShowHint() {
   std::tie(matches_found, match_pos) = grid_->FindPotentialMatches();
 
   if (matches_found) {
-    animations.push_back(std::make_shared<HintAnimation>(renderer_, *grid_, match_pos.first, match_pos.second, asset_manager_));
+    animations.emplace_back(std::make_shared<HintAnimation>(renderer_, *grid_, match_pos.first, match_pos.second, asset_manager_));
   } else {
     assert(false);
   }
@@ -153,11 +181,11 @@ std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) 
       int chains;
       std::tie(matches, chains) = grid_->GetMatchesFromSwap(first_selected_, selected);
 
-      animations.push_back(std::make_shared<SwapAnimation>(renderer_, *grid_, first_selected_, selected, !matches.empty(), asset_manager_));
+      animations.emplace_back(std::make_shared<SwapAnimation>(renderer_, *grid_, first_selected_, selected, !matches.empty(), asset_manager_));
 
       if (!matches.empty()) {
         UpdateScore(matches, chains);
-        animations.push_back(std::make_shared<MatchAnimation>(renderer_, *grid_, matches, chains, asset_manager_));
+        animations.emplace_back(std::make_shared<MatchAnimation>(renderer_, *grid_, matches, chains, asset_manager_));
       }
     } else {
       grid_->At(first_selected_).Unselect();
@@ -177,7 +205,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
   if (timer_animation_->IsReady()) {
     RemoveIdleAnimations(active_animations_);
     if (active_animations_.size() == 0) {
-      active_animations_.push_back(std::make_shared<ExplosionAnimation>(renderer_, *grid_, asset_manager_));
+      active_animations_.emplace_back(std::make_shared<ExplosionAnimation>(renderer_, *grid_, asset_manager_));
     }
     RenderText(400, 233, Font::Bold, "G A M E  O V E R", TextColor::Red);
     UpdateStatus(10, 2);
@@ -191,16 +219,14 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
   SDL_RenderSetClipRect(renderer_, &clip_rc);
 
   for (const auto& a:animations) {
-    queued_animations_.push_back(a);
+    queued_animations_.emplace_back(a);
   }
   if (CanUpdateBoard(active_animations_) && !queued_animations_.empty()) {
     auto animation = queued_animations_.front();
-    queued_animations_.erase(std::begin(queued_animations_));
+    queued_animations_.pop_front();
     animation->Start();
-    active_animations_.push_back(animation);
+    active_animations_.push_front(animation);
   }
-  // Ensure Z-order
-  std::sort(active_animations_.begin(), active_animations_.end(), [](const auto& a, const auto& b) { return a->Z() < b->Z(); });
   RunAnimation(active_animations_, delta_time);
 
   if (CanUpdateBoard(active_animations_) && CanUpdateBoard(queued_animations_)) {
@@ -212,16 +238,18 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
 
     UpdateScore(matches, chains);
 
+    if (!matches.empty()) {
+      auto animation = std::make_shared<MatchAnimation>(renderer_, *grid_, matches, chains, asset_manager_);
+      animation->Start();
+      // Ensure that match animations are first in the queue
+      // for Z-order reasons
+      active_animations_.push_front(animation);
+    }
     for (const auto& obj:moved_objects) {
       auto animation = std::make_shared<MoveDownAnimation>(renderer_, *grid_, obj, asset_manager_);
 
       animation->Start();
-      active_animations_.push_back(animation);
-    }
-    if (!matches.empty()) {
-      auto animation = std::make_shared<MatchAnimation>(renderer_, *grid_, matches, chains, asset_manager_);
-      animation->Start();
-      active_animations_.push_back(animation);
+      active_animations_.push_front(animation);
     }
   }
   SDL_RenderSetClipRect(renderer_, &rc);

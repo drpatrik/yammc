@@ -52,8 +52,6 @@ public:
 
   virtual bool LockBoard() const { return true; }
 
-  virtual int Z() const { return 0; }
-
   operator SDL_Renderer *() const { return renderer_; }
 
   Grid &GetGrid() { return grid_; }
@@ -183,8 +181,6 @@ class ScoreSignAnimation : public Animation {
 
   virtual bool IsReady() override { return (y_ <= end_pos_); }
 
-  virtual int Z() const override { return 1; }
-
  private:
   int score_;
   SDL_Rect rc_;
@@ -245,8 +241,6 @@ public:
     }
     return false;
   }
-
-  virtual int Z() const override { return lock_board_ ? 0 : score_sign_anim_.Z(); }
 
   virtual bool LockBoard() const override { return lock_board_; }
 

@@ -118,7 +118,7 @@ class Grid {
         if (At(row, col).IsEmpty()) {
           std::swap(At(row, col), At(row - 1, col));
           if (!At(row, col).IsEmpty()) {
-            moved_objects.push_back(Position(row, col));
+            moved_objects.emplace_back(row, col);
           }
           grid_is_unstable = true;
         }
@@ -137,7 +137,7 @@ class Grid {
         }
         grid_is_unstable = true;
         grid_is_dirty_ = !filling;
-        moved_objects.push_back(Position(0, col));
+        moved_objects.emplace_back(0, col);
       }
     }
     int chains = 0;

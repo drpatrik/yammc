@@ -3,6 +3,7 @@
 #include "animation.h"
 
 #include <memory>
+#include <deque>
 
 class Board {
  public:
@@ -52,7 +53,7 @@ class Board {
   std::shared_ptr<AssetManager> asset_manager_;
   SDL_Window *window_ = nullptr;
   SDL_Renderer *renderer_ = nullptr;
-  std::vector<std::shared_ptr<Animation>> queued_animations_;
-  std::vector<std::shared_ptr<Animation>> active_animations_;
+  std::deque<std::shared_ptr<Animation>> queued_animations_;
+  std::deque<std::shared_ptr<Animation>> active_animations_;
   std::shared_ptr<TimerAnimation> timer_animation_;
 };
