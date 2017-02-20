@@ -151,9 +151,9 @@ private:
   bool has_match_;
 };
 
-class ScoreSignAnimation : public Animation {
+class ScoreAnimation : public Animation {
  public:
-  ScoreSignAnimation(SDL_Renderer *renderer, Grid &grid,
+  ScoreAnimation(SDL_Renderer *renderer, Grid &grid,
                      const std::vector<Position> &matches, int chains,
                      int score,
                      const std::shared_ptr<AssetManager> &asset_manager)
@@ -168,7 +168,7 @@ class ScoreSignAnimation : public Animation {
     end_pos_ = y_ - kSpriteHeight;
   }
 
-  virtual ~ScoreSignAnimation() { SDL_DestroyTexture(texture_); }
+  virtual ~ScoreAnimation() { SDL_DestroyTexture(texture_); }
 
   virtual void Start() override {}
 
@@ -197,7 +197,7 @@ public:
                  const std::vector<Position> &matches, int chains,
                  const std::shared_ptr<AssetManager> &asset_manager)
       : Animation(renderer, grid, asset_manager), matches_(matches.begin(), matches.end()),
-        score_sign_anim_(renderer, grid, matches, chains, GetBasicScore(matches_.size()), asset_manager) {}
+        score_animation_(renderer, grid, matches, chains, GetBasicScore(matches_.size()), asset_manager) {}
 
   virtual void Start() override {
     int i = 0;
@@ -211,7 +211,7 @@ public:
 
   virtual void Update(double delta) override {
     if (!lock_board_) {
-      score_sign_anim_.Update(delta);
+      score_animation_.Update(delta);
       return;
     }
     int i = 0;
@@ -224,22 +224,22 @@ public:
       RenderCopy(elements_[i], rc);
       i++;
     }
-    x_ += (100 * delta);
-    y_ += (100 * delta);
-    scale_w_ -= (200 * delta);
-    scale_h_ -= (200 * delta);
+    x_ += (75 * delta);
+    y_ += (75 * delta);
+    scale_w_ -= (150 * delta);
+    scale_h_ -= (150 * delta);
   }
 
   virtual bool IsReady() override {
     if (!lock_board_) {
-      return score_sign_anim_.IsReady();
+      return score_animation_.IsReady();
     } else {
       if (scale_w_ <= 0.0 || scale_h_ <= 0.0) {
         for (const auto &m : matches_) {
           GetGrid().At(m) = Element(SpriteID::Empty);
         }
         lock_board_ = false;
-        score_sign_anim_.Start();
+        score_animation_.Start();
       }
     }
     return false;
@@ -253,7 +253,7 @@ private:
   double scale_w_ = kSpriteWidth;
   double scale_h_ = kSpriteHeight;
   bool lock_board_ = true;
-  ScoreSignAnimation score_sign_anim_;
+  ScoreAnimation score_animation_;
 };
 
 class MoveDownAnimation : public Animation {
