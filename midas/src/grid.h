@@ -12,7 +12,7 @@ namespace {
     int unique_chain = 0;
 
     for (InputIt it = first; it != last; ++it) {
-      if(s.insert(*it).second) {
+      if (s.insert(*it).second) {
         unique_chain = 1;
       }
     }

@@ -8,6 +8,7 @@
 
 namespace {
 
+// This function should really return x,y in pixels and interpolate if neccessary
 const Position& FindPositionForScoreAnimation(const std::vector<Position>& c_matches, int chains) {
   if (chains == 1) {
     return c_matches[(c_matches.size() / 2)];
@@ -144,10 +145,10 @@ private:
   int *t2_ = nullptr;
   double pixels_moved_ = 0.0;
   Position p1_;
-  SDL_Rect rc1_;
+  SDL_Rect rc1_ { 0, 0, 0, 0};
   Element element1_ = Element(OwnedByAnimation);
   Position p2_;
-  SDL_Rect rc2_;
+  SDL_Rect rc2_ { 0, 0, 0, 0};
   Element element2_ = Element(OwnedByAnimation);
   bool has_match_;
 };
@@ -162,8 +163,8 @@ class ScoreSignAnimation : public Animation {
     auto p = FindPositionForScoreAnimation(matches, chains);
 
     int width, height;
-    texture_ = CreateScoreSign(*this, GetAsset().GetFont(Small), std::to_string(score_));
-    SDL_QueryTexture(texture_, nullptr, nullptr, &width, &height);
+    std::tie(texture_, width, height) = RenderFramedText(*this, GetAsset().GetFont(Small), std::to_string(score_));
+
     rc_ = { p.x() + Center(kSpriteWidth, width), p.y() + Center(kSpriteHeight, height), width, height };
     y_ = rc_.y;
     end_pos_ = y_ - kSpriteHeight;
@@ -174,9 +175,13 @@ class ScoreSignAnimation : public Animation {
   virtual void Start() override {}
 
   virtual void Update(double delta) override {
+    SDL_Rect clip_rc;
+    SDL_RenderGetClipRect(*this, &clip_rc);
+    SDL_RenderSetClipRect(*this, NULL);
     rc_.y = static_cast<int>(y_);
     RenderCopy(texture_, rc_);
     y_ -= delta * 65.0;
+    SDL_RenderSetClipRect(*this, &clip_rc);
   }
 
   virtual bool IsReady() override { return (y_ <= end_pos_); }
@@ -283,7 +288,7 @@ public:
 
 private:
   Position p_;
-  SDL_Rect rc_;
+  SDL_Rect rc_ { 0, 0, 0, 0 };
   Element element_ = Element(OwnedByAnimation);
 };
 
