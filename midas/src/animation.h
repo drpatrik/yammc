@@ -4,8 +4,6 @@
 #include "score.h"
 #include "text.h"
 
-#include <cassert>
-
 namespace {
 
 // This function should really return x,y in pixels and interpolate if neccessary
@@ -342,9 +340,7 @@ class TimerAnimation : public Animation {
 public:
   TimerAnimation(SDL_Renderer *renderer, Grid &grid,
                  std::shared_ptr<AssetManager> &asset_manager)
-      : Animation(renderer, grid, asset_manager), star_textures_(asset_manager->GetStarTextures()) {
-    assert(coordinates_.size() == kGameTime);
-  }
+      : Animation(renderer, grid, asset_manager), star_textures_(asset_manager->GetStarTextures()) {}
 
   virtual void Start() override {}
 

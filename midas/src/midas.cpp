@@ -24,8 +24,8 @@ class MidasMiner {
   static void Play() {
     Board board;
     bool quit = false;
-    Timer hint_timer(kShowHintTimer);
-    Timer idle_timer(kIdleTimer);
+    Timer show_hint_timer(kShowHintTimer);
+    Timer idle_penalty_timer(kIdlePenaltyTimer);
     DeltaTimer delta_timer;
     std::vector<std::shared_ptr<Animation>> animations;
 
@@ -43,8 +43,8 @@ class MidasMiner {
             if(event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
               board.Restart();
               animations.clear();
-              idle_timer.Reset();
-              hint_timer.Reset();
+              idle_penalty_timer.Reset();
+              show_hint_timer.Reset();
               delta_timer.Reset();
             }
             break;
@@ -70,20 +70,20 @@ class MidasMiner {
             switch (event.button.button) {
               case SDL_BUTTON_LEFT:
                 board.BoardNotIdle();
-                idle_timer.Reset();
-                hint_timer.Reset();
+                idle_penalty_timer.Reset();
+                show_hint_timer.Reset();
                 animations = board.ButtonPressed(Position(pixel_to_row(event.motion.y), pixel_to_col(event.motion.x)));
                 break;
             }
         }
       }
-      if (idle_timer.IsZero()) {
+      if (idle_penalty_timer.IsZero()) {
         board.DecreseScore();
-        idle_timer.Reset();
+        idle_penalty_timer.Reset();
       }
-      if (hint_timer.IsZero()) {
+      if (show_hint_timer.IsZero()) {
         animations = board.ShowHint();
-        hint_timer.Reset();
+        show_hint_timer.Reset();
       }
       board.Render(animations, delta_timer.GetDelta());
     }
