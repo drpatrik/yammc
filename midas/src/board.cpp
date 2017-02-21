@@ -8,9 +8,8 @@
 
 namespace {
 
-const int kWidth = 755;
-const int kHeight = 600;
-const Position kNothingSelected{ -1, -1 };
+const SDL_Rect kClipRect { kBoardStartX, kBoardStartY, kWidth, kHeight };
+const Position kNothingSelected { -1, -1 };
 const std::string kFilename("midas.shs");
 
 void SaveHighscore(int high_score) {
@@ -197,11 +196,8 @@ std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) 
 }
 
 void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, double delta_time) {
-  SDL_Rect rc{ 0, 0, kWidth, kHeight};
-  SDL_Rect clip_rc{ kBoardStartX, kBoardStartY, kWidth, kHeight };
-
   SDL_RenderClear(renderer_);
-  SDL_RenderCopy(renderer_, asset_manager_->GetBackgroundTexture(), nullptr, &rc);
+  SDL_RenderCopy(renderer_, asset_manager_->GetBackgroundTexture(), nullptr, nullptr);
 
   if (timer_animation_->IsReady()) {
     RemoveIdleAnimations(active_animations_);
@@ -217,7 +213,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
   timer_animation_->Update(delta_time);
 
   grid_->Render(renderer_);
-  SDL_RenderSetClipRect(renderer_, &clip_rc);
+  SDL_RenderSetClipRect(renderer_, &kClipRect);
 
   for (const auto& a:animations) {
     queued_animations_.emplace_back(a);
@@ -253,7 +249,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
       active_animations_.push_front(animation);
     }
   }
-  SDL_RenderSetClipRect(renderer_, &rc);
+  SDL_RenderSetClipRect(renderer_, nullptr);
   UpdateStatus(10, 1);
   SDL_RenderPresent(renderer_);
 }

@@ -4,6 +4,8 @@
 
 #include <cstddef>
 
+const int kWidth = 755;
+const int kHeight = 600;
 const double kFPS = 60;
 const int kGameTime = 180;
 const int kFontSize = 25;

@@ -161,7 +161,7 @@ class ScoreAnimation : public Animation {
     auto p = FindPositionForScoreAnimation(matches, chains);
 
     int width, height;
-    std::tie(texture_, width, height) = RenderFramedText(*this, GetAsset().GetFont(Small), std::to_string(score_));
+    std::tie(texture_, width, height) = CreateTextureFromFramedText(*this, GetAsset().GetFont(Small), std::to_string(score_));
 
     rc_ = { p.x() + Center(kSpriteWidth, width), p.y() + Center(kSpriteHeight, height), width, height };
     y_ = rc_.y;
