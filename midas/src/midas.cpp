@@ -4,6 +4,16 @@
 #include <thread>
 #include <sstream>
 
+namespace {
+
+void InsertAnimation(std::vector<std::shared_ptr<Animation>>& animations, const std::shared_ptr<Animation>& a) {
+  if (a) {
+    animations.emplace_back(a);
+  }
+}
+
+}
+
 class MidasMiner {
  public:
   using HighResClock = std::chrono::high_resolution_clock;
@@ -40,7 +50,7 @@ class MidasMiner {
         }
         switch (event.type) {
           case SDL_KEYDOWN:
-            if(event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+            if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
               board.Restart();
               animations.clear();
               idle_penalty_timer.Reset();
@@ -78,11 +88,11 @@ class MidasMiner {
         }
       }
       if (idle_penalty_timer.IsZero()) {
-        board.DecreseScore();
+        InsertAnimation(animations, board.DecreseScore());
         idle_penalty_timer.Reset();
       }
       if (show_hint_timer.IsZero()) {
-        animations = board.ShowHint();
+        InsertAnimation(animations, board.ShowHint());
         show_hint_timer.Reset();
       }
       board.Render(animations, delta_timer.GetDelta());

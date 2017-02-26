@@ -128,6 +128,8 @@ Board::~Board() noexcept {
 
 void Board::Restart() {
   score_ = 0;
+  displayed_score_ = 0;
+  update_score_ticks_ = 0.0;
   consecutive_matches_ = 0;
   previous_consecutive_matches_ = 0;
   total_matches_ = 0;
@@ -139,11 +141,9 @@ void Board::Restart() {
   timer_animation_ = std::make_shared<TimerAnimation>(renderer_, *grid_.get(), asset_manager_);
 }
 
-std::vector<std::shared_ptr<Animation>> Board::ShowHint() {
-  std::vector<std::shared_ptr<Animation>> animations;
-
+std::shared_ptr<Animation> Board::ShowHint() {
   if (timer_animation_->IsReady()) {
-    return animations;
+    return nullptr;
   }
   bool matches_found;
   std::pair<Position, Position> match_pos;
@@ -151,13 +151,20 @@ std::vector<std::shared_ptr<Animation>> Board::ShowHint() {
   std::tie(matches_found, match_pos) = grid_->FindPotentialMatches();
 
   if (matches_found) {
-    animations.emplace_back(std::make_shared<HintAnimation>(renderer_, *grid_, match_pos.first, match_pos.second, asset_manager_));
-  } else {
-    assert(false);
+    return std::make_shared<HintAnimation>(renderer_, *grid_, match_pos.first, match_pos.second, asset_manager_);
   }
-
-  return animations;
+  return nullptr;
 }
+
+std::shared_ptr<Animation> Board::DecreseScore() {
+    if (timer_animation_->IsReady()) {
+      return nullptr;
+    }
+    score_ -= 10;
+    score_ = std::max(score_, 0);
+
+    return nullptr;
+  }
 
 void Board::BoardNotIdle() {
   RemoveIdleAnimations(active_animations_);
@@ -205,7 +212,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
       active_animations_.emplace_back(std::make_shared<ExplosionAnimation>(renderer_, *grid_, asset_manager_));
     }
     RenderText(400, 233, Font::Bold, "G A M E  O V E R", TextColor::Red);
-    UpdateStatus(10, 2);
+    UpdateStatus(delta_time, 10, 2);
     RunAnimation(active_animations_, delta_time);
     SDL_RenderPresent(renderer_);
     return;
@@ -250,7 +257,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
     }
   }
   SDL_RenderSetClipRect(renderer_, nullptr);
-  UpdateStatus(10, 1);
+  UpdateStatus(delta_time, 10, 1);
   SDL_RenderPresent(renderer_);
 }
 
@@ -266,12 +273,26 @@ void Board::UpdateScore(const std::vector<Position>& matches, int chains) {
   score_ += CalculateScore(unique_matches, total_matches_, current_threshold_step_, consecutive_matches_, previous_consecutive_matches_);
 }
 
-void Board::UpdateStatus(int x, int y) const {
+void Board::UpdateStatus(double delta, int x, int y) {
+  TextColor score_color = (displayed_score_ > score_ ) ? TextColor::Red : TextColor::White;
+
   RenderText(x, y, Font::Normal, "Score:", TextColor::White);
-  RenderText(x + 74, y, Font::Normal, std::to_string(score_), TextColor::White);
+
+  if (update_score_ticks_ > 0.1) {
+    if (displayed_score_ < score_) {
+      displayed_score_ = std::min(displayed_score_ + 15, score_);
+    } else if (displayed_score_ > score_) {
+      displayed_score_ = std::max(displayed_score_ - 2, 0);
+      score_color = TextColor::Red;
+    }
+    update_score_ticks_ = 0.0;
+  }
+  RenderText(x + 74, y, Font::Normal, std::to_string(displayed_score_), score_color);
 
   RenderText(x + 520, y, Font::Normal, "High Score:", TextColor::White);
   RenderText(x + 650, y, Font::Normal, std::to_string(high_score_), TextColor::White);
 
   RenderText(x + 72, y + 430, Font::Bold, FormatTime(timer_animation_->GetTimeLeft()), TextColor::Blue);
+
+  update_score_ticks_ += delta;
 }

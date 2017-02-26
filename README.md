@@ -14,7 +14,6 @@
 
         Next update might include anything of the following:
 
-        - Animation when you have been idle too long
         - Sound
         - Use Catch instead of gtest
         - Windows port

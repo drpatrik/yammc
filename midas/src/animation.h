@@ -214,6 +214,11 @@ public:
       score_animation_.Update(delta);
       return;
     }
+    x_ += (75 * delta);
+    y_ += (75 * delta);
+    scale_w_ -= (150 * delta);
+    scale_h_ -= (150 * delta);
+
     int i = 0;
 
     for (const auto &m : matches_) {
@@ -224,10 +229,6 @@ public:
       RenderCopy(elements_[i], rc);
       i++;
     }
-    x_ += (75 * delta);
-    y_ += (75 * delta);
-    scale_w_ -= (150 * delta);
-    scale_h_ -= (150 * delta);
   }
 
   virtual bool IsReady() override {
@@ -438,4 +439,52 @@ private:
   int frame_ = 0;
   double animation_ticks_ = 0.0;
   std::vector<SDL_Texture *> explosion_texture_;
+};
+
+// This effect is not used. I was consider using it when the
+// player has been idle for too long so the score was
+// decreased. But it annoying,
+class ColorModulationEffect : public Animation {
+public:
+  ColorModulationEffect(SDL_Renderer *renderer, Grid &grid,
+                     std::shared_ptr<AssetManager> &asset_manager)
+      : Animation(renderer, grid, asset_manager) {}
+
+  ~ColorModulationEffect() {
+    for (int sprite = Blue; sprite < Empty; ++sprite) {
+      SDL_SetTextureColorMod(GetAsset().GetSpriteAsTexture(static_cast<SpriteID>(sprite)), 255, 255, 255);
+    }
+  }
+
+  virtual void Start() override { srand(time(NULL)); }
+
+  virtual void Update(double delta) override {
+    const double v = (ticks_ <= 0.25) ? delta * 500.0 : -delta * 500;
+
+    r_ -= v;
+    g_ -= v;
+    b_ -= v;
+
+    for (int sprite = Blue; sprite < Empty; ++sprite) {
+      SDL_SetTextureColorMod(GetAsset().GetSpriteAsTexture(static_cast<SpriteID>(sprite)), r_, g_, b_);
+    }
+    ticks_ += delta;
+  }
+
+  virtual bool IsReady() override {
+    if (ticks_ >= 0.5) {
+      return true;
+    }
+    return false;
+  }
+
+  virtual bool Idle() const override { return true; }
+
+  virtual bool LockBoard() const override { return false; }
+
+private:
+  double r_ = 255.0;
+  double g_ = 255.0;
+  double b_ = 255.0;
+  double ticks_ = 0.0;
 };
