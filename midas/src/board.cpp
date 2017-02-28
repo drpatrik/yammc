@@ -280,7 +280,7 @@ void Board::UpdateStatus(double delta, int x, int y) {
 
   if (update_score_ticks_ > 0.1) {
     if (displayed_score_ < score_) {
-      displayed_score_ = std::min(displayed_score_ + 15, score_);
+      displayed_score_ = std::min(displayed_score_ + 25, score_);
     } else if (displayed_score_ > score_) {
       displayed_score_ = std::max(displayed_score_ - 2, 0);
       score_color = TextColor::Red;
