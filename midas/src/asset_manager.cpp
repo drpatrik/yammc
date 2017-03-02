@@ -10,7 +10,7 @@ const size_t kExplosionTextures = 17;
 const std::string kAssetFolder = "../../assets/";
 
 SDL_Texture* LoadTexture(SDL_Renderer *renderer, const std::string& name) {
-  std::string full_path =  kAssetFolder + name;
+  std::string full_path =  kAssetFolder + "art/" + name;
 
   SDL_Surface* surface = SDL_LoadBMP(full_path.c_str());
   if (nullptr == surface) {
@@ -26,7 +26,7 @@ SDL_Texture* LoadTexture(SDL_Renderer *renderer, const std::string& name) {
 }
 
 TTF_Font *LoadFont(const std::string& name, int size) {
-  std::string full_path = kAssetFolder + name;
+  std::string full_path = kAssetFolder + "fonts/" + name;
 
   TTF_Font *font = TTF_OpenFont(full_path.c_str(), size);
 
