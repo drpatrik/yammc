@@ -21,7 +21,7 @@ namespace {
   }
 }
 
-class Grid {
+class Grid final {
  public:
   enum class GenerateType { Fill, NoFill };
 

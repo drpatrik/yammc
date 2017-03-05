@@ -12,7 +12,7 @@
 
 enum SpriteID { Blue, Green, Red, Yellow, Purple, Empty, OwnedByAnimation };
 
-class Sprite {
+class Sprite final {
  public:
   explicit Sprite(SpriteID id) : id_(id) {}
 
@@ -63,7 +63,7 @@ class AssetManagerInterface {
   virtual void ResetPreviousIds() = 0;
 };
 
-class AssetManager : public AssetManagerInterface {
+class AssetManager final : public AssetManagerInterface {
  public:
   explicit AssetManager(SDL_Renderer *renderer);
 

@@ -3,7 +3,7 @@
 #include <chrono>
 #include <algorithm>
 
-class Timer {
+class Timer final {
  public:
   using SystemClock = std::chrono::system_clock;
   using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
@@ -29,7 +29,7 @@ class Timer {
 };
 
 // Adapted from http://headerphile.com/sdl2/sdl2-part-9-no-more-delays/
-class DeltaTimer {
+class DeltaTimer final {
 public:
   using HighResClock = std::chrono::high_resolution_clock;
   using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;

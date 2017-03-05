@@ -19,6 +19,7 @@ enum SoundEffect {
 class Audio final {
  public:
   Audio();
+
   ~Audio() noexcept;
 
   void PlayMusic() const {

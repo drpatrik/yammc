@@ -5,7 +5,7 @@
 #include <memory>
 #include <deque>
 
-class Board {
+class Board final {
  public:
   Board();
   Board(const Board&) = delete;

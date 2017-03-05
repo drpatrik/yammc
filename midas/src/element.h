@@ -2,7 +2,7 @@
 
 #include "asset_manager.h"
 
-class Element {
+class Element final {
  public:
   Element() : sprite_(std::make_shared<Sprite>(SpriteID::Empty)) {}
 

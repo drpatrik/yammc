@@ -75,12 +75,12 @@ private:
   std::shared_ptr<AssetManager> asset_manager_;
 };
 
-class SwapAnimation : public Animation {
+class SwapAnimation final : public Animation {
 public:
   SwapAnimation(SDL_Renderer *renderer, Grid &grid, const Position &p1,
                 const Position &p2, bool has_match,
                 const std::shared_ptr<AssetManager> &asset_manager)
-      : Animation(renderer, grid, asset_manager), p1_(p1), p2_(p2), has_match_(has_match) {}
+      : Animation(renderer, grid, asset_manager), p1_(p1), p2_(p2), has_match_(has_match), play_sound_(!has_match) {}
 
   virtual void Start() override {
     GetGrid().At(p1_).Unselect();
@@ -127,13 +127,15 @@ public:
 
   virtual bool IsReady() override {
     if (pixels_moved_ < ((has_match_) ? kSpriteWidth : kSpriteWidth * 2.0)) {
+      if (pixels_moved_ >= kSpriteWidth && play_sound_) {
+        GetAsset().GetAudio().PlaySound(SoundEffect::MoveUnSuccessful);
+        play_sound_ = false;
+      }
       return false;
     }
     if (has_match_) {
       GetAsset().GetAudio().PlaySound(SoundEffect::MoveSuccessful);
       std::swap(element1_, element2_);
-    } else {
-      GetAsset().GetAudio().PlaySound(SoundEffect::MoveUnSuccessful);
     }
     std::swap(element1_, GetGrid().At(p1_));
     std::swap(element2_, GetGrid().At(p2_));
@@ -152,9 +154,10 @@ private:
   SDL_Rect rc2_ { 0, 0, 0, 0};
   Element element2_ = Element(OwnedByAnimation);
   bool has_match_;
+  bool play_sound_;
 };
 
-class ScoreAnimation : public Animation {
+class ScoreAnimation final : public Animation {
  public:
   ScoreAnimation(SDL_Renderer *renderer, Grid &grid,
                      const std::vector<Position> &matches, int chains,
@@ -210,7 +213,7 @@ class ScoreAnimation : public Animation {
   double end_pos_;
 };
 
-class MatchAnimation : public Animation {
+class MatchAnimation final : public Animation {
 public:
   MatchAnimation(SDL_Renderer *renderer, Grid &grid,
                  const std::vector<Position> &matches, int chains,
@@ -276,7 +279,7 @@ private:
   ScoreAnimation score_animation_;
 };
 
-class MoveDownAnimation : public Animation {
+class MoveDownAnimation final : public Animation {
 public:
   MoveDownAnimation(SDL_Renderer *renderer, Grid &grid, const Position &p,
                     const std::shared_ptr<AssetManager> &asset_manager)
@@ -313,7 +316,7 @@ private:
   Element element_ = Element(OwnedByAnimation);
 };
 
-class HintAnimation : public Animation {
+class HintAnimation final : public Animation {
 public:
   HintAnimation(SDL_Renderer *renderer, Grid &grid, const Position &p1,
                 const Position &p2,
@@ -360,7 +363,7 @@ private:
   int revolutions_ = 0;
 };
 
-class TimerAnimation : public Animation {
+class TimerAnimation final : public Animation {
 public:
   TimerAnimation(SDL_Renderer *renderer, Grid &grid,
                  std::shared_ptr<AssetManager> &asset_manager)
@@ -435,13 +438,12 @@ private:
   };
 };
 
-class ExplosionAnimation : public Animation {
+class ExplosionAnimation final : public Animation {
 public:
   ExplosionAnimation(SDL_Renderer *renderer, Grid &grid,
                      std::shared_ptr<AssetManager> &asset_manager)
       : Animation(renderer, grid, asset_manager), explosion_texture_(asset_manager->GetExplosionTextures()) {
     GetAsset().GetAudio().StopMusic();
-    GetAsset().GetAudio().PlaySound(SoundEffect::Explosion);
   }
 
   virtual void Start() override {}
@@ -470,7 +472,7 @@ private:
 // This effect is not used. I was consider using it when the
 // player has been idle for too long so the score was
 // decreased. But it annoying,
-class ColorModulationEffect : public Animation {
+class ColorModulationEffect final : public Animation {
 public:
   ColorModulationEffect(SDL_Renderer *renderer, Grid &grid,
                      std::shared_ptr<AssetManager> &asset_manager)
