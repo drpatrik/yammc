@@ -14,8 +14,7 @@ SDL_Texture* LoadTexture(SDL_Renderer *renderer, const std::string& name) {
 
   SDL_Surface* surface = SDL_LoadBMP(full_path.c_str());
   if (nullptr == surface) {
-    std::cout << "Failed to load surface " << full_path
-              << " error : " << SDL_GetError() << std::endl;
+    std::cout << "Failed to load surface " << full_path << " error : " << SDL_GetError() << std::endl;
     exit(-1);
   }
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -31,8 +30,7 @@ TTF_Font *LoadFont(const std::string& name, int size) {
   TTF_Font *font = TTF_OpenFont(full_path.c_str(), size);
 
   if (font == nullptr) {
-    std::cout << "Failed to load text " << full_path
-              << " error : " << SDL_GetError() << std::endl;
+    std::cout << "Failed to load text " << full_path << " error : " << SDL_GetError() << std::endl;
     exit(-1);
   }
 

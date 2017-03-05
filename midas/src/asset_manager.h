@@ -2,66 +2,28 @@
 
 #include "constants.h"
 #include "audio.h"
+#include "sprite.h"
 
 #include <string>
 #include <vector>
 #include <random>
 
-#include <SDL.h>
 #include <SDL_TTF.h>
-
-enum SpriteID { Blue, Green, Red, Yellow, Purple, Empty, OwnedByAnimation };
-
-class Sprite final {
- public:
-  explicit Sprite(SpriteID id) : id_(id) {}
-
-  Sprite(SpriteID id, SDL_Texture *sprite, SDL_Texture *selected) : id_(id), sprite_(sprite), selected_(selected) {
-    Uint32 format;
-    int access;
-
-    SDL_QueryTexture(sprite, &format, &access, &width_, &height_);
-  }
-
-  Sprite(const Sprite& s) : id_(s.id_), sprite_(s.sprite_), width_(s.width_), height_(s.height_), selected_(s.selected_) {}
-
-  auto id() const { return id_; }
-
-  SDL_Texture* operator()() const { return sprite_; }
-
-  SDL_Texture* sprite() const { return sprite_; }
-
-  SDL_Texture* selected_sprite() const { return selected_; }
-
-  int width() const { return width_; }
-
-  int height() const { return height_; }
-
-  bool IsEmpty() const { return (id_ == SpriteID::Empty || id_ == SpriteID::OwnedByAnimation); }
-
- private:
-  const SpriteID id_;
-  SDL_Texture* sprite_ = nullptr;
-  int width_ = 0;
-  int height_ = 0;
-  SDL_Texture* selected_ = nullptr;
-};
-
-enum Font { Normal, Bold, Small };
 
 class AssetManagerInterface {
  public:
   virtual ~AssetManagerInterface() {}
-  virtual SDL_Texture *GetBackgroundTexture() const = 0;
-  virtual std::shared_ptr<const Sprite> GetSprite(int col) const = 0;
+
   virtual std::shared_ptr<const Sprite> GetSprite() const = 0;
-  virtual std::shared_ptr<const Sprite> GetSprite(SpriteID id) const = 0;
-  virtual std::vector<SDL_Texture*> GetStarTextures() const = 0;
-  virtual std::vector<SDL_Texture*> GetExplosionTextures() const= 0;
-  virtual SDL_Texture *GetSpriteAsTexture(SpriteID id) const= 0;
-  virtual TTF_Font *GetFont(int id) const = 0;
+
+  virtual std::shared_ptr<const Sprite> GetSprite(int) const = 0;
+
+  virtual std::shared_ptr<const Sprite> GetSprite(SpriteID) const = 0;
+
   virtual void ResetPreviousIds() = 0;
 };
+
+enum Font { Normal, Bold, Small };
 
 class AssetManager final : public AssetManagerInterface {
  public:
@@ -71,7 +33,7 @@ class AssetManager final : public AssetManagerInterface {
 
   virtual ~AssetManager() noexcept;
 
-  virtual SDL_Texture *GetBackgroundTexture() const override { return background_texture_; }
+  virtual SDL_Texture *GetBackgroundTexture() const { return background_texture_; }
 
   virtual std::shared_ptr<const Sprite> GetSprite() const override { return sprites_.at(distribution_(engine_)); }
 
@@ -92,21 +54,19 @@ class AssetManager final : public AssetManagerInterface {
     return sprites_.at(id);
   }
 
-  virtual std::vector<SDL_Texture*> GetStarTextures() const override {
+  virtual std::vector<SDL_Texture*> GetStarTextures() const {
     return star_textures_;
   }
 
-  virtual std::vector<SDL_Texture*> GetExplosionTextures() const override {
+  virtual std::vector<SDL_Texture*> GetExplosionTextures() const {
     return explosion_texture_;
   }
 
-  virtual SDL_Texture * GetSpriteAsTexture(SpriteID id) const override { return (*GetSprite(id))(); }
+  virtual SDL_Texture * GetSpriteAsTexture(SpriteID id) const { return (*GetSprite(id))(); }
 
-  virtual TTF_Font *GetFont(int id) const override { return fonts_[id]; }
+  virtual TTF_Font *GetFont(int id) const { return fonts_[id]; }
 
-  virtual void ResetPreviousIds() override {
-    previous_ids_ = std::vector<SpriteID>(kCols, SpriteID::Empty);
-  }
+  virtual void ResetPreviousIds() override { previous_ids_ = std::vector<SpriteID>(kCols, SpriteID::Empty); }
 
   virtual const Audio& GetAudio() const { return audio_; }
 

@@ -5,24 +5,18 @@
 
 class AssetManagerMock : public AssetManagerInterface {
  public:
-  virtual SDL_Texture *GetBackgroundTexture() const override { return nullptr; }
-  virtual std::shared_ptr<const Sprite> GetSprite(int) const override {
-    return std::make_shared<const Sprite>(SpriteID::Blue);
-  }
   virtual std::shared_ptr<const Sprite> GetSprite() const override {
     return std::make_shared<const Sprite>(SpriteID::Blue);
   }
+
+  virtual std::shared_ptr<const Sprite> GetSprite(int) const override {
+    return std::make_shared<const Sprite>(SpriteID::Blue);
+  }
+
   virtual std::shared_ptr<const Sprite> GetSprite(SpriteID id) const override {
     return std::make_shared<const Sprite>(id);
   }
-  virtual std::vector<SDL_Texture*> GetStarTextures() const override {
-    return std::vector<SDL_Texture*>();
-  }
-  virtual std::vector<SDL_Texture*> GetExplosionTextures() const override {
-    return std::vector<SDL_Texture*>();
-  }
-  virtual SDL_Texture * GetSpriteAsTexture(SpriteID) const override { return nullptr; }
-  virtual TTF_Font *GetFont(int) const override { return nullptr; }
+
   virtual void ResetPreviousIds() override {}
 };
 

@@ -29,6 +29,7 @@ Audio::Audio() {
 
   if (nullptr == music_) {
     std::cout << "Failed to load: " << full_path << ". Error: " << Mix_GetError() << std::endl;
+    exit(-1);
   }
   Mix_VolumeMusic(MIX_MAX_VOLUME / 3);
 
@@ -39,6 +40,7 @@ Audio::Audio() {
 
     if (nullptr == chunk) {
       std::cout << "Failed to load: " << full_path << ". Error: " << Mix_GetError() << std::endl;
+      exit(-1);
     }
     sound_effects_.push_back(chunk);
     Mix_VolumeChunk(chunk, MIX_MAX_VOLUME);
