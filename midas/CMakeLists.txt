@@ -3,12 +3,15 @@ project(midas)
 add_definitions(-DASSETS_FOLDER="${midas_SOURCE_DIR}/assets/" )
 
 include_directories(${SDL2_INCLUDE_DIR} ${SDL2_TTF_INCLUDE_DIR})
+include_directories(${SDL2_INCLUDE_DIR} ${SDL2_MIXER_INCLUDE_DIRS})
 
 file(GLOB_RECURSE SourceFiles src/*.cpp)
 add_executable(midas ${SourceFiles})
 
 target_link_libraries(midas ${SDL2_LIBRARY})
 target_link_libraries(midas ${SDL2_TTF_LIBRARIES})
+target_link_libraries(midas ${SDL2_MIXER_LIBRARIES})
+
 install(TARGETS midas RUNTIME DESTINATION ${BIN_DIR})
 
 # Remove everything below if you do not want to

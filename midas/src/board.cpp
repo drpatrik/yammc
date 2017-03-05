@@ -139,6 +139,7 @@ void Board::Restart() {
   first_selected_ = kNothingSelected;
   grid_ = std::make_unique<Grid>(kRows, kCols, asset_manager_.get());
   timer_animation_ = std::make_shared<TimerAnimation>(renderer_, *grid_.get(), asset_manager_);
+  asset_manager_->GetAudio().PlayMusic();
 }
 
 std::shared_ptr<Animation> Board::ShowHint() {
@@ -159,6 +160,9 @@ std::shared_ptr<Animation> Board::ShowHint() {
 std::shared_ptr<Animation> Board::DecreseScore() {
     if (timer_animation_->IsReady()) {
       return nullptr;
+    }
+    if (score_ > 0) {
+      asset_manager_->GetAudio().PlaySound(TimesUp, 500);
     }
     score_ -= 10;
     score_ = std::max(score_, 0);
@@ -280,7 +284,7 @@ void Board::UpdateStatus(double delta, int x, int y) {
 
   if (update_score_ticks_ > 0.1) {
     if (displayed_score_ < score_) {
-      displayed_score_ = std::min(displayed_score_ + 25, score_);
+      displayed_score_ = std::min(displayed_score_ + 50, score_);
     } else if (displayed_score_ > score_) {
       displayed_score_ = std::max(displayed_score_ - 2, 0);
       score_color = TextColor::Red;

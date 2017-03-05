@@ -52,7 +52,7 @@ std::vector<SDL_Texture*> LoadTextures(SDL_Renderer *renderer, const std::string
 
 }
 
-AssetManager::AssetManager(SDL_Renderer *renderer) {
+AssetManager::AssetManager(SDL_Renderer *renderer) : audio_() {
   std::vector<SpriteID> ids_ { Blue, Green, Red, Yellow, Purple };
   std::vector<std::string> sprites { "Blue.bmp", "Green.bmp", "Red.bmp", "Yellow.bmp", "Purple.bmp" };
   std::vector<std::string> selected { "BlueSelected.bmp", "GreenSelected.bmp", "RedSelected.bmp", "YellowSelected.bmp", "PurpleSelected.bmp" };

@@ -28,6 +28,8 @@ class Board {
 
   const Element& operator()(int row, int col) const { return grid_->At(row, col); }
 
+  const AssetManager& GetAsset() const { return *asset_manager_; }
+
  protected:
   void UpdateScore(const std::vector<Position>& matches, int chains);
   void UpdateStatus(double delta, int x, int y);

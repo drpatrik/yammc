@@ -130,7 +130,10 @@ public:
       return false;
     }
     if (has_match_) {
+      GetAsset().GetAudio().PlaySound(SoundEffect::MoveSuccessful);
       std::swap(element1_, element2_);
+    } else {
+      GetAsset().GetAudio().PlaySound(SoundEffect::MoveUnSuccessful);
     }
     std::swap(element1_, GetGrid().At(p1_));
     std::swap(element2_, GetGrid().At(p2_));
@@ -157,8 +160,8 @@ class ScoreAnimation : public Animation {
                      const std::vector<Position> &matches, int chains,
                      int score,
                      const std::shared_ptr<AssetManager> &asset_manager)
-      : Animation(renderer, grid, asset_manager), score_(score) {
-    auto p = FindPositionForScoreAnimation(matches, chains);
+      : Animation(renderer, grid, asset_manager), score_(score), chains_(chains) {
+    auto p = FindPositionForScoreAnimation(matches, chains_);
 
     int width, height;
     std::tie(texture_, width, height) = CreateTextureFromFramedText(*this, GetAsset().GetFont(Small), std::to_string(score_));
@@ -170,7 +173,22 @@ class ScoreAnimation : public Animation {
 
   virtual ~ScoreAnimation() { SDL_DestroyTexture(texture_); }
 
-  virtual void Start() override {}
+  virtual void Start() override {
+    switch (chains_) {
+      case 1:
+        GetAsset().GetAudio().PlaySound(SoundEffect::RemovedOneChain);
+        break;
+      case 2:
+        GetAsset().GetAudio().PlaySound(SoundEffect::RemovedTwoChains);
+        break;
+      case 3:
+        GetAsset().GetAudio().PlaySound(SoundEffect::RemovedThreeChains);
+        break;
+      default:
+        GetAsset().GetAudio().PlaySound(SoundEffect::RemovedManyChains);
+        break;
+    }
+  }
 
   virtual void Update(double delta) override {
     SDL_Rect clip_rc;
@@ -186,6 +204,7 @@ class ScoreAnimation : public Animation {
 
  private:
   int score_;
+  int chains_;
   SDL_Rect rc_;
   SDL_Texture *texture_ = nullptr;
   double end_pos_;
@@ -282,6 +301,9 @@ public:
       return false;
     }
     std::swap(element_, GetGrid().At(p_));
+    if (p_.row() + 1 >= kRows || !GetGrid().At(p_.row() + 1, p_.col()).IsEmpty()) {
+      GetAsset().GetAudio().PlaySound(SoundEffect::DiamondLanding);
+    }
     return true;
   }
 
@@ -306,6 +328,7 @@ public:
   virtual void Start() override {
     std::swap(e1_, GetGrid().At(p1_));
     std::swap(e2_, GetGrid().At(p2_));
+    GetAsset().GetAudio().PlaySound(SoundEffect::Hint);
   }
 
   virtual void Update(double delta) override {
@@ -416,7 +439,10 @@ class ExplosionAnimation : public Animation {
 public:
   ExplosionAnimation(SDL_Renderer *renderer, Grid &grid,
                      std::shared_ptr<AssetManager> &asset_manager)
-      : Animation(renderer, grid, asset_manager), explosion_texture_(asset_manager->GetExplosionTextures()) {}
+      : Animation(renderer, grid, asset_manager), explosion_texture_(asset_manager->GetExplosionTextures()) {
+    GetAsset().GetAudio().StopMusic();
+    GetAsset().GetAudio().PlaySound(SoundEffect::Explosion);
+  }
 
   virtual void Start() override {}
 

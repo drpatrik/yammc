@@ -1,6 +1,7 @@
 #pragma once
 
 #include "constants.h"
+#include "audio.h"
 
 #include <string>
 #include <vector>
@@ -107,12 +108,15 @@ class AssetManager : public AssetManagerInterface {
     previous_ids_ = std::vector<SpriteID>(kCols, SpriteID::Empty);
   }
 
+  virtual const Audio& GetAudio() const { return audio_; }
+
  private:
   std::vector<TTF_Font *> fonts_;
   std::vector<std::shared_ptr<const Sprite>> sprites_;
   std::vector<SDL_Texture*> star_textures_;
   std::vector<SDL_Texture*> explosion_texture_;
   SDL_Texture* background_texture_;
+  Audio audio_;
   mutable std::vector<SpriteID> previous_ids_ = std::vector<SpriteID>(kCols, SpriteID::Empty);
   mutable std::mt19937 engine_ {std::random_device{}()};
   mutable std::uniform_int_distribution<int> distribution_{ 0, kNumSprites - 1 };

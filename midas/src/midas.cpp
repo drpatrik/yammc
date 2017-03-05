@@ -27,13 +27,22 @@ class MidasMiner {
       std::cout << "TTF_Init Error: " << TTF_GetError() << std::endl;
       exit(-1);
     }
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0) {
+      std::cout << "Mix_OpenAudio Error: " << Mix_GetError() << std::endl;
+      exit(-1);
+    }
   }
 
-  ~MidasMiner() = default;
+  ~MidasMiner() {
+    SDL_Quit();
+    Mix_CloseAudio();
+    Mix_Quit();
+  }
 
   static void Play() {
     Board board;
     bool quit = false;
+    bool music_on = true;
     Timer show_hint_timer(kShowHintTimer);
     Timer idle_penalty_timer(kIdlePenaltyTimer);
     DeltaTimer delta_timer;
@@ -56,6 +65,14 @@ class MidasMiner {
               idle_penalty_timer.Reset();
               show_hint_timer.Reset();
               delta_timer.Reset();
+            }
+            if (event.key.keysym.scancode == SDL_SCANCODE_M) {
+              music_on = !music_on;
+            }
+            if (music_on) {
+              board.GetAsset().GetAudio().PlayMusic();
+            } else {
+              board.GetAsset().GetAudio().StopMusic();
             }
             break;
 #if !defined(NDEBUG)
@@ -97,7 +114,6 @@ class MidasMiner {
       }
       board.Render(animations, delta_timer.GetDelta());
     }
-    SDL_Quit();
   }
 };
 
