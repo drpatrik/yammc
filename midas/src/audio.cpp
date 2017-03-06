@@ -12,8 +12,8 @@ std::vector<std::string> kSoundEffects = {
   "move-unsuccessful.wav",
   "removed-one-chain.wav",
   "removed-two-chains.wav",
-  "removed-three-chains.wav",
   "removed-many-chains.wav",
+  "threshold_reached.wav",
   "times-up.wav",
   "hint.wav",
 };
@@ -23,6 +23,8 @@ const std::string kAssetFolder = "../../assets/sfx/";
 }
 
 Audio::Audio() {
+  Mix_AllocateChannels(16);
+
   std::string full_path = kAssetFolder + "music-loop.wav";
 
   music_ = Mix_LoadMUS(full_path.c_str());

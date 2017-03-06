@@ -8,7 +8,7 @@
 
 namespace {
 
-const SDL_Rect kClipRect { kBoardStartX, kBoardStartY, kWidth, kHeight };
+const SDL_Rect kClipRect { 0, kBoardStartY, kWidth, kHeight }; // We only care about Y position
 const Position kNothingSelected { -1, -1 };
 const std::string kFilename("midas.shs");
 
@@ -64,8 +64,9 @@ void RemoveIdleAnimations(std::deque<std::shared_ptr<Animation>>& animations) {
   auto it = std::begin(animations);
 
   while (it != std::end(animations)) {
-    if ((*it)->Idle())
+    if ((*it)->Idle()) {
       it = animations.erase(it);
+    }
     break;
   }
 }
@@ -76,15 +77,22 @@ bool CanUpdateBoard(const std::deque<std::shared_ptr<Animation>>& animations) {
   return animations.empty() || (c == 0);
 }
 
-int CalculateScore(size_t matches, int& total_matches, int& current_threshold_step, int consecutive_matches, int& previous_consecutive_matches) {
+std::pair<int, bool> CalculateScore(size_t matches,
+                                    int& total_matches,
+                                    int& current_threshold_step,
+                                    int consecutive_matches,
+                                    int& previous_consecutive_matches) {
   int score = 0;
+  int total_score = 0;
+  bool threshold_reached;
 
   total_matches += matches;
   score += GetBasicScore(matches);
-  score += GetScoreForTotalMatches(total_matches, current_threshold_step);
   score += GetScoreForConsecutiveMatches(consecutive_matches, previous_consecutive_matches);
 
-  return score;
+  std::tie(total_score, threshold_reached) = GetScoreForTotalMatches(total_matches, current_threshold_step);
+
+  return std::make_pair(score + total_score, threshold_reached);
 }
 
 std::string FormatTime(size_t seconds) {
@@ -213,9 +221,9 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
   if (timer_animation_->IsReady()) {
     RemoveIdleAnimations(active_animations_);
     if (active_animations_.size() == 0) {
-      active_animations_.emplace_back(std::make_shared<ExplosionAnimation>(renderer_, *grid_, asset_manager_));
+      ActivateAnimation<ExplosionAnimation>(renderer_, *grid_, asset_manager_);
     }
-    RenderText(400, 233, Font::Bold, "G A M E  O V E R", TextColor::Red);
+    RenderText(400, 233, Font::Bold, "G A M E  O V E R", Color::Red);
     UpdateStatus(delta_time, 10, 2);
     RunAnimation(active_animations_, delta_time);
     SDL_RenderPresent(renderer_);
@@ -247,17 +255,10 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
     UpdateScore(matches, chains);
 
     if (!matches.empty()) {
-      auto animation = std::make_shared<MatchAnimation>(renderer_, *grid_, matches, chains, asset_manager_);
-      animation->Start();
-      // Ensure that match animations are first in the queue
-      // for Z-order reasons
-      active_animations_.push_front(animation);
+      ActivateAnimation<MatchAnimation>(renderer_, *grid_, matches, chains, asset_manager_);
     }
     for (const auto& obj:moved_objects) {
-      auto animation = std::make_shared<MoveDownAnimation>(renderer_, *grid_, obj, asset_manager_);
-
-      animation->Start();
-      active_animations_.push_front(animation);
+      ActivateAnimation<MoveDownAnimation>(renderer_, *grid_, obj, asset_manager_);
     }
   }
   SDL_RenderSetClipRect(renderer_, nullptr);
@@ -274,29 +275,40 @@ void Board::UpdateScore(const std::vector<Position>& matches, int chains) {
   if (matches.size() > 0) {
     unique_matches = std::set<Position>(matches.begin(), matches.end()).size();
   }
-  score_ += CalculateScore(unique_matches, total_matches_, current_threshold_step_, consecutive_matches_, previous_consecutive_matches_);
+  int score;
+  bool threshold_reached;
+
+  std::tie(score, threshold_reached) = CalculateScore(unique_matches, total_matches_, current_threshold_step_,
+                                                      consecutive_matches_, previous_consecutive_matches_);
+
+  score_ += score;
+  if (threshold_reached) {
+    // This animation does not lock the board so we can add it directly to the
+    // active animation queue
+    ActivateAnimation<ThresholdReachedAnimation>(renderer_, *grid_, asset_manager_, total_matches_);
+  }
 }
 
 void Board::UpdateStatus(double delta, int x, int y) {
-  TextColor score_color = (displayed_score_ > score_ ) ? TextColor::Red : TextColor::White;
+  Color score_color = (displayed_score_ > score_ ) ? Color::Red : Color::White;
 
-  RenderText(x, y, Font::Normal, "Score:", TextColor::White);
+  RenderText(x, y, Font::Normal, "Score:", Color::White);
 
   if (update_score_ticks_ > 0.1) {
     if (displayed_score_ < score_) {
       displayed_score_ = std::min(displayed_score_ + 50, score_);
     } else if (displayed_score_ > score_) {
       displayed_score_ = std::max(displayed_score_ - 2, 0);
-      score_color = TextColor::Red;
+      score_color = Color::Red;
     }
     update_score_ticks_ = 0.0;
   }
   RenderText(x + 74, y, Font::Normal, std::to_string(displayed_score_), score_color);
 
-  RenderText(x + 520, y, Font::Normal, "High Score:", TextColor::White);
-  RenderText(x + 650, y, Font::Normal, std::to_string(high_score_), TextColor::White);
+  RenderText(x + 520, y, Font::Normal, "High Score:", Color::White);
+  RenderText(x + 650, y, Font::Normal, std::to_string(high_score_), Color::White);
 
-  RenderText(x + 72, y + 430, Font::Bold, FormatTime(timer_animation_->GetTimeLeft()), TextColor::Blue);
+  RenderText(x + 72, y + 430, Font::Bold, FormatTime(timer_animation_->GetTimeLeft()), Color::Blue);
 
   update_score_ticks_ += delta;
 }

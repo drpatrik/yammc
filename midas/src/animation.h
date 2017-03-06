@@ -167,11 +167,11 @@ class ScoreAnimation final : public Animation {
     auto p = FindPositionForScoreAnimation(matches, chains_);
 
     int width, height;
-    std::tie(texture_, width, height) = CreateTextureFromFramedText(*this, GetAsset().GetFont(Small), std::to_string(score_));
+    std::tie(texture_, width, height) = CreateTextureFromFramedText(*this, GetAsset().GetFont(Small), std::to_string(score_), Color::White, Color::Black);
 
     rc_ = { p.x() + Center(kSpriteWidth, width), p.y() + Center(kSpriteHeight, height), width, height };
     y_ = rc_.y;
-    end_pos_ = y_ - kSpriteHeight;
+    end_pos_ = y_ - kSpriteHeightTimes1_5;
   }
 
   virtual ~ScoreAnimation() { SDL_DestroyTexture(texture_); }
@@ -183,9 +183,6 @@ class ScoreAnimation final : public Animation {
         break;
       case 2:
         GetAsset().GetAudio().PlaySound(SoundEffect::RemovedTwoChains);
-        break;
-      case 3:
-        GetAsset().GetAudio().PlaySound(SoundEffect::RemovedThreeChains);
         break;
       default:
         GetAsset().GetAudio().PlaySound(SoundEffect::RemovedManyChains);
@@ -469,50 +466,45 @@ private:
   std::vector<SDL_Texture *> explosion_texture_;
 };
 
-// This effect is not used. I was consider using it when the
-// player has been idle for too long so the score was
-// decreased. But it annoying,
-class ColorModulationEffect final : public Animation {
+class ThresholdReachedAnimation final : public Animation {
 public:
-  ColorModulationEffect(SDL_Renderer *renderer, Grid &grid,
-                     std::shared_ptr<AssetManager> &asset_manager)
-      : Animation(renderer, grid, asset_manager) {}
+  ThresholdReachedAnimation(SDL_Renderer *renderer, Grid &grid,
+                            std::shared_ptr<AssetManager> &asset_manager, int value)
+      : Animation(renderer, grid, asset_manager) {
+    const std::string kText = std::to_string(value - (value % kThresholdMultiplier)) + " diamonds cleared";
 
-  ~ColorModulationEffect() {
-    for (int sprite = Blue; sprite < Empty; ++sprite) {
-      SDL_SetTextureColorMod(GetAsset().GetSpriteAsTexture(static_cast<SpriteID>(sprite)), 255, 255, 255);
-    }
+    int width, height;
+    std::tie(texture_, width, height) = CreateTextureFromText(*this, GetAsset().GetFont(Large), kText, Color::White);
+
+    rc_ = { kBlackAreaX + Center(kBlackAreadWidth, width), kBlackAreaY + Center(kBlackAreadHeight, height) , width, height };
   }
 
-  virtual void Start() override { srand(time(NULL)); }
+  ~ThresholdReachedAnimation() {  SDL_DestroyTexture(texture_); }
+
+  virtual void Start() override { GetAsset().GetAudio().PlaySound(SoundEffect::ThresholdReached); }
 
   virtual void Update(double delta) override {
-    const double v = (ticks_ <= 0.25) ? delta * 500.0 : -delta * 500;
+    const double kFade = (ticks_ <= 0.6) ? 0.0 : 500.0;
 
-    r_ -= v;
-    g_ -= v;
-    b_ -= v;
+    SDL_SetTextureAlphaMod(texture_, alpha_);
+    RenderCopy(texture_, rc_);
 
-    for (int sprite = Blue; sprite < Empty; ++sprite) {
-      SDL_SetTextureColorMod(GetAsset().GetSpriteAsTexture(static_cast<SpriteID>(sprite)), r_, g_, b_);
-    }
+    alpha_ -= static_cast<Uint8>(std::max(0.0, delta * kFade));
     ticks_ += delta;
   }
 
   virtual bool IsReady() override {
-    if (ticks_ >= 0.5) {
+    if (ticks_ >= 2.0 || alpha_ == 0) {
       return true;
     }
     return false;
   }
 
-  virtual bool Idle() const override { return true; }
-
   virtual bool LockBoard() const override { return false; }
 
 private:
-  double r_ = 255.0;
-  double g_ = 255.0;
-  double b_ = 255.0;
-  double ticks_ = 0.0;
+  Uint8 alpha_ = 255;
+  SDL_Texture* texture_;
+  SDL_Rect rc_;
+  double ticks_;
 };

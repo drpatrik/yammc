@@ -10,8 +10,8 @@ enum SoundEffect {
   MoveUnSuccessful,
   RemovedOneChain,
   RemovedTwoChains,
-  RemovedThreeChains,
   RemovedManyChains,
+  ThresholdReached,
   TimesUp,
   Hint,
 };

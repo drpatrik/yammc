@@ -64,9 +64,10 @@ AssetManager::AssetManager(SDL_Renderer *renderer) : audio_() {
   explosion_texture_ = LoadTextures(renderer, "explosion", kExplosionTextures);
 
   std::vector<std::pair<std::string, int>> fonts {
-    std::make_pair("Cabin-Regular.ttf", kFontSize),
-    std::make_pair("Cabin-Bold.ttf", kFontSize),
-    std::make_pair("Cabin-Regular.ttf", kScoreFontSize)
+    std::make_pair("Cabin-Regular.ttf", kNormalFontSize),
+    std::make_pair("Cabin-Bold.ttf", kNormalFontSize),
+    std::make_pair("Cabin-Regular.ttf", kSmallFontSize),
+    std::make_pair("Cabin-Bold.ttf", kLargeFontSize)
   };
 
   for (const auto& f:fonts) {

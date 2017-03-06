@@ -23,7 +23,7 @@ class AssetManagerInterface {
   virtual void ResetPreviousIds() = 0;
 };
 
-enum Font { Normal, Bold, Small };
+enum Font { Normal, Bold, Small, Large };
 
 class AssetManager final : public AssetManagerInterface {
  public:

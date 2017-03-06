@@ -31,9 +31,19 @@ class Board final {
   const AssetManager& GetAsset() const { return *asset_manager_; }
 
  protected:
+  template<class T, class ...U>
+  void ActivateAnimation(U&&... u) {
+    auto animation = std::make_shared<T>(std::forward<U>(u)...);
+
+    animation->Start();
+    active_animations_.push_front(animation);
+  }
+
   void UpdateScore(const std::vector<Position>& matches, int chains);
+
   void UpdateStatus(double delta, int x, int y);
-  void RenderText(int x, int y, Font font, const std::string& text, TextColor text_color) const {
+
+  void RenderText(int x, int y, Font font, const std::string& text, Color text_color) const {
     ::RenderText(renderer_, x, y, asset_manager_->GetFont(font), text, text_color);
   }
 

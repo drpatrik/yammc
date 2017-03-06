@@ -4,12 +4,14 @@
 
 #include <vector>
 
-inline int GetScoreForTotalMatches(int total_matches, int& current_threshold_step) {
+inline std::pair<int, bool> GetScoreForTotalMatches(int total_matches, int& current_threshold_step) {
   int score = 0;
+  bool threshold_reached = false;
 
   if (total_matches >= (current_threshold_step * kThresholdMultiplier)) {
     score = (500 + ((current_threshold_step - kInitialThresholdStep) * 250));
     current_threshold_step++;
+    threshold_reached = true;
 
 #if !defined(NDEBUG)
     if (score > 0) {
@@ -17,7 +19,7 @@ inline int GetScoreForTotalMatches(int total_matches, int& current_threshold_ste
     }
 #endif
   }
-  return score;
+  return std::make_pair(score, threshold_reached);
 }
 
 inline int GetBasicScore(size_t matches) {
