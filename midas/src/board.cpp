@@ -78,11 +78,8 @@ bool CanUpdateBoard(const std::deque<std::shared_ptr<Animation>>& animations) {
   return animations.empty() || (c == 0);
 }
 
-std::pair<int, bool> CalculateScore(size_t matches,
-                                    int& total_matches,
-                                    int& current_threshold_step,
-                                    int consecutive_matches,
-                                    int& previous_consecutive_matches) {
+std::pair<int, bool> CalculateScore(size_t matches, int& total_matches, int& current_threshold_step,
+                                    int consecutive_matches, int& previous_consecutive_matches) {
   int score = 0;
   int total_score = 0;
   bool threshold_reached;
@@ -110,7 +107,7 @@ std::string FormatTime(size_t seconds) {
 
 Board::Board() {
   window_ = SDL_CreateWindow("Yet Another Midas Clone", SDL_WINDOWPOS_UNDEFINED,
-                             SDL_WINDOWPOS_UNDEFINED, kWidth, kHeight, SDL_WINDOW_OPENGL);
+                             SDL_WINDOWPOS_UNDEFINED, kWidth, kHeight, SDL_WINDOW_RESIZABLE);
   if (nullptr == window_) {
     std::cout << "Failed to create window : " << SDL_GetError() << std::endl;
     exit(-1);
@@ -120,6 +117,7 @@ Board::Board() {
     std::cout << "Failed to create renderer : " << SDL_GetError() << std::endl;
     exit(-1);
   }
+  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
   SDL_RenderSetLogicalSize(renderer_, kWidth, kHeight);
 
   asset_manager_ = std::make_shared<AssetManager>(renderer_);
