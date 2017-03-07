@@ -18,7 +18,7 @@ class Board final {
 
   std::shared_ptr<Animation> ShowHint();
 
-  std::shared_ptr<Animation> DecreseScore();
+  void DecreseScore();
 
   void BoardNotIdle();
 
@@ -48,15 +48,18 @@ class Board final {
   }
 
  private:
-  Position first_selected_;
   int score_ = 0;
   int displayed_score_ = 0;
+  int displayed_high_score_ = 0;
   int high_score_ = 0;
   int consecutive_matches_ = 0;
   int previous_consecutive_matches_ = 0;
   int total_matches_ = 0;
   int current_threshold_step_ = kInitialThresholdStep;
   double update_score_ticks_ = 0.0;
+  bool new_high_score_ = false;
+  bool game_over_ = false;
+  Position first_selected_;
   std::unique_ptr<Grid> grid_;
   std::shared_ptr<AssetManager> asset_manager_;
   SDL_Window *window_ = nullptr;

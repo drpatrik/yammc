@@ -15,6 +15,8 @@
         Next update might include anything of the following:
 
         - Windows port
+        - Use Catch instead of gtest
+        - Refactor game statistics into its own class
 
         The project requires cmake 2.6 or higher, SDL2, SDL2_ttf, SDL2_mixer and a C++14 compliant
         compiler.

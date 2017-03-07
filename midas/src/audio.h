@@ -14,6 +14,7 @@ enum SoundEffect {
   ThresholdReached,
   TimesUp,
   Hint,
+  HighScore
 };
 
 class Audio final {

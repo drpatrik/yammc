@@ -66,8 +66,9 @@ void RemoveIdleAnimations(std::deque<std::shared_ptr<Animation>>& animations) {
   while (it != std::end(animations)) {
     if ((*it)->Idle()) {
       it = animations.erase(it);
+    } else {
+      ++it;
     }
-    break;
   }
 }
 
@@ -123,7 +124,7 @@ Board::Board() {
 
   asset_manager_ = std::make_shared<AssetManager>(renderer_);
 
-  high_score_ = ReadHighscore();
+  displayed_high_score_ =  high_score_ = ReadHighscore();
 
   Restart();
 }
@@ -137,10 +138,12 @@ Board::~Board() noexcept {
 void Board::Restart() {
   score_ = 0;
   displayed_score_ = 0;
+  new_high_score_ = (high_score_ == 0);
   update_score_ticks_ = 0.0;
   consecutive_matches_ = 0;
   previous_consecutive_matches_ = 0;
   total_matches_ = 0;
+  game_over_ = false;
   current_threshold_step_ = kInitialThresholdStep;
   active_animations_.clear();
   queued_animations_.clear();
@@ -165,17 +168,15 @@ std::shared_ptr<Animation> Board::ShowHint() {
   return nullptr;
 }
 
-std::shared_ptr<Animation> Board::DecreseScore() {
+void Board::DecreseScore() {
     if (timer_animation_->IsReady()) {
-      return nullptr;
+      return;
     }
     if (score_ > 0) {
       asset_manager_->GetAudio().PlaySound(TimesUp, 500);
     }
     score_ -= 10;
     score_ = std::max(score_, 0);
-
-    return nullptr;
   }
 
 void Board::BoardNotIdle() {
@@ -219,54 +220,61 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
   SDL_RenderCopy(renderer_, asset_manager_->GetBackgroundTexture(), nullptr, nullptr);
 
   if (timer_animation_->IsReady()) {
-    RemoveIdleAnimations(active_animations_);
+    if (!game_over_) {
+      GetAsset().GetAudio().StopMusic();
+      RemoveIdleAnimations(active_animations_);
+      active_animations_.clear();
+      game_over_ = true;
+    }
     if (active_animations_.size() == 0) {
       ActivateAnimation<ExplosionAnimation>(renderer_, *grid_, asset_manager_);
     }
     RenderText(400, 233, Font::Bold, "G A M E  O V E R", Color::Red);
-    UpdateStatus(delta_time, 10, 2);
     RunAnimation(active_animations_, delta_time);
-    SDL_RenderPresent(renderer_);
-    return;
-  }
-  timer_animation_->Update(delta_time);
+  } else {
+    grid_->Render(renderer_);
 
-  grid_->Render(renderer_);
-  SDL_RenderSetClipRect(renderer_, &kClipRect);
+    SDL_RenderSetClipRect(renderer_, &kClipRect);
 
-  for (const auto& a:animations) {
-    queued_animations_.emplace_back(a);
-  }
-  if (CanUpdateBoard(active_animations_) && !queued_animations_.empty()) {
-    auto animation = queued_animations_.front();
-    queued_animations_.pop_front();
-    animation->Start();
-    active_animations_.push_front(animation);
-  }
-  RunAnimation(active_animations_, delta_time);
-
-  if (CanUpdateBoard(active_animations_) && CanUpdateBoard(queued_animations_)) {
-    std::vector<Position> moved_objects;
-    std::vector<Position> matches;
-    int chains;
-
-    std::tie(moved_objects, matches, chains) = grid_->Collaps(consecutive_matches_, previous_consecutive_matches_);
-
-    UpdateScore(matches, chains);
-
-    if (!matches.empty()) {
-      ActivateAnimation<MatchAnimation>(renderer_, *grid_, matches, chains, asset_manager_);
+    for (const auto& a:animations) {
+      queued_animations_.emplace_back(a);
     }
-    for (const auto& obj:moved_objects) {
-      ActivateAnimation<MoveDownAnimation>(renderer_, *grid_, obj, asset_manager_);
+    if (CanUpdateBoard(active_animations_) && !queued_animations_.empty()) {
+      auto animation = queued_animations_.front();
+      queued_animations_.pop_front();
+      animation->Start();
+      active_animations_.push_front(animation);
     }
+    RunAnimation(active_animations_, delta_time);
+
+    if (CanUpdateBoard(active_animations_) && CanUpdateBoard(queued_animations_)) {
+      std::vector<Position> moved_objects;
+      std::vector<Position> matches;
+      int chains;
+
+      std::tie(moved_objects, matches, chains) = grid_->Collaps(consecutive_matches_, previous_consecutive_matches_);
+
+      UpdateScore(matches, chains);
+
+      if (!matches.empty()) {
+        ActivateAnimation<MatchAnimation>(renderer_, *grid_, matches, chains, asset_manager_);
+      }
+      for (const auto& obj:moved_objects) {
+        ActivateAnimation<MoveDownAnimation>(renderer_, *grid_, obj, asset_manager_);
+      }
+    }
+    timer_animation_->Update(delta_time);
+    SDL_RenderSetClipRect(renderer_, nullptr);
   }
-  SDL_RenderSetClipRect(renderer_, nullptr);
   UpdateStatus(delta_time, 10, 1);
   SDL_RenderPresent(renderer_);
 }
 
 void Board::UpdateScore(const std::vector<Position>& matches, int chains) {
+  if (!new_high_score_ && score_ > high_score_) {
+    asset_manager_->GetAudio().PlaySound(HighScore);
+    new_high_score_ = true;
+  }
   high_score_ = std::max(high_score_, score_);
   consecutive_matches_ += chains;
 
@@ -295,18 +303,20 @@ void Board::UpdateStatus(double delta, int x, int y) {
   RenderText(x, y, Font::Normal, "Score:", Color::White);
 
   if (update_score_ticks_ > 0.1) {
-    if (displayed_score_ < score_) {
-      displayed_score_ = std::min(displayed_score_ + 50, score_);
-    } else if (displayed_score_ > score_) {
+    if (displayed_score_ > score_) {
       displayed_score_ = std::max(displayed_score_ - 2, 0);
-      score_color = Color::Red;
+    } else {
+      displayed_score_ = score_;
+    }
+    if (displayed_high_score_ < high_score_) {
+      displayed_high_score_ = std::min(displayed_high_score_ + 50, high_score_);
     }
     update_score_ticks_ = 0.0;
   }
   RenderText(x + 74, y, Font::Normal, std::to_string(displayed_score_), score_color);
 
   RenderText(x + 520, y, Font::Normal, "High Score:", Color::White);
-  RenderText(x + 650, y, Font::Normal, std::to_string(high_score_), Color::White);
+  RenderText(x + 650, y, Font::Normal, std::to_string(displayed_high_score_), Color::White);
 
   RenderText(x + 72, y + 430, Font::Bold, FormatTime(timer_animation_->GetTimeLeft()), Color::Blue);
 

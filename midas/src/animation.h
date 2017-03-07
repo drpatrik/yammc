@@ -439,9 +439,7 @@ class ExplosionAnimation final : public Animation {
 public:
   ExplosionAnimation(SDL_Renderer *renderer, Grid &grid,
                      std::shared_ptr<AssetManager> &asset_manager)
-      : Animation(renderer, grid, asset_manager), explosion_texture_(asset_manager->GetExplosionTextures()) {
-    GetAsset().GetAudio().StopMusic();
-  }
+      : Animation(renderer, grid, asset_manager), explosion_texture_(asset_manager->GetExplosionTextures()) {}
 
   virtual void Start() override {}
 

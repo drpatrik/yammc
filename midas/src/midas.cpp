@@ -105,7 +105,7 @@ class MidasMiner {
         }
       }
       if (idle_penalty_timer.IsZero()) {
-        InsertAnimation(animations, board.DecreseScore());
+        board.DecreseScore();
         idle_penalty_timer.Reset();
       }
       if (show_hint_timer.IsZero()) {

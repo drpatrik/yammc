@@ -16,6 +16,7 @@ std::vector<std::string> kSoundEffects = {
   "threshold_reached.wav",
   "times-up.wav",
   "hint.wav",
+  "high-score.wav"
 };
 
 const std::string kAssetFolder = "../../assets/sfx/";

@@ -22,7 +22,8 @@ SDL_Color GetColor(Color color, uint8_t alpha = 0) {
 
 }
 
-std::tuple<SDL_Texture*, int, int> CreateTextureFromText(SDL_Renderer *renderer, TTF_Font *font, const std::string& text, Color text_color) {
+std::tuple<SDL_Texture*, int, int> CreateTextureFromText(SDL_Renderer *renderer, TTF_Font *font, const std::string& text,
+                                                         Color text_color) {
   SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), GetColor(text_color, 0));
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 
@@ -47,10 +48,8 @@ void RenderText(SDL_Renderer *renderer, int x, int y, TTF_Font *font, const std:
   SDL_DestroyTexture(texture);
 }
 
-std::tuple<SDL_Texture*, int, int> CreateTextureFromFramedText(SDL_Renderer *renderer,
-                                                               TTF_Font *font,
-                                                               const std::string& text,
-                                                               Color text_color,
+std::tuple<SDL_Texture*, int, int> CreateTextureFromFramedText(SDL_Renderer *renderer, TTF_Font *font,
+                                                               const std::string& text, Color text_color,
                                                                Color background_color) {
   SDL_Surface* surface = TTF_RenderText_Shaded(font, text.c_str(), GetColor(text_color), GetColor(background_color));
   SDL_Texture* source_texture = SDL_CreateTextureFromSurface(renderer, surface);
