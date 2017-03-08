@@ -1,7 +1,7 @@
 # yammc
 
-![screenshots](screenshoots/midas-demo-1.png)
-![screenshots](screenshoots/midas-demo-2.png)
+![screenshots](screenshots/midas-demo-1.png)
+![screenshots](screenshots/midas-demo-2.png)
 
         Yet Another Midas Miner Clone in C++
 
