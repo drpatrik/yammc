@@ -1,5 +1,8 @@
 # yammc
 
+![screenshots](screenshoots/midas-demo-1.png)
+![screenshots](screenshoots/midas-demo-2.png)
+
         Yet Another Midas Miner Clone in C++
 
         My hobby project is to create a Midas Miner Clone the artwork/fonts/sfx
