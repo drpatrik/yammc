@@ -1,5 +1,8 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.8)
 project(midas)
+
+# 3rdparty Libraries
+include(CMakeLists-Catch.txt)
 
 # Set an output directory for our binaries
 set(BIN_DIR ${midas_BUILD_DIR}/)

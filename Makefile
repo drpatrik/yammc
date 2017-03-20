@@ -21,14 +21,20 @@ MAKE_COMMAND := cd $(BUILD_DIR) && $(MAKE_PROG)
 all: build
 
 cmake-setup:
-	@mkdir -p $(BUILD_DIR) && cd $(BUILD_DIR);$(CMAKE) -G $(CMAKE_GENERATOR) -DGTEST_INCLUDE_DIR=../gtest-1.7.0/include -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) ..
+	@mkdir -p $(BUILD_DIR) && cd $(BUILD_DIR);$(CMAKE) -G $(CMAKE_GENERATOR) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) ..
 
 build: cmake-setup
 	$(MAKE_COMMAND) all
 
 cppcheck:
-	@mkdir -p $(BUILD_DIR) && cd $(BUILD_DIR);$(CMAKE) -G $(CMAKE_GENERATOR) -DGTEST_INCLUDE_DIR=../gtest-1.7.0/include -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+	@mkdir -p $(BUILD_DIR) && cd $(BUILD_DIR);$(CMAKE) -G $(CMAKE_GENERATOR) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
 	cppcheck --enable=all --project=build/compile_commands.json
 
 clean:
 	rm -rf $(BUILD_DIR)/
+
+test:
+	@build/midas/midas_test
+
+run:
+	@build/midas/midas

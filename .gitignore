@@ -19,6 +19,7 @@ TAGS
 # .idea/workspace.xml
 # .idea/tasks.xml
 # .idea/dictionaries
+midas.shs
 
 # Sensitive or high-churn files:
 # .idea/dataSources.ids
@@ -59,6 +60,7 @@ CMakeCache.txt
 CMakeFiles
 Makefile
 build
+external
 cmake_install.cmake
 install_manifest.txt
 

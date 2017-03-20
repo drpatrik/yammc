@@ -1,4 +1,6 @@
-#include <gtest/gtest.h>
+#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#include "catch.hpp"
+
 #include <initializer_list>
 #include "animation.h"
 #include "grid.h"
@@ -25,7 +27,7 @@ AssetManagerMock kAssetManagerMock;
 int consecutive_matches = 0;
 int previous_consecutive_matches = -1;
 
-TEST(MidasTest, FindAllMatchesAndChains) {
+TEST_CASE("FindAllMatchesAndChains") {
   std::vector<std::vector<int>> init_grid {
     {0,   0,  0,  3,  4,  7,  7, 7},  // 0 // 1 chains (0H) 7(h)
     { 8,  9, 10, 11, 12, 13,  7, 15}, // 1
@@ -44,11 +46,11 @@ TEST(MidasTest, FindAllMatchesAndChains) {
 
   std::tie(matches, chains) = grid.GetAllMatches();
 
-  ASSERT_EQ(matches.size(), 21ul);
-  ASSERT_EQ(chains, 7);
+  REQUIRE(matches.size() == 21ul);
+  REQUIRE(chains == 7);
 }
 
-TEST(MidasTest, TestIsMatch) {
+TEST_CASE("TestIsMatch") {
   std::vector<std::vector<int>> init_grid {
     {0,   0,  0,  3,  4,  5,  6, 7},  // 0
     { 8,  9, 10, 11, 12, 13, 14, 15}, // 1
@@ -63,16 +65,16 @@ TEST(MidasTest, TestIsMatch) {
 
   Grid grid(init_grid, &kAssetManagerMock);
 
-  ASSERT_TRUE(grid.IsMatch(0,1));
-  ASSERT_TRUE(grid.IsMatch(3,1));
-  ASSERT_TRUE(grid.IsMatch(4,1));
-  ASSERT_TRUE(grid.IsMatch(5,1));
-  ASSERT_TRUE(grid.IsMatch(7,7));
-  ASSERT_FALSE(grid.IsMatch(7,3));
-  ASSERT_FALSE(grid.IsMatch(2,6));
+  REQUIRE(grid.IsMatch(0,1));
+  REQUIRE(grid.IsMatch(3,1));
+  REQUIRE(grid.IsMatch(4,1));
+  REQUIRE(grid.IsMatch(5,1));
+  REQUIRE(grid.IsMatch(7,7));
+  REQUIRE(grid.IsMatch(7,3) == false);
+  REQUIRE(grid.IsMatch(2,6) == false);
 }
 
-TEST(MidasTest, FindNoSolution) {
+TEST_CASE("FindNoSolution") {
   std::vector<std::vector<int>> init_grid {
     {0,   1,  2,  3,  4,  5,  7, 7},  // 0
     { 8,  9, 10, 11, 12, 13,  7, 15}, // 1
@@ -89,10 +91,10 @@ TEST(MidasTest, FindNoSolution) {
 
   auto matches = grid.GetAllMatches();
 
-  ASSERT_EQ(matches.first.size(), 0ul);
+  REQUIRE(matches.first.size() == 0ul);
 }
 
-TEST(MidasTest, FindSolutionAfterSwap) {
+TEST_CASE("FindSolutionAfterSwap") {
   std::vector<std::vector<int>> init_grid {
     {0,   1,  2,  3,  4,  5,  7, 7}, // 0
     { 8,  9, 10, 11, 12, 13,  7, 15}, // 1
@@ -109,9 +111,9 @@ TEST(MidasTest, FindSolutionAfterSwap) {
 
   auto matches = grid.GetAllMatches();
 
-  ASSERT_EQ(matches.first.size(), 0ul);
+  REQUIRE(matches.first.size() == 0ul);
 
-  ASSERT_TRUE(!grid.GetMatchesFromSwap(Position(4, 4), Position(4, 5)).first.empty());
+  REQUIRE(!grid.GetMatchesFromSwap(Position(4, 4), Position(4, 5)).first.empty());
 }
 
 void RemoveMatches(Grid& grid, const std::vector<Position>& matches) {
@@ -120,7 +122,7 @@ void RemoveMatches(Grid& grid, const std::vector<Position>& matches) {
   }
 }
 
-TEST(MidasTest, CollapseTest) {
+TEST_CASE("CollapseTest") {
   std::vector<std::vector<int>> init_grid {
     { 0,  1,  2,  3,  4,  6,  7,  7},  // 0
     { 8,  9, 10, 11, 12, 13, 14, 15},  // 1
@@ -134,20 +136,20 @@ TEST(MidasTest, CollapseTest) {
   };
   Grid grid(init_grid, &kAssetManagerMock);
 
-  ASSERT_EQ(grid.GetAllMatches().first.size(), 9u);
+  REQUIRE(grid.GetAllMatches().first.size() == 9u);
   RemoveMatches(grid, grid.GetAllMatches().first);
-  ASSERT_EQ(grid.GetAllMatches().first.size(), 0u);
+  REQUIRE(grid.GetAllMatches().first.size() == 0u);
 
   grid.Collaps(consecutive_matches, previous_consecutive_matches);
   grid.Collaps(consecutive_matches, previous_consecutive_matches);
   grid.Collaps(consecutive_matches, previous_consecutive_matches);
-  ASSERT_TRUE(grid.At(3,3).id() == static_cast<SpriteID>(3));
-  ASSERT_TRUE(grid.At(3,4).id() == static_cast<SpriteID>(4));
-  ASSERT_TRUE(grid.At(5,3).id() == static_cast<SpriteID>(19));
-  ASSERT_TRUE(grid.At(5,4).id() == static_cast<SpriteID>(20));
+  REQUIRE(grid.At(3,3).id() == static_cast<SpriteID>(3));
+  REQUIRE(grid.At(3,4).id() == static_cast<SpriteID>(4));
+  REQUIRE(grid.At(5,3).id() == static_cast<SpriteID>(19));
+  REQUIRE(grid.At(5,4).id() == static_cast<SpriteID>(20));
 }
 
-TEST(MidasTest, FindPotentialMatches) {
+TEST_CASE("FindPotentialMatches") {
   std::vector<std::vector<int>> init_grid {
     {10, 12, 14, 18, 20, 22, 23, 43}, // 0
     { 8,  9, 10, 11, 12, 13,  7, 15}, // 1
@@ -166,11 +168,11 @@ TEST(MidasTest, FindPotentialMatches) {
 
   std::tie(matches_found, swap_to_match) = grid.FindPotentialMatches();
 
-  ASSERT_TRUE(matches_found);
+  REQUIRE(matches_found);
 
   auto matches = grid.GetMatchesFromSwap(swap_to_match.first, swap_to_match.second);
 
-  ASSERT_EQ(matches.first.size(), 9lu);
+  REQUIRE(matches.first.size() == 9lu);
 
   std::vector<std::vector<int>> init_grid2 {
     {0, 1, 2, 3, 0, 1, 2, 3},
@@ -187,10 +189,10 @@ TEST(MidasTest, FindPotentialMatches) {
 
   std::tie(matches_found, swap_to_match) = grid_no_matches.FindPotentialMatches();
 
-  ASSERT_FALSE(matches_found);
+  REQUIRE(matches_found == false);
 }
 
-TEST(MidasTest, DISABLED_TestFindPositionForScoreAnimation) {
+TEST_CASE("DISABLED_TestFindPositionForScoreAnimation") {
   std::vector<std::vector<int>> init_grid {
     {5, 5, 5, 5, 5, 5, 5, 5}, // 0
     {5, 1, 1, 1, 5, 5, 5, 5}, // 1
@@ -210,7 +212,7 @@ TEST(MidasTest, DISABLED_TestFindPositionForScoreAnimation) {
 
   std::tie(matches, chains) = grid.GetAllMatches();
 
-  std::cout << matches.size() << std::endl;
+  // std::cout << matches.size() << std::endl;
 
-  FindPositionForScoreAnimation(matches, chains).Print();
+  //FindPositionForScoreAnimation(matches, chains).Print();
 }
