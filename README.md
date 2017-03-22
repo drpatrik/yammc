@@ -15,6 +15,12 @@
         My goal is to make the game as similar as possible to the original:
         http://www.royalgames.com/games/puzzle-games/midas-miner
 
+        Features:
+
+        - Smooth Animation
+        - Music and sound
+        - Advanced scoring system
+
         Next update might include anything of the following:
 
         - Windows port
