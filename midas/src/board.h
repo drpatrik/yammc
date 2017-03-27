@@ -39,8 +39,6 @@ class Board final {
     active_animations_.push_front(animation);
   }
 
-  void UpdateScore(const std::vector<Position>& matches, int chains);
-
   void UpdateStatus(double delta, int x, int y);
 
   void RenderText(int x, int y, Font font, const std::string& text, Color text_color) const {
@@ -48,16 +46,7 @@ class Board final {
   }
 
  private:
-  int score_ = 0;
-  int displayed_score_ = 0;
-  int displayed_high_score_ = 0;
-  int high_score_ = 0;
-  int consecutive_matches_ = 0;
-  int previous_consecutive_matches_ = 0;
-  int total_matches_ = 0;
-  int current_threshold_step_ = kInitialThresholdStep;
-  double update_score_ticks_ = 0.0;
-  bool new_high_score_ = false;
+  ScoreManagement score_;
   bool game_over_ = false;
   Position first_selected_;
   std::unique_ptr<Grid> grid_;

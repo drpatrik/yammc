@@ -1,26 +1,91 @@
 #pragma once
 
-#include "constants.h"
+#include "text.h"
+#include "coordinates.h"
 
 #include <vector>
 
-inline std::pair<int, bool> GetScoreForTotalMatches(int total_matches, int& current_threshold_step) {
-  int score = 0;
-  bool threshold_reached = false;
+class ScoreManagement final {
+ public:
+  ScoreManagement();
 
-  if (total_matches >= (current_threshold_step * kThresholdMultiplier)) {
-    score = (500 + ((current_threshold_step - kInitialThresholdStep) * 250));
-    current_threshold_step++;
-    threshold_reached = true;
+  ~ScoreManagement();
 
-#if !defined(NDEBUG)
-    if (score > 0) {
-      std::cout << "GetScoreForTotalMatches: " << score << "N Jewels: " << total_matches << std::endl;
-    }
-#endif
+  void Reset() {
+    score_ = 0;
+    displayed_score_ = 0;
+    new_highscore_ = (highscore_ == 0);
+    update_score_ticks_ = 0.0;
+    consecutive_matches_ = 0;
+    previous_consecutive_matches_ = 0;
+    total_matches_ = 0;
+    threshold_reached_ = false;
+    update_score_ticks_ = 0.0;
+    current_threshold_step_ = kInitialThresholdStep;
   }
-  return std::make_pair(score, threshold_reached);
-}
+
+  void Update(const std::vector<Position>& matches, int chains);
+
+  bool ThresholdReached() {
+    if (threshold_reached_) {
+      threshold_reached_ = false;
+      return true;
+    }
+    return false;
+  }
+
+  bool NewHighScore() {
+    if (!new_highscore_ && score_ > highscore_) {
+      new_highscore_ = true;
+      return true;
+    }
+    return false;
+  }
+
+  bool ShouldPlayTimesUp() const { return score_ > 0; }
+
+  void Decrese() { score_ = std::max(score_ - 10, 0); }
+
+  int Get() const { return score_; }
+
+  int GetTotalMatches() const { return total_matches_; }
+
+  Color GetColor() const { return (displayed_score_ > score_ ) ? Color::Red : Color::White; }
+
+  std::pair<int, int> GetDisplayedScore(double delta) {
+    if (update_score_ticks_ > 0.1) {
+      if (displayed_score_ > score_) {
+        displayed_score_ = std::max(displayed_score_ - 2, 0);
+      } else {
+        displayed_score_ = score_;
+      }
+      if (displayed_highscore_ < highscore_) {
+        displayed_highscore_ = std::min(displayed_highscore_ + 50, highscore_);
+      }
+      update_score_ticks_ = 0.0;
+    }
+    update_score_ticks_ += delta;
+
+    return std::make_pair(displayed_score_, displayed_highscore_);
+  }
+
+  int& GetConsecutiveMatchesRef() { return consecutive_matches_; }
+
+  int& GetPreviousConsecutiveMatchesRef() { return previous_consecutive_matches_; }
+
+private:
+  int score_ = 0;
+  int displayed_score_ = 0;
+  int highscore_ = 0;
+  int displayed_highscore_ = 0;
+  double update_score_ticks_ = 0.0;
+  int consecutive_matches_ = 0;
+  int previous_consecutive_matches_ = 0;
+  int total_matches_ = 0;
+  int current_threshold_step_ = kInitialThresholdStep;
+  bool new_highscore_ = false;
+  bool threshold_reached_ = false;
+};
 
 inline int GetBasicScore(size_t matches) {
   std::vector<int> scores = { 0, 0, 0, 50, 100, 150, 250, 500 };
@@ -30,25 +95,6 @@ inline int GetBasicScore(size_t matches) {
 #if !defined(NDEBUG)
   if (score > 0) {
     std::cout << "GetBasicScore: " << score << std::endl;
-  }
-#endif
-
-  return score;
-}
-
-inline int GetScoreForConsecutiveMatches(int consecutive_matches, int& previous_consecutive_matches) {
-  if (previous_consecutive_matches == consecutive_matches) {
-    return 0;
-  }
-  previous_consecutive_matches = consecutive_matches;
-
-  std::vector<int> scores = { 0, 0, 50, 100, 150, 250, 350, 500, 750 };
-
-  int score = (consecutive_matches >=9) ? 1000 : scores.at(consecutive_matches);
-
-#if !defined(NDEBUG)
-  if (score > 0) {
-    std::cout << "GetScoreForConsecutiveMatches: " << score << std::endl;
   }
 #endif
 

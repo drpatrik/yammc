@@ -2,30 +2,31 @@
 
 #include <iostream>
 #include <string>
+#include <unordered_map>
 
 namespace {
 
-std::vector<std::string> kSoundEffects = {
-  "diamond-land.wav",
-  "explosion.wav",
-  "move-successful.wav",
-  "move-unsuccessful.wav",
-  "removed-one-chain.wav",
-  "removed-two-chains.wav",
-  "removed-many-chains.wav",
-  "threshold_reached.wav",
-  "times-up.wav",
-  "hint.wav",
-  "high-score.wav"
+std::vector<std::pair<std::string, int>> kSoundEffects = {
+  { "diamond-land.wav", MIX_MAX_VOLUME },
+  { "explosion.wav", MIX_MAX_VOLUME },
+  { "move-successful.wav", MIX_MAX_VOLUME },
+  { "move-unsuccessful.wav", MIX_MAX_VOLUME },
+  { "removed-one-chain.wav", MIX_MAX_VOLUME },
+  { "removed-two-chains.wav", MIX_MAX_VOLUME },
+  { "removed-many-chains.wav", MIX_MAX_VOLUME },
+  { "threshold_reached.wav", MIX_MAX_VOLUME },
+  { "times-up.wav", MIX_MAX_VOLUME },
+  { "hint.wav", MIX_MAX_VOLUME },
+  { "high-score.wav", MIX_MAX_VOLUME },
+  { "hurryup.wav", MIX_MAX_VOLUME / 2 }
 };
 
+const int kMixChannels = 16;
 const std::string kAssetFolder = "../../assets/sfx/";
 
 }
 
 Audio::Audio() {
-  Mix_AllocateChannels(16);
-
   std::string full_path = kAssetFolder + "music-loop.wav";
 
   music_ = Mix_LoadMUS(full_path.c_str());
@@ -34,9 +35,15 @@ Audio::Audio() {
     std::cout << "Failed to load: " << full_path << ". Error: " << Mix_GetError() << std::endl;
     exit(-1);
   }
+  Mix_AllocateChannels(kMixChannels);
   Mix_VolumeMusic(MIX_MAX_VOLUME / 3);
 
-  for (auto effect : kSoundEffects) {
+  std::string effect;
+  int volume;
+
+  for (auto effect_entry : kSoundEffects) {
+    std::tie(effect, volume) = effect_entry;
+
     full_path = kAssetFolder + effect;
 
     Mix_Chunk *chunk = Mix_LoadWAV(full_path.c_str());
@@ -46,7 +53,7 @@ Audio::Audio() {
       exit(-1);
     }
     sound_effects_.push_back(chunk);
-    Mix_VolumeChunk(chunk, MIX_MAX_VOLUME);
+    Mix_VolumeChunk(chunk, volume);
   }
 }
 

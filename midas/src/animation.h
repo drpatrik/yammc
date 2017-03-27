@@ -384,9 +384,12 @@ public:
     if (movement_ticks_ > 1.0) {
       timer_++;
       if (timer_ % kTimerStep == 0) {
-        step_ ++;
+        step_++;
       }
       movement_ticks_ = 0.0;
+    }
+    if (ShouldPlayHurryUp()) {
+      GetAsset().GetAudio().PlaySound(HurryUp);
     }
   }
 
@@ -394,12 +397,21 @@ public:
 
   int GetTimeLeft() const { return kGameTime - timer_; }
 
+  bool ShouldPlayHurryUp() {
+    if (!hurry_up && GetTimeLeft() <= 10) {
+      hurry_up = true;
+      return true;
+    }
+    return false;
+  }
+
 private:
   int frame_ = 0;
   double animation_ticks_ = 0.0;
   double movement_ticks_ = 0.0;
   size_t timer_ = 0;
   size_t step_ = 0;
+  bool hurry_up = false;
   std::vector<SDL_Texture *> star_textures_;
   const std::vector<std::pair<int, int>> coordinates_ = {
       std::make_pair(262, 555), std::make_pair(258, 552),
@@ -484,15 +496,15 @@ public:
   virtual void Update(double delta) override {
     const double kFade = (ticks_ <= 0.6) ? 0.0 : 500.0;
 
-    SDL_SetTextureAlphaMod(texture_, alpha_);
+    SDL_SetTextureAlphaMod(texture_, static_cast<Uint8>(alpha_));
     RenderCopy(texture_, rc_);
 
-    alpha_ -= static_cast<Uint8>(std::max(0.0, delta * kFade));
+    alpha_ -= delta * kFade;
     ticks_ += delta;
   }
 
   virtual bool IsReady() override {
-    if (ticks_ >= 2.0 || alpha_ == 0) {
+    if (ticks_ >= 2.0 || alpha_ <= 0) {
       return true;
     }
     return false;
@@ -501,7 +513,7 @@ public:
   virtual bool LockBoard() const override { return false; }
 
 private:
-  Uint8 alpha_ = 255;
+  double alpha_ = 255.0;
   SDL_Texture* texture_;
   SDL_Rect rc_;
   double ticks_;

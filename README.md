@@ -23,12 +23,16 @@
 
         Next update might include anything of the following:
 
-        - Windows port
-        - Refactor game statistics into its own class
-        - Introduce Z-order (again)
+        - Windows port (Visual Studio 2015 or later)
 
-        The project requires cmake 2.8.8 or higher, SDL2, SDL2_ttf, SDL2_mixer and a C++14 compliant
-        compiler.
+        Dependencies:
+        - C++14 compliant
+        - cmake 2.8.8
+        - git
+        - SDL2
+        - SDL2_ttf
+        - SDL2_mixer
+
         The test suit requires catch - Catch will be automatically download and installed
         as part of the build process
 
