@@ -16,17 +16,15 @@
         http://www.royalgames.com/games/puzzle-games/midas-miner
 
         Features:
-
         - Smooth Animation
         - Music and sound
         - Advanced scoring system
 
-        Next update might include anything of the following:
-
+        Next update might include:
         - Windows port (Visual Studio 2015 or later)
 
         Dependencies:
-        - C++14 compliant
+        - C++14 compliant compiler (only tested with clang)
         - cmake 2.8.8
         - git
         - SDL2
