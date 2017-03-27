@@ -31,9 +31,9 @@ class Board final {
   const AssetManager& GetAsset() const { return *asset_manager_; }
 
  protected:
-  template<class T, class ...U>
-  void ActivateAnimation(U&&... u) {
-    auto animation = std::make_shared<T>(std::forward<U>(u)...);
+  template<class T, class ...Args>
+  void ActivateAnimation(Args&&... args) {
+    auto animation = std::make_shared<T>(std::forward<Args>(args)...);
 
     animation->Start();
     active_animations_.push_front(animation);
