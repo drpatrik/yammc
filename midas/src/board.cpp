@@ -99,6 +99,7 @@ void Board::Restart() {
   first_selected_ = kNothingSelected;
   grid_ = std::make_unique<Grid>(kRows, kCols, asset_manager_.get());
   timer_animation_ = std::make_shared<TimerAnimation>(renderer_, *grid_.get(), asset_manager_);
+  asset_manager_->GetAudio().StopSound();
   asset_manager_->GetAudio().PlayMusic();
 }
 

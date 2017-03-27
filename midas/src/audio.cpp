@@ -7,18 +7,18 @@
 namespace {
 
 std::vector<std::pair<std::string, int>> kSoundEffects = {
-  { "diamond-land.wav", MIX_MAX_VOLUME },
+  { "diamond-land.wav", MIX_MAX_VOLUME / 4},
   { "explosion.wav", MIX_MAX_VOLUME },
-  { "move-successful.wav", MIX_MAX_VOLUME },
-  { "move-unsuccessful.wav", MIX_MAX_VOLUME },
+  { "move-successful.wav", MIX_MAX_VOLUME / 2},
+  { "move-unsuccessful.wav", MIX_MAX_VOLUME / 2},
   { "removed-one-chain.wav", MIX_MAX_VOLUME },
   { "removed-two-chains.wav", MIX_MAX_VOLUME },
   { "removed-many-chains.wav", MIX_MAX_VOLUME },
   { "threshold_reached.wav", MIX_MAX_VOLUME },
-  { "times-up.wav", MIX_MAX_VOLUME },
+  { "times-up.wav", MIX_MAX_VOLUME / 2},
   { "hint.wav", MIX_MAX_VOLUME },
   { "high-score.wav", MIX_MAX_VOLUME },
-  { "hurryup.wav", MIX_MAX_VOLUME / 2 }
+  { "hurryup.wav", MIX_MAX_VOLUME }
 };
 
 const int kMixChannels = 16;
@@ -58,6 +58,8 @@ Audio::Audio() {
 }
 
 Audio::~Audio() noexcept {
+  Mix_HaltMusic();
+  Mix_HaltChannel(-1);
   if (nullptr != music_) {
     Mix_FreeMusic(music_);
   }

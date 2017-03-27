@@ -57,6 +57,8 @@ public:
 
   const AssetManager& GetAsset() const { return *asset_manager_; }
 
+  const Audio& GetAudio() const { return asset_manager_->GetAudio(); }
+
   void RenderCopy(SpriteID id, const SDL_Rect &rc) {
     SDL_RenderCopy(*this, asset_manager_->GetSpriteAsTexture(id), nullptr, &rc);
   }
@@ -128,13 +130,13 @@ public:
   virtual bool IsReady() override {
     if (pixels_moved_ < ((has_match_) ? kSpriteWidth : kSpriteWidth * 2.0)) {
       if (pixels_moved_ >= kSpriteWidth && play_sound_) {
-        GetAsset().GetAudio().PlaySound(SoundEffect::MoveUnSuccessful);
+        GetAudio().PlaySound(SoundEffect::MoveUnSuccessful);
         play_sound_ = false;
       }
       return false;
     }
     if (has_match_) {
-      GetAsset().GetAudio().PlaySound(SoundEffect::MoveSuccessful);
+      GetAudio().PlaySound(SoundEffect::MoveSuccessful);
       std::swap(element1_, element2_);
     }
     std::swap(element1_, GetGrid().At(p1_));
@@ -179,13 +181,13 @@ class ScoreAnimation final : public Animation {
   virtual void Start() override {
     switch (chains_) {
       case 1:
-        GetAsset().GetAudio().PlaySound(SoundEffect::RemovedOneChain);
+        GetAudio().PlaySound(SoundEffect::RemovedOneChain);
         break;
       case 2:
-        GetAsset().GetAudio().PlaySound(SoundEffect::RemovedTwoChains);
+        GetAudio().PlaySound(SoundEffect::RemovedTwoChains);
         break;
       default:
-        GetAsset().GetAudio().PlaySound(SoundEffect::RemovedManyChains);
+        GetAudio().PlaySound(SoundEffect::RemovedManyChains);
         break;
     }
   }
@@ -302,7 +304,7 @@ public:
     }
     std::swap(element_, GetGrid().At(p_));
     if (p_.row() + 1 >= kRows || !GetGrid().At(p_.row() + 1, p_.col()).IsEmpty()) {
-      GetAsset().GetAudio().PlaySound(SoundEffect::DiamondLanding);
+      GetAudio().PlaySound(SoundEffect::DiamondLanding);
     }
     return true;
   }
@@ -328,7 +330,7 @@ public:
   virtual void Start() override {
     std::swap(e1_, GetGrid().At(p1_));
     std::swap(e2_, GetGrid().At(p2_));
-    GetAsset().GetAudio().PlaySound(SoundEffect::Hint);
+    GetAudio().PlaySound(SoundEffect::Hint);
   }
 
   virtual void Update(double delta) override {
@@ -389,7 +391,8 @@ public:
       movement_ticks_ = 0.0;
     }
     if (ShouldPlayHurryUp()) {
-      GetAsset().GetAudio().PlaySound(HurryUp);
+      GetAudio().FadeoutMusic(kHurryUpTimeLimit * 1000);
+      GetAudio().PlaySound(HurryUp);
     }
   }
 
@@ -398,7 +401,7 @@ public:
   int GetTimeLeft() const { return kGameTime - timer_; }
 
   bool ShouldPlayHurryUp() {
-    if (!hurry_up && GetTimeLeft() <= 10) {
+    if (!hurry_up && GetTimeLeft() <= kHurryUpTimeLimit) {
       hurry_up = true;
       return true;
     }
@@ -491,7 +494,7 @@ public:
 
   ~ThresholdReachedAnimation() {  SDL_DestroyTexture(texture_); }
 
-  virtual void Start() override { GetAsset().GetAudio().PlaySound(SoundEffect::ThresholdReached); }
+  virtual void Start() override { GetAudio().PlaySound(SoundEffect::ThresholdReached); }
 
   virtual void Update(double delta) override {
     const double kFade = (ticks_ <= 0.6) ? 0.0 : 500.0;
