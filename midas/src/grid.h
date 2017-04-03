@@ -41,7 +41,7 @@ class Grid final {
     }
   }
 
-  ~Grid() = default;
+  ~Grid() noexcept = default;
 
   inline int rows() const { return rows_; }
 

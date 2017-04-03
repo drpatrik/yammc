@@ -1,7 +1,8 @@
 #pragma once
 
-#include <SDL.h>
 #include <utility>
+
+#include <SDL.h>
 
 enum SpriteID { Blue, Green, Red, Yellow, Purple, Empty, OwnedByAnimation };
 
