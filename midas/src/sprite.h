@@ -43,7 +43,7 @@ class Sprite final {
   bool IsEmpty() const { return (id_ == SpriteID::Empty || id_ == SpriteID::OwnedByAnimation); }
 
   friend void swap(Sprite& s1, Sprite& s2) {
-    using namespace std;
+    using std::swap;
 
     swap(s1.id_, s2.id_);
     swap(s1.sprite_, s2.sprite_);

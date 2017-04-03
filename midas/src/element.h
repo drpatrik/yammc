@@ -56,7 +56,8 @@ class Element final {
   }
 
   friend void swap(Element& e1, Element& e2) {
-    std::swap(e1.sprite_, e2.sprite_);
+    using std::swap;
+    swap(e1.sprite_, e2.sprite_);
   }
 
  private:
