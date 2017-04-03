@@ -6,11 +6,37 @@
 
 namespace {
 
-// This function should really return x,y in pixels and interpolate if neccessary
-const Position& FindPositionForScoreAnimation(const std::vector<Position>& c_matches, int chains) {
+const double kTimeResolution = static_cast<double>(1.0 / kFPS);
+
+const std::pair<int, int> CenterH(const Position& p, const std::vector<Position>& matches) {
+  int x = p.x() + Center(matches.size() * kSpriteWidth, kSpriteWidth);
+
+  return std::make_pair(x, p.y());
+}
+
+const std::pair<int, int> CenterV(const Position& p, const std::vector<Position>& matches) {
+  int y = p.y() + Center(matches.size() * kSpriteHeight, kSpriteHeight);
+
+  return std::make_pair(p.x(), y);
+}
+
+bool IsHorizontalChain(const Position& start, const Position& end) {
+  return (start.row() == end.row());
+}
+
+std::pair<int, int> FindPositionForScoreAnimation(const std::vector<Position>& c_matches, int chains) {
+  const size_t n_matches = c_matches.size();
+  const Position start = c_matches[0];
+  const Position end = c_matches[n_matches - 1];
+
+  // All links of the chain or on the same column / row
   if (chains == 1) {
-    return c_matches[(c_matches.size() / 2)];
+    if (IsHorizontalChain(start, end)) {
+      return CenterH(start, c_matches);
+    }
+    return CenterV(start, c_matches);
   }
+  // Links on the chains is overlapping
   auto matches = c_matches;
 
   while (!matches.empty()) {
@@ -19,22 +45,23 @@ const Position& FindPositionForScoreAnimation(const std::vector<Position>& c_mat
     auto it = std::find(std::begin(matches), std::end(matches), match);
 
     if (it != std::end(matches)) {
-      return *it;
+      return std::make_pair(it->x(), it->y());
     }
   }
-  int chain_size = (c_matches.size() / 2);
+  // The chains are on different rows / cols
+  // Need to find some clever algorithm to handle the
+  // location of the position better
+  int chain_size = (n_matches >> 1);
+  bool is_horizontal_chain = IsHorizontalChain(start, c_matches[chain_size - 1]);
+  auto p = (is_horizontal_chain) ? c_matches[n_matches >> 1] : c_matches[chain_size >> 1];
 
-  bool is_vertical_chain = (c_matches[0].row() == c_matches[chain_size - 1].row());
-
-  return (is_vertical_chain) ? c_matches[(chain_size / 2)] : c_matches[(c_matches.size()) / 2];
+  return std::make_pair(p.x(), p.y());
 }
 
 }
 
 class Animation {
 public:
-  const double kTimeResolution = static_cast<double>(1.0 / kFPS);
-
   Animation(SDL_Renderer *renderer, Grid &grid,
             const std::shared_ptr<AssetManager> &asset_manager)
       : renderer_(renderer), grid_(grid), asset_manager_(asset_manager) {}
@@ -162,16 +189,16 @@ private:
 class ScoreAnimation final : public Animation {
  public:
   ScoreAnimation(SDL_Renderer *renderer, Grid &grid,
-                     const std::vector<Position> &matches, int chains,
-                     int score,
-                     const std::shared_ptr<AssetManager> &asset_manager)
+                 const std::vector<Position> &matches, int chains,
+                 int score,
+                 const std::shared_ptr<AssetManager> &asset_manager)
       : Animation(renderer, grid, asset_manager), score_(score), chains_(chains) {
-    auto p = FindPositionForScoreAnimation(matches, chains_);
+    std::tie(x_, y_) = FindPositionForScoreAnimation(matches, chains_);
 
     int width, height;
     std::tie(texture_, width, height) = CreateTextureFromFramedText(*this, GetAsset().GetFont(Small), std::to_string(score_), Color::White, Color::Black);
 
-    rc_ = { p.x() + Center(kSpriteWidth, width), p.y() + Center(kSpriteHeight, height), width, height };
+    rc_ = { static_cast<int>(x_) + Center(kSpriteWidth, width), static_cast<int>(y_) + Center(kSpriteHeight, height), width, height };
     y_ = rc_.y;
     end_pos_ = y_ - kSpriteHeightTimes1_5;
   }
@@ -401,8 +428,8 @@ public:
   int GetTimeLeft() const { return kGameTime - timer_; }
 
   bool ShouldPlayHurryUp() {
-    if (!hurry_up && GetTimeLeft() <= kHurryUpTimeLimit) {
-      hurry_up = true;
+    if (!hurry_up_played_ && GetTimeLeft() <= kHurryUpTimeLimit) {
+      hurry_up_played_ = true;
       return true;
     }
     return false;
@@ -414,7 +441,7 @@ private:
   double movement_ticks_ = 0.0;
   size_t timer_ = 0;
   size_t step_ = 0;
-  bool hurry_up = false;
+  bool hurry_up_played_ = false;
   std::vector<SDL_Texture *> star_textures_;
   const std::vector<std::pair<int, int>> coordinates_ = {
       std::make_pair(262, 555), std::make_pair(258, 552),

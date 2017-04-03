@@ -50,6 +50,28 @@ TEST_CASE("FindAllMatchesAndChains") {
   REQUIRE(chains == 7);
 }
 
+/*TEST_CASE("FindAllMatchesAndChains2") {
+  std::vector<std::vector<int>> init_grid {
+    {6, 6, 6, 6, 6, 6, 6, 6},  // 6 // 1 chains (6H) 7(h)
+    {6, 6, 6, 6, 6, 6, 6, 6}, // 1
+    {0, 0, 1, 1, 1, 1, 6, 6}, // 2 // chains (7V)
+    {6, 6, 6, 6, 6, 6, 6, 6}, // 3
+    {6, 6, 6, 6, 6, 6, 6, 6}, // 4 // 1 chain (28H)
+    {6, 6, 6, 6, 6, 6, 6, 6}, // 5 // 1 chain (28V)
+    {6, 6, 6, 6, 6, 6, 6, 6}, // 6
+    {6, 6, 6, 6, 6, 6, 6, 6}, // 7 2 chains (56H, 61H)
+    {6, 1, 6, 1, 6, 1, 6, 6}          // 8
+  };
+  Grid grid(init_grid, &kAssetManagerMock);
+
+  std::vector<Position> matches;
+  int chains;
+
+  std::tie(matches, chains) = grid.GetAllMatches();
+
+  std::cout << chains << std::endl;
+  }*/
+
 TEST_CASE("TestIsMatch") {
   std::vector<std::vector<int>> init_grid {
     {0,   0,  0,  3,  4,  5,  6, 7},  // 0

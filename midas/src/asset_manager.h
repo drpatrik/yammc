@@ -8,7 +8,7 @@
 #include <vector>
 #include <random>
 
-#include <SDL_TTF.h>
+#include <SDL_ttf.h>
 
 class AssetManagerInterface {
  public:

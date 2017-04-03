@@ -1,8 +1,6 @@
 #include "score.h"
 
 #include <set>
-#include <sstream>
-#include <iomanip>
 #include <fstream>
 
 namespace {
@@ -83,17 +81,14 @@ ScoreManagement::~ScoreManagement() {
 }
 
 void ScoreManagement::Update(const std::vector<Position>& matches, int chains) {
-  highscore_ = std::max(highscore_, score_);
-  consecutive_matches_ += chains;
-
-  size_t unique_matches = 0;
-
-  if (matches.size() > 0) {
-    unique_matches = std::set<Position>(matches.begin(), matches.end()).size();
+  if (matches.size() == 0) {
+    return;
   }
+  consecutive_matches_ += chains;
+  size_t unique_matches = std::set<Position>(matches.begin(), matches.end()).size();
+
   int score;
   bool threshold_reached;
-
   std::tie(score, threshold_reached) = CalculateScore(unique_matches, total_matches_, current_threshold_step_,
                                                       consecutive_matches_, previous_consecutive_matches_);
 
@@ -101,4 +96,5 @@ void ScoreManagement::Update(const std::vector<Position>& matches, int chains) {
     threshold_reached_ = true;
   }
   score_ += score;
+  highscore_ = std::max(highscore_, score_);
 }

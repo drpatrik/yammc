@@ -3,8 +3,6 @@
 
 #include <sstream>
 #include <iomanip>
-#include <fstream>
-#include <cassert>
 
 namespace {
 

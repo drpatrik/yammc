@@ -12,10 +12,10 @@ class Element final {
 
   Element(const Element& e) : sprite_(e.sprite_) {}
 
-  Element(Element&& rhs) noexcept { Swap(*this, rhs); }
+  Element(Element&& rhs) noexcept { swap(*this, rhs); }
 
   Element& operator=(Element rhs) noexcept {
-    Swap(*this, rhs);
+    swap(*this, rhs);
 
     return *this;
   }
@@ -55,8 +55,7 @@ class Element final {
     }
   }
 
- protected:
-  void Swap(Element& e1, Element& e2) {
+  friend void swap(Element& e1, Element& e2) {
     std::swap(e1.sprite_, e2.sprite_);
   }
 

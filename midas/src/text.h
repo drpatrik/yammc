@@ -3,7 +3,7 @@
 #include <string>
 
 #include <SDL.h>
-#include <SDL_TTF.h>
+#include <SDL_ttf.h>
 
 enum class Color { White, Blue, Red, Green, Black, Yellow, Cyan };
 

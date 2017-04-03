@@ -12,7 +12,7 @@
         I have spent the last 30 years developing software but the last game
         I wrote was a Tetris clone for the Hercules graphic card back in 1989.
 
-        My goal is to make the game as similar as possible to the original:
+        My goal is to make the game better then the original:
         http://www.royalgames.com/games/puzzle-games/midas-miner
 
         Features:

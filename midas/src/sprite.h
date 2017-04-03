@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL.h>
+#include <utility>
 
 enum SpriteID { Blue, Green, Red, Yellow, Purple, Empty, OwnedByAnimation };
 
@@ -17,7 +18,17 @@ class Sprite final {
 
   Sprite(const Sprite& s) : id_(s.id_), sprite_(s.sprite_), width_(s.width_), height_(s.height_), selected_sprite_(s.selected_sprite_) {}
 
-  auto id() const { return id_; }
+  Sprite(Sprite&& other) {
+    swap(*this, other);
+  }
+
+  Sprite& operator=(Sprite other) {
+    swap(*this, other);
+
+    return *this;
+  }
+
+  SpriteID id() const { return id_; }
 
   SDL_Texture* operator()() const { return sprite_; }
 
@@ -31,8 +42,18 @@ class Sprite final {
 
   bool IsEmpty() const { return (id_ == SpriteID::Empty || id_ == SpriteID::OwnedByAnimation); }
 
+  friend void swap(Sprite& s1, Sprite& s2) {
+    using namespace std;
+
+    swap(s1.id_, s2.id_);
+    swap(s1.sprite_, s2.sprite_);
+    swap(s1.width_, s2.width_);
+    swap(s1.height_, s2.height_);
+    swap(s1.selected_sprite_, s2.selected_sprite_);
+  }
+
  private:
-  const SpriteID id_;
+  SpriteID id_;
   SDL_Texture* sprite_ = nullptr;
   int width_ = 0;
   int height_ = 0;
