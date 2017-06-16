@@ -4,6 +4,7 @@
 ![screenshots](screenshots/midas-demo-2.png)
 
         Yet Another Midas Miner Clone in C++
+        ------------------------------------
 
         My hobby project is to create a clone of the game Midas Miner. The
         artwork/fonts/sfx is not mine and I consider it to be public domain.
@@ -21,17 +22,21 @@
         - Advanced scoring system
 
         Dependencies:
-        - C++14 compliant compiler
+        - C++14 compliant compiler (e.g. clang 3.4, clang-802, Visual Studio 2015 / 2017)
+        - C++14 compliant SDL implementation
         - cmake 2.8.8 or later
         - git
         - SDL2
         - SDL2_ttf
         - SDL2_mixer
 
-        The test suit requires catch - Catch will be automatically download and installed
+        The test suit requires catch - Catch will be automatically downloaded and installed
         as part of the build process
 
         Tested under OSX and Windows 10. It should run under Linux and GCC as well
+
+        OSX / Linux
+        -----------
 
         make
 
@@ -48,10 +53,9 @@
         ./build/midas/midas
         ./build/midas/midas_test
 
-	Windows Requirements
+	Windows 10
+        ----------
 
-	Tested with Visual Studio 2016 and 2017 64 bit only
-	Download and install SDL2, SDL2_Mixer and SDL2_TTF
 	Set the following environment variables (see System Properties/Environemnt Variables...):
 
 	SDL2DIR
@@ -59,14 +63,18 @@
 	SDL2TTFDIR
 
 	Example:
-	SDL2DIR C:\SDL2-2.0.5 	
-	
+	SDL2DIR C:\SDL2-2.0.5
+
 	The PATH should include all three libraries lib\x64 directories
 
 	Example:
 	PATH C:\SDL2-2.0.5\lib\x64;C:\SDL2_mixer\lib\x64;C:\SDL2_ttf-2.0.14\lib\x64;
 
-        Credits:
+        Generate Visual Studio project files with CMakeSetup.exe
+
+        Credits
+        -------
+
         All sfx and music are from www.freesound.org
         Fonts http://www.dafont.com/cabin.font
         Music by https://mrthenoronha.bandcamp.com
