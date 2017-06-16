@@ -47,9 +47,9 @@
 
         make run # will start the game
 
-	Windows 10:
+        Windows 10:
 
-	Set the following environment variables (see System Properties/Environemnt Variables...):
+        Set the following environment variables (see System Properties/Environemnt Variables...):
 
 	SDL2DIR
 	SDL2MIXER
