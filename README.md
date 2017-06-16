@@ -37,8 +37,7 @@
 
         Tested under OSX and Windows 10. It should run under Linux and GCC as well
 
-        OSX / Linux
-        -----------
+        OSX / Linux:
 
         make
 
@@ -48,8 +47,7 @@
 
         make run # will start the game
 
-	Windows 10
-        ----------
+	Windows 10:
 
 	Set the following environment variables (see System Properties/Environemnt Variables...):
 
@@ -67,9 +65,7 @@
 
         Generate Visual Studio project files with CMakeSetup.exe
 
-        Credits
-        -------
-
+        Credits:
         All sfx and music are from www.freesound.org
         Fonts http://www.dafont.com/cabin.font
         Music by https://mrthenoronha.bandcamp.com
