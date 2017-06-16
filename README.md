@@ -21,6 +21,8 @@
         - Music and sound
         - Advanced scoring system
 
+        Space restarts the game. M toggles the music on / off.
+
         Dependencies:
         - C++14 compliant compiler (e.g. clang 3.4, clang-802, Visual Studio 2015 / 2017)
         - C++14 compliant SDL implementation
@@ -45,13 +47,6 @@
         make test # will run the test suit.
 
         make run # will start the game
-
-        Space restarts the game. M toggles the music on / off.
-
-        Executables found here:
-
-        ./build/midas/midas
-        ./build/midas/midas_test
 
 	Windows 10
         ----------
