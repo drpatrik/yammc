@@ -68,7 +68,7 @@
 	The PATH should include all three libraries lib\x64 directories
 
 	Example:
-	PATH C:\SDL2-2.0.5\lib\x64;C:\SDL2_mixer\lib\x64;C:\SDL2_ttf-2.0.14\lib\x64;
+	PATH C:\SDL2-2.0.5\lib\x64;C:\SDL2_mixer\lib\x64;C:\SDL2_ttf-2.0.14\lib\x64
 
         Generate Visual Studio project files with CMakeSetup.exe
 
