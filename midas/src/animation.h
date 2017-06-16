@@ -9,13 +9,13 @@ namespace {
 const double kTimeResolution = static_cast<double>(1.0 / kFPS);
 
 const std::pair<int, int> CenterH(const Position& p, const std::vector<Position>& matches) {
-  int x = p.x() + Center(matches.size() * kSpriteWidth, kSpriteWidth);
+  int x = p.x() + Center(static_cast<int>(matches.size()) * kSpriteWidth, kSpriteWidth);
 
   return std::make_pair(x, p.y());
 }
 
 const std::pair<int, int> CenterV(const Position& p, const std::vector<Position>& matches) {
-  int y = p.y() + Center(matches.size() * kSpriteHeight, kSpriteHeight);
+  int y = p.y() + Center(static_cast<int>(matches.size()) * kSpriteHeight, kSpriteHeight);
 
   return std::make_pair(p.x(), y);
 }
@@ -51,7 +51,7 @@ std::pair<int, int> FindPositionForScoreAnimation(const std::vector<Position>& c
   // The chains are on different rows / cols
   // Need to find some clever algorithm to handle the
   // location of the position better
-  int chain_size = (n_matches >> 1);
+  int chain_size = static_cast<int>(n_matches >> 1);
   bool is_horizontal_chain = IsHorizontalChain(start, c_matches[chain_size - 1]);
   auto p = (is_horizontal_chain) ? c_matches[n_matches >> 1] : c_matches[chain_size >> 1];
 
@@ -372,8 +372,8 @@ public:
     x_ = cos(angle_) * kRadius;
     y_ = sin(angle_) * kRadius;
 
-    e1_.Render(*this, x_ + p1_.x(), y_ + p1_.y(), true);
-    e2_.Render(*this, x_ + p2_.x(), y_ + p2_.y(), true);
+    e1_.Render(*this, static_cast<int>(x_) + p1_.x(), static_cast<int>(y_) + p1_.y(), true);
+    e2_.Render(*this, static_cast<int>(x_) + p2_.x(), static_cast<int>(y_) + p2_.y(), true);
   }
 
   virtual bool IsReady() override { return (revolutions_ >= 3) ? true : false; }
@@ -425,7 +425,7 @@ public:
 
   virtual bool IsReady() override { return timer_ == kGameTime; }
 
-  int GetTimeLeft() const { return kGameTime - timer_; }
+  int GetTimeLeft() const { return static_cast<int>(kGameTime - timer_); }
 
   bool ShouldPlayHurryUp() {
     if (!hurry_up_played_ && GetTimeLeft() <= kHurryUpTimeLimit) {

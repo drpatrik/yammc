@@ -5,6 +5,8 @@
 
 #include <set>
 #include <functional>
+#include <iterator>
+#include <tuple>
 
 namespace {
   template<class T, class InputIt>
@@ -31,7 +33,7 @@ class Grid final {
 
   // This constructor is only used by the test suit
   Grid(const std::vector<std::vector<int>>& grid, AssetManagerInterface* am)
-      : rows_(grid.size()), cols_(grid.at(0).size()), asset_manager_(am) {
+      : rows_(static_cast<int>(grid.size())), cols_(static_cast<int>(grid.at(0).size())), asset_manager_(am) {
     grid_.resize(grid.size());
     for (int row = 0; row < rows_; row++) {
       grid_.at(row).resize(grid.at(0).size(), Element(0));

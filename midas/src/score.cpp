@@ -2,7 +2,6 @@
 
 #include <set>
 #include <fstream>
-
 namespace {
 
 const std::string kFilename("midas.shs");
@@ -50,7 +49,7 @@ std::pair<int, bool> CalculateScore(size_t matches, int& total_matches, int& cur
   int total_score = 0;
   bool threshold_reached;
 
-  total_matches += matches;
+  total_matches += static_cast<int>(matches);
   score += GetBasicScore(matches);
   score += GetScoreForConsecutiveMatches(consecutive_matches, previous_consecutive_matches);
 

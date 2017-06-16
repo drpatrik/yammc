@@ -20,12 +20,9 @@
         - Music and sound
         - Advanced scoring system
 
-        Next update might include:
-        - Windows port (Visual Studio 2015 or later)
-
         Dependencies:
-        - C++14 compliant compiler (only tested with clang)
-        - cmake 2.8.8
+        - C++14 compliant compiler
+        - cmake 2.8.8 or later
         - git
         - SDL2
         - SDL2_ttf
@@ -34,7 +31,7 @@
         The test suit requires catch - Catch will be automatically download and installed
         as part of the build process
 
-        Only tested under OSX. All my development machines are OSX and Linux these days.
+        Tested under OSX and Windows 10. It should run under Linux and GCC as well
 
         make
 
@@ -50,6 +47,24 @@
 
         ./build/midas/midas
         ./build/midas/midas_test
+
+	Windows Requirements
+
+	Tested with Visual Studio 2016 and 2017 64 bit only
+	Download and install SDL2, SDL2_Mixer and SDL2_TTF
+	Set the following environment variables (see System Properties/Environemnt Variables...):
+
+	SDL2DIR
+	SDL2MIXER
+	SDL2TTFDIR
+
+	Example:
+	SDL2DIR C:\SDL2-2.0.5 	
+	
+	The PATH should include all three libraries lib\x64 directories
+
+	Example:
+	PATH C:\SDL2-2.0.5\lib\x64;C:\SDL2_mixer\lib\x64;C:\SDL2_ttf-2.0.14\lib\x64;
 
         Credits:
         All sfx and music are from www.freesound.org

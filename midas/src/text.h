@@ -4,6 +4,7 @@
 
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <tuple>
 
 enum class Color { White, Blue, Red, Green, Black, Yellow, Cyan };
 

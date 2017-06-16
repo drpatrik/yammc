@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.8)
 project(midas)
 
+cmake_policy(SET CMP0054 OLD) 
+cmake_policy(SET CMP0045 OLD)
+
 # 3rdparty Libraries
 include(CMakeLists-Catch.txt)
 
