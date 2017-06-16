@@ -51,14 +51,14 @@
 
         Set the following environment variables (see System Properties/Environemnt Variables...):
 
-	SDL2DIR
-	SDL2MIXER
-	SDL2TTFDIR
+        SDL2DIR
+        SDL2MIXER
+        SDL2TTFDIR
 
-	Example:
-	SDL2DIR C:\SDL2-2.0.5
+        Example:
+        SDL2DIR C:\SDL2-2.0.5
 
-	The PATH should include all three libraries lib\x64 directories
+        The PATH should include all three libraries lib\x64 directories
 
 	Example:
 	PATH C:\SDL2-2.0.5\lib\x64;C:\SDL2_mixer\lib\x64;C:\SDL2_ttf-2.0.14\lib\x64
