@@ -25,7 +25,7 @@
 
         Dependencies:
         - C++14 compliant compiler (e.g. clang 3.4, clang-802, Visual Studio 2015 / 2017)
-        - C++14 compliant SDL implementation
+        - C++14 compliant STL implementation
         - cmake 2.8.8 or later
         - git
         - SDL2
