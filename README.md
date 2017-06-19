@@ -40,6 +40,8 @@
         OSX / Linux
         -----------
 
+        Install the required libries with (linux)brew.
+
         make
 
         will build the project, default is a release build. Ninja is used if available
