@@ -178,12 +178,13 @@ class ScoreAnimation final : public Animation {
                  int score,
                  const std::shared_ptr<AssetManager> &asset_manager)
       : Animation(renderer, grid, asset_manager), score_(score), chains_(chains) {
-    std::tie(x_, y_) = FindPositionForScoreAnimation(matches);
+    int x, y;
+    std::tie(x, y) = FindPositionForScoreAnimation(matches);
 
     int width, height;
     std::tie(texture_, width, height) = CreateTextureFromFramedText(*this, GetAsset().GetFont(Small), std::to_string(score_), Color::White, Color::Black);
 
-    rc_ = { static_cast<int>(x_) + Center(kSpriteWidth, width), static_cast<int>(y_) + Center(kSpriteHeight, height), width, height };
+    rc_ = { x + Center(kSpriteWidth, width), y + Center(kSpriteHeight, height), width, height };
     y_ = rc_.y;
     end_pos_ = y_ - kSpriteHeightTimes1_5;
   }
@@ -247,8 +248,8 @@ public:
       score_animation_.Update(delta);
       return;
     }
-    x_ += (75 * delta);
-    y_ += (75 * delta);
+    x_ += (75.0 * delta);
+    y_ += (75.0 * delta);
     scale_w_ -= (150 * delta);
     scale_h_ -= (150 * delta);
 
@@ -471,7 +472,7 @@ public:
   virtual void Start() override {}
 
   virtual void Update(double delta) override {
-    const SDL_Rect rc{100, 278, 71, 100};
+    const SDL_Rect rc{ 100, 278, 71, 100 };
 
     RenderCopy(explosion_texture_.at(frame_), rc);
     animation_ticks_ += delta;
