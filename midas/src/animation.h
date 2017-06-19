@@ -8,35 +8,9 @@ namespace {
 
 const double kTimeResolution = static_cast<double>(1.0 / kFPS);
 
-const std::pair<int, int> CenterH(const Position& p, const std::vector<Position>& matches) {
-  int x = p.x() + Center(static_cast<int>(matches.size()) * kSpriteWidth, kSpriteWidth);
-
-  return std::make_pair(x, p.y());
-}
-
-const std::pair<int, int> CenterV(const Position& p, const std::vector<Position>& matches) {
-  int y = p.y() + Center(static_cast<int>(matches.size()) * kSpriteHeight, kSpriteHeight);
-
-  return std::make_pair(p.x(), y);
-}
-
-bool IsHorizontalChain(const Position& start, const Position& end) {
-  return (start.row() == end.row());
-}
-
-std::pair<int, int> FindPositionForScoreAnimation(const std::vector<Position>& c_matches, int chains) {
-  const size_t n_matches = c_matches.size();
-  const Position start = c_matches[0];
-  const Position end = c_matches[n_matches - 1];
-
-  // All links of the chain or on the same column / row
-  if (chains == 1) {
-    if (IsHorizontalChain(start, end)) {
-      return CenterH(start, c_matches);
-    }
-    return CenterV(start, c_matches);
-  }
-  // Links on the chains is overlapping
+std::pair<int, int> FindPositionForScoreAnimation(const std::vector<Position>& c_matches) {
+  // If diamonds are overlapping use the overlapping diamond position
+  // as score position
   auto matches = c_matches;
 
   while (!matches.empty()) {
@@ -48,14 +22,25 @@ std::pair<int, int> FindPositionForScoreAnimation(const std::vector<Position>& c
       return std::make_pair(it->x(), it->y());
     }
   }
-  // The chains are on different rows / cols
-  // Need to find some clever algorithm to handle the
-  // location of the position better
-  int chain_size = static_cast<int>(n_matches >> 1);
-  bool is_horizontal_chain = IsHorizontalChain(start, c_matches[chain_size - 1]);
-  auto p = (is_horizontal_chain) ? c_matches[n_matches >> 1] : c_matches[chain_size >> 1];
+  // Center score within a bounding box
+  using RowCol = std::pair<int, int>;
 
-  return std::make_pair(p.x(), p.y());
+  RowCol upper_right_corner(kRows, 0);
+  RowCol lower_left_corner(0, kCols);
+
+  for (const auto& match : c_matches) {
+    upper_right_corner.first = std::min(upper_right_corner.first, match.row());
+    upper_right_corner.second = std::max(upper_right_corner.second, match.col());
+
+    lower_left_corner.first = std::max(lower_left_corner.first, match.row());
+    lower_left_corner.second = std::min(lower_left_corner.second, match.col());
+  }
+  const int x = col_to_pixel(lower_left_corner.second);
+  const int offset_x = Center((1 + (upper_right_corner.second - lower_left_corner.second)) * kSpriteWidth, kSpriteWidth);
+  const int y = row_to_pixel(upper_right_corner.first);
+  const int offset_y = Center((1 + (lower_left_corner.first - upper_right_corner.first)) * kSpriteHeight, kSpriteHeight);
+
+  return std::make_pair(x + offset_x, y + offset_y);
 }
 
 }
@@ -193,7 +178,7 @@ class ScoreAnimation final : public Animation {
                  int score,
                  const std::shared_ptr<AssetManager> &asset_manager)
       : Animation(renderer, grid, asset_manager), score_(score), chains_(chains) {
-    std::tie(x_, y_) = FindPositionForScoreAnimation(matches, chains_);
+    std::tie(x_, y_) = FindPositionForScoreAnimation(matches);
 
     int width, height;
     std::tie(texture_, width, height) = CreateTextureFromFramedText(*this, GetAsset().GetFont(Small), std::to_string(score_), Color::White, Color::Black);
