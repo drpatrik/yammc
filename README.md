@@ -1,6 +1,5 @@
 # yammc
 
-![screenshots](screenshots/midas-demo-1.png)
 ![screenshots](screenshots/midas-demo-2.png)
 
         Yet Another Midas Miner Clone in C++
@@ -40,7 +39,7 @@
         OSX / Linux
         -----------
 
-        Install the required libries with (linux)brew.
+        Install the required libries with (linux)brew or any other package manager.
 
         make
 
