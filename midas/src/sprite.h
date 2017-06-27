@@ -23,10 +23,10 @@ class Sprite final {
       : id_(s.id_), sprite_(s.sprite_), width_(s.width_), height_(s.height_),
         selected_sprite_(s.selected_sprite_) {}
 
-  Sprite(Sprite&& other) { Swap(*this, other); }
+  Sprite(Sprite&& other) { swap(*this, other); }
 
   Sprite& operator=(Sprite other) {
-    Swap(*this, other);
+    swap(*this, other);
 
     return *this;
   }
@@ -45,7 +45,7 @@ class Sprite final {
 
   bool IsEmpty() const { return (id_ == SpriteID::Empty || id_ == SpriteID::OwnedByAnimation); }
 
-  friend void Swap(Sprite& s1, Sprite& s2) {
+  friend void swap(Sprite& s1, Sprite& s2) {
     using std::swap;
 
     swap(s1.id_, s2.id_);
