@@ -105,9 +105,9 @@ public:
       std::swap(p1_, p2_);
     }
     std::swap(element1_, GetGrid().At(p1_));
-    rc1_ = {p1_.x(), p1_.y(), kSpriteWidth, kSpriteWidth};
+    rc1_ = { p1_.x(), p1_.y(), kSpriteWidth, kSpriteHeight };
     std::swap(element2_, GetGrid().At(p2_));
-    rc2_ = {p2_.x(), p2_.y(), kSpriteWidth, kSpriteHeight};
+    rc2_ = { p2_.x(), p2_.y(), kSpriteWidth, kSpriteHeight };
 
     if (p1_.row() == p2_.row()) {
       t1_ = &rc1_.x;
@@ -189,8 +189,6 @@ class ScoreAnimation final : public Animation {
     end_pos_ = y_ - kSpriteHeightTimes1_5;
   }
 
-  virtual ~ScoreAnimation() { SDL_DestroyTexture(texture_); }
-
   virtual void Start() override {
     switch (chains_) {
       case 1:
@@ -210,7 +208,7 @@ class ScoreAnimation final : public Animation {
     SDL_RenderGetClipRect(*this, &clip_rc);
     SDL_RenderSetClipRect(*this, NULL);
     rc_.y = static_cast<int>(y_);
-    RenderCopy(texture_, rc_);
+    RenderCopy(texture_.get(), rc_);
     y_ -= delta * 65.0;
     SDL_RenderSetClipRect(*this, &clip_rc);
   }
@@ -221,7 +219,7 @@ class ScoreAnimation final : public Animation {
   int score_;
   int chains_;
   SDL_Rect rc_;
-  SDL_Texture *texture_ = nullptr;
+  UniqueTexturePtr texture_ = nullptr;
   double end_pos_;
 };
 
@@ -505,15 +503,13 @@ public:
     rc_ = { kBlackAreaX + Center(kBlackAreadWidth, width), kBlackAreaY + Center(kBlackAreadHeight, height) , width, height };
   }
 
-  ~ThresholdReachedAnimation() {  SDL_DestroyTexture(texture_); }
-
   virtual void Start() override { GetAudio().PlaySound(SoundEffect::ThresholdReached); }
 
   virtual void Update(double delta) override {
     const double kFade = (ticks_ <= 0.6) ? 0.0 : 500.0;
 
-    SDL_SetTextureAlphaMod(texture_, static_cast<Uint8>(alpha_));
-    RenderCopy(texture_, rc_);
+    SDL_SetTextureAlphaMod(texture_.get(), static_cast<Uint8>(alpha_));
+    RenderCopy(texture_.get(), rc_);
 
     alpha_ -= delta * kFade;
     ticks_ += delta;
@@ -530,7 +526,7 @@ public:
 
 private:
   double alpha_ = 255.0;
-  SDL_Texture* texture_;
+  UniqueTexturePtr texture_;
   SDL_Rect rc_;
   double ticks_;
 };

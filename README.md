@@ -17,6 +17,7 @@
 
         Features:
         - Smooth Animation
+        - Many effects
         - Music and sound
         - Advanced scoring system
 
@@ -27,14 +28,14 @@
         - C++14 compliant STL implementation
         - cmake 2.8.8 or later
         - git
-        - SDL2
-        - SDL2_ttf
-        - SDL2_mixer
+        - SDL2 (x64 only)
+        - SDL2_ttf (x64 only)
+        - SDL2_mixer (x64 only)
 
         The test suit requires catch - Catch will be automatically downloaded and installed
         as part of the build process
 
-        Tested under OSX and Windows 10. It should run under Linux and GCC as well
+        Tested under OSX and x64 Windows 10. It should run under Linux and GCC as well
 
         OSX / Linux
         -----------
@@ -49,8 +50,8 @@
 
         make run # will start the game
 
-        Windows 10
-        ----------
+        64-bit Windows 10
+        -----------------
 
         Set the following environment variables (see System Properties/Environemnt Variables...):
 

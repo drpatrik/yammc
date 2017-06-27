@@ -36,9 +36,11 @@ class ScoreManagement final {
 
   bool NewHighScore() {
     if (!new_highscore_ && score_ > highscore_) {
+      score_ = highscore_;
       new_highscore_ = true;
       return true;
     }
+    highscore_ = std::max(highscore_, score_);
     return false;
   }
 

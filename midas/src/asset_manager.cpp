@@ -48,6 +48,12 @@ std::vector<SDL_Texture*> LoadTextures(SDL_Renderer *renderer, const std::string
   return textures;
 }
 
+void DeleteTexture(SDL_Texture* texture) {
+  if (texture != nullptr) {
+    SDL_DestroyTexture(texture);
+  }
+}
+
 }
 
 AssetManager::AssetManager(SDL_Renderer *renderer) {
@@ -56,7 +62,9 @@ AssetManager::AssetManager(SDL_Renderer *renderer) {
   std::vector<std::string> selected { "BlueSelected.bmp", "GreenSelected.bmp", "RedSelected.bmp", "YellowSelected.bmp", "PurpleSelected.bmp" };
 
   for (size_t i = 0; i < sprites.size(); ++i) {
-    sprites_.push_back(std::make_shared<Sprite>(ids_[i], LoadTexture(renderer, sprites[i]), LoadTexture(renderer, selected[i])));
+    auto texture = std::shared_ptr<SDL_Texture>(LoadTexture(renderer, sprites[i]), DeleteTexture);
+    auto selected_texture = std::shared_ptr<SDL_Texture>(LoadTexture(renderer, selected[i]), DeleteTexture);
+    sprites_.push_back(std::make_shared<Sprite>(ids_[i], texture, selected_texture));
   }
   sprites_.push_back(std::make_shared<Sprite>(Empty, nullptr, nullptr));
 
@@ -71,14 +79,12 @@ AssetManager::AssetManager(SDL_Renderer *renderer) {
   };
 
   for (const auto& f:fonts) {
-    fonts_.push_back(LoadFont(f.first, f.second));
+    fonts_.push_back(UniqueFontPtr{ LoadFont(f.first, f.second) });
   }
-  background_texture_ = LoadTexture(renderer, "BackGround.bmp");
+  background_texture_ = UniqueTexturePtr{ LoadTexture(renderer, "BackGround.bmp") };
 }
 
 AssetManager::~AssetManager() noexcept {
-  std::for_each(std::begin(fonts_), std::end(fonts_), [] (auto font) { TTF_CloseFont(font); });
   std::for_each(std::begin(star_textures_), std::end(star_textures_), [] (auto texture) { SDL_DestroyTexture(texture); });
   std::for_each(std::begin(explosion_texture_), std::end(explosion_texture_), [] (auto texture) { SDL_DestroyTexture(texture); });
-  SDL_DestroyTexture(background_texture_);
 }

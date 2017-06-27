@@ -2,20 +2,19 @@
 
 #include <iostream>
 #include <string>
-#include <unordered_map>
 
 namespace {
 
-std::vector<std::pair<std::string, int>> kSoundEffects = {
-  { "diamond-land.wav", MIX_MAX_VOLUME / 4},
+const std::vector<std::pair<std::string, int>> kSoundEffects = {
+  { "diamond-land.wav", MIX_MAX_VOLUME / 4 },
   { "explosion.wav", MIX_MAX_VOLUME },
-  { "move-successful.wav", MIX_MAX_VOLUME / 2},
-  { "move-unsuccessful.wav", MIX_MAX_VOLUME / 2},
+  { "move-successful.wav", MIX_MAX_VOLUME / 2 },
+  { "move-unsuccessful.wav", MIX_MAX_VOLUME / 2 },
   { "removed-one-chain.wav", MIX_MAX_VOLUME },
   { "removed-two-chains.wav", MIX_MAX_VOLUME },
   { "removed-many-chains.wav", MIX_MAX_VOLUME },
   { "threshold_reached.wav", MIX_MAX_VOLUME },
-  { "times-up.wav", MIX_MAX_VOLUME / 2},
+  { "times-up.wav", MIX_MAX_VOLUME / 2 },
   { "hint.wav", MIX_MAX_VOLUME },
   { "high-score.wav", MIX_MAX_VOLUME },
   { "hurryup.wav", MIX_MAX_VOLUME }
@@ -29,7 +28,7 @@ const std::string kAssetFolder = "../../assets/sfx/";
 Audio::Audio() {
   std::string full_path = kAssetFolder + "music-loop.wav";
 
-  music_ = Mix_LoadMUS(full_path.c_str());
+  music_ = UniqueMusicPtr{ Mix_LoadMUS(full_path.c_str()) };
 
   if (nullptr == music_) {
     std::cout << "Failed to load: " << full_path << ". Error: " << Mix_GetError() << std::endl;
@@ -46,24 +45,19 @@ Audio::Audio() {
 
     full_path = kAssetFolder + effect;
 
-    Mix_Chunk *chunk = Mix_LoadWAV(full_path.c_str());
+    auto chunk = UniqueChunkPtr{ Mix_LoadWAV(full_path.c_str()) };
 
     if (nullptr == chunk) {
       std::cout << "Failed to load: " << full_path << ". Error: " << Mix_GetError() << std::endl;
       exit(-1);
     }
-    sound_effects_.push_back(chunk);
-    Mix_VolumeChunk(chunk, volume);
+    Mix_VolumeChunk(chunk.get(), volume);
+    sound_effects_.push_back(std::move(chunk));
+
   }
 }
 
 Audio::~Audio() noexcept {
   Mix_HaltMusic();
   Mix_HaltChannel(-1);
-  if (nullptr != music_) {
-    Mix_FreeMusic(music_);
-  }
-  for (auto effect : sound_effects_) {
-    Mix_FreeChunk(effect);
-  }
 }

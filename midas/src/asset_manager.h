@@ -34,7 +34,7 @@ class AssetManager final : public AssetManagerInterface {
 
   virtual ~AssetManager() noexcept;
 
-  virtual SDL_Texture *GetBackgroundTexture() const { return background_texture_; }
+  virtual SDL_Texture *GetBackgroundTexture() const { return background_texture_.get(); }
 
   virtual std::shared_ptr<const Sprite> GetSprite() const override { return sprites_.at(distribution_(engine_)); }
 
@@ -55,28 +55,27 @@ class AssetManager final : public AssetManagerInterface {
     return sprites_.at(id);
   }
 
-  virtual std::vector<SDL_Texture*> GetStarTextures() const {
-    return star_textures_;
-  }
+  virtual std::vector<SDL_Texture*> GetStarTextures() const { return star_textures_; }
 
-  virtual std::vector<SDL_Texture*> GetExplosionTextures() const {
-    return explosion_texture_;
-  }
+  virtual std::vector<SDL_Texture*> GetExplosionTextures() const { return explosion_texture_; }
 
   virtual SDL_Texture * GetSpriteAsTexture(SpriteID id) const { return (*GetSprite(id))(); }
 
-  virtual TTF_Font *GetFont(int id) const { return fonts_[id]; }
+  virtual TTF_Font *GetFont(int id) const { return fonts_[id].get(); }
 
   virtual void ResetPreviousIds() override { previous_ids_ = std::vector<SpriteID>(kCols, SpriteID::Empty); }
 
   virtual const Audio& GetAudio() const { return audio_; }
 
  private:
-  std::vector<TTF_Font *> fonts_;
+  using UniqueFontPtr = std::unique_ptr<TTF_Font, function_caller<void(TTF_Font*), &TTF_CloseFont>>;
+  using UniqueTexturePtr = std::unique_ptr<SDL_Texture, function_caller<void(SDL_Texture*), &SDL_DestroyTexture>>;
+
+  std::vector<UniqueFontPtr> fonts_;
   std::vector<std::shared_ptr<const Sprite>> sprites_;
-  std::vector<SDL_Texture*> star_textures_;
-  std::vector<SDL_Texture*> explosion_texture_;
-  SDL_Texture* background_texture_;
+  std::vector<SDL_Texture *> star_textures_;
+  std::vector<SDL_Texture *> explosion_texture_;
+  UniqueTexturePtr background_texture_;
   Audio audio_;
   mutable std::vector<SpriteID> previous_ids_ = std::vector<SpriteID>(kCols, SpriteID::Empty);
   mutable std::mt19937 engine_ {std::random_device{}()};

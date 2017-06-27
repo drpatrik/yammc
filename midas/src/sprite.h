@@ -1,6 +1,6 @@
 #pragma once
 
-#include <utility>
+#include <memory>
 
 #include <SDL.h>
 
@@ -10,32 +10,34 @@ class Sprite final {
  public:
   explicit Sprite(SpriteID id) : id_(id) {}
 
-  Sprite(SpriteID id, SDL_Texture *sprite, SDL_Texture *selected_sprite) : id_(id), sprite_(sprite), selected_sprite_(selected_sprite) {
+  Sprite(SpriteID id, const std::shared_ptr<SDL_Texture> &sprite,
+         const std::shared_ptr<SDL_Texture> &selected_sprite)
+      : id_(id), sprite_(sprite), selected_sprite_(selected_sprite) {
     Uint32 format;
     int access;
 
-    SDL_QueryTexture(sprite_, &format, &access, &width_, &height_);
+    SDL_QueryTexture(sprite_.get(), &format, &access, &width_, &height_);
   }
 
-  Sprite(const Sprite& s) : id_(s.id_), sprite_(s.sprite_), width_(s.width_), height_(s.height_), selected_sprite_(s.selected_sprite_) {}
+  Sprite(const Sprite &s)
+      : id_(s.id_), sprite_(s.sprite_), width_(s.width_), height_(s.height_),
+        selected_sprite_(s.selected_sprite_) {}
 
-  Sprite(Sprite&& other) {
-    swap(*this, other);
-  }
+  Sprite(Sprite&& other) { Swap(*this, other); }
 
   Sprite& operator=(Sprite other) {
-    swap(*this, other);
+    Swap(*this, other);
 
     return *this;
   }
 
   SpriteID id() const { return id_; }
 
-  SDL_Texture* operator()() const { return sprite_; }
+  SDL_Texture* operator()() const { return sprite_.get(); }
 
-  SDL_Texture* sprite() const { return sprite_; }
+  SDL_Texture* sprite() const { return sprite_.get(); }
 
-  SDL_Texture* selected_sprite() const { return selected_sprite_; }
+  SDL_Texture* selected_sprite() const { return selected_sprite_.get(); }
 
   int width() const { return width_; }
 
@@ -43,7 +45,7 @@ class Sprite final {
 
   bool IsEmpty() const { return (id_ == SpriteID::Empty || id_ == SpriteID::OwnedByAnimation); }
 
-  friend void swap(Sprite& s1, Sprite& s2) {
+  friend void Swap(Sprite& s1, Sprite& s2) {
     using std::swap;
 
     swap(s1.id_, s2.id_);
@@ -55,8 +57,8 @@ class Sprite final {
 
  private:
   SpriteID id_;
-  SDL_Texture* sprite_ = nullptr;
+  std::shared_ptr<SDL_Texture> sprite_;
   int width_ = 0;
   int height_ = 0;
-  SDL_Texture* selected_sprite_ = nullptr;
+  std::shared_ptr<SDL_Texture> selected_sprite_;
 };

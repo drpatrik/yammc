@@ -95,5 +95,4 @@ void ScoreManagement::Update(const std::vector<Position>& matches, int chains) {
     threshold_reached_ = true;
   }
   score_ += score;
-  highscore_ = std::max(highscore_, score_);
 }
