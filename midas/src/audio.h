@@ -3,6 +3,7 @@
 #include "function_caller.h"
 
 #include <vector>
+#include <memory>
 
 #include <SDL_mixer.h>
 

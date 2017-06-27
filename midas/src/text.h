@@ -4,6 +4,7 @@
 
 #include <tuple>
 #include <string>
+#include <memory>
 
 #include <SDL.h>
 #include <SDL_ttf.h>
