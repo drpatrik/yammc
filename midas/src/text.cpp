@@ -36,11 +36,7 @@ std::tuple<UniqueTexturePtr, int, int> CreateTextureFromText(SDL_Renderer *rende
 }
 
 void RenderText(SDL_Renderer *renderer, int x, int y, TTF_Font *font, const std::string& text, Color text_color) {
-  UniqueTexturePtr texture;
-  int width;
-  int height;
-
-  std::tie(texture, width, height) = CreateTextureFromText(renderer, font, text, text_color);
+  auto [texture, width, height] = CreateTextureFromText(renderer, font, text, text_color);
 
   SDL_Rect rc{ x, y, width, height };
 

@@ -38,11 +38,8 @@ Audio::Audio() {
   Mix_AllocateChannels(kMixChannels);
   Mix_VolumeMusic(MIX_MAX_VOLUME / 3);
 
-  std::string effect;
-  int volume;
-
   for (auto effect_entry : kSoundEffects) {
-    std::tie(effect, volume) = effect_entry;
+    auto [effect, volume] = effect_entry;
 
     full_path = kAssetFolder + effect;
 

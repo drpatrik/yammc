@@ -20,9 +20,7 @@ bool IsSwapValid(const Position& old_pos, const Position& new_pos) {
 }
 
 bool RunAnimation(std::deque<std::shared_ptr<Animation>>& animations, double delta_time) {
-  auto it = std::begin(animations);
-
-  while (it != std::end(animations)) {
+  for (auto it = std::begin(animations); it != std::end(animations);) {
     (*it)->Update(delta_time);
     if ((*it)->IsReady()) {
       it = animations.erase(it);
@@ -35,9 +33,7 @@ bool RunAnimation(std::deque<std::shared_ptr<Animation>>& animations, double del
 }
 
 void RemoveIdleAnimations(std::deque<std::shared_ptr<Animation>>& animations) {
-  auto it = std::begin(animations);
-
-  while (it != std::end(animations)) {
+  for (auto it = std::begin(animations); it != std::end(animations);) {
     if ((*it)->Idle()) {
       it = animations.erase(it);
     } else {
@@ -105,12 +101,7 @@ std::shared_ptr<Animation> Board::ShowHint() {
   if (timer_animation_->IsReady()) {
     return nullptr;
   }
-  bool matches_found;
-  std::pair<Position, Position> match_pos;
-
-  std::tie(matches_found, match_pos) = grid_->FindPotentialMatches();
-
-  if (matches_found) {
+  if (auto [matches_found, match_pos] = grid_->FindPotentialMatches(); matches_found) {
     return std::make_shared<HintAnimation>(renderer_, *grid_, match_pos.first, match_pos.second, asset_manager_);
   }
   return nullptr;
@@ -144,9 +135,7 @@ std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) 
     first_selected_ = selected;
   } else {
     if (IsSwapValid(first_selected_, selected)) {
-      std::vector<Position> matches;
-      int chains;
-      std::tie(matches, chains) = grid_->GetMatchesFromSwap(first_selected_, selected);
+      auto [matches, chains] = grid_->GetMatchesFromSwap(first_selected_, selected);
 
       animations.emplace_back(std::make_shared<SwapAnimation>(renderer_, *grid_, first_selected_, selected, !matches.empty(), asset_manager_));
 
@@ -200,11 +189,7 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
     RunAnimation(active_animations_, delta_time);
 
     if (CanUpdateBoard(active_animations_) && CanUpdateBoard(queued_animations_)) {
-      std::vector<Position> moved_objects;
-      std::vector<Position> matches;
-      int chains;
-
-      std::tie(moved_objects, matches, chains) = grid_->Collaps(score_.GetConsecutiveMatchesRef(),
+      auto [moved_objects, matches, chains] = grid_->Collaps(score_.GetConsecutiveMatchesRef(),
                                                                 score_.GetPreviousConsecutiveMatchesRef());
 
       score_.Update(matches, chains);
@@ -227,10 +212,7 @@ void Board::UpdateStatus(double delta, int x, int y) {
   if (score_.NewHighScore()) {
     asset_manager_->GetAudio().PlaySound(HighScore);
   }
-  int score;
-  int highscore;
-
-  std::tie(score, highscore) = score_.GetDisplayedScore(delta);
+  auto [score, highscore] = score_.GetDisplayedScore(delta);
 
   RenderText(x, y, Font::Normal, "Score:", Color::White);
   RenderText(x + 74, y, Font::Normal, std::to_string(score), score_.GetColor());

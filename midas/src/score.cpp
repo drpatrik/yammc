@@ -46,14 +46,12 @@ int GetScoreForConsecutiveMatches(int consecutive_matches, int& previous_consecu
 std::pair<int, bool> CalculateScore(size_t matches, int& total_matches, int& current_threshold_step,
                                     int consecutive_matches, int& previous_consecutive_matches) {
   int score = 0;
-  int total_score = 0;
-  bool threshold_reached;
 
   total_matches += static_cast<int>(matches);
   score += GetBasicScore(matches);
   score += GetScoreForConsecutiveMatches(consecutive_matches, previous_consecutive_matches);
 
-  std::tie(total_score, threshold_reached) = GetScoreForTotalMatches(total_matches, current_threshold_step);
+  auto [total_score, threshold_reached] = GetScoreForTotalMatches(total_matches, current_threshold_step);
 
   return std::make_pair(score + total_score, threshold_reached);
 }
@@ -86,9 +84,7 @@ void ScoreManagement::Update(const std::vector<Position>& matches, int chains) {
   consecutive_matches_ += chains;
   size_t unique_matches = std::set<Position>(matches.begin(), matches.end()).size();
 
-  int score;
-  bool threshold_reached;
-  std::tie(score, threshold_reached) = CalculateScore(unique_matches, total_matches_, current_threshold_step_,
+  auto [score, threshold_reached] = CalculateScore(unique_matches, total_matches_, current_threshold_step_,
                                                       consecutive_matches_, previous_consecutive_matches_);
 
   if (threshold_reached) {

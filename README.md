@@ -24,7 +24,7 @@
         Space restarts the game. M toggles the music on / off.
 
         Dependencies:
-        - C++14 compliant compiler (e.g. clang 3.4, clang-802, Visual Studio 2015 / 2017)
+        - C++17 compliant compiler (e.g. clang 4, clang-9.0.0, Visual Studio 2017.3 [P2])
         - C++14 compliant STL implementation
         - cmake 2.8.8 or later
         - git
@@ -40,7 +40,7 @@
         OSX / Linux
         -----------
 
-        Install the required libries with (linux)brew or any other package manager.
+        Install the required libraries with (linux)brew or any other package manager.
 
         make
 
@@ -53,7 +53,7 @@
         64-bit Windows 10
         -----------------
 
-        Set the following environment variables (see System Properties/Environemnt Variables...):
+        Set the following environment variables (see System Properties/Environment Variables...):
 
         SDL2DIR
         SDL2MIXER

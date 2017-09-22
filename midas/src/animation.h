@@ -16,9 +16,8 @@ std::pair<int, int> FindPositionForScoreAnimation(const std::vector<Position>& c
   while (!matches.empty()) {
     auto match = matches.back();
     matches.pop_back();
-    auto it = std::find(std::begin(matches), std::end(matches), match);
 
-    if (it != std::end(matches)) {
+    if (auto it = std::find(std::begin(matches), std::end(matches), match); it != std::end(matches)) {
       return std::make_pair(it->x(), it->y());
     }
   }
@@ -178,8 +177,7 @@ class ScoreAnimation final : public Animation {
                  int score,
                  const std::shared_ptr<AssetManager> &asset_manager)
       : Animation(renderer, grid, asset_manager), score_(score), chains_(chains) {
-    int x, y;
-    std::tie(x, y) = FindPositionForScoreAnimation(matches);
+    auto [x, y] = FindPositionForScoreAnimation(matches);
 
     int width, height;
     std::tie(texture_, width, height) = CreateTextureFromFramedText(*this, GetAsset().GetFont(Small), std::to_string(score_), Color::White, Color::Black);
@@ -383,8 +381,7 @@ public:
 
   virtual void Update(double delta) override {
     const size_t kTimerStep = static_cast<size_t>(double(kGameTime) / coordinates_.size());
-    int x, y;
-    std::tie(x, y) = coordinates_[step_];
+    auto [x, y] = coordinates_[step_];
 
     RenderCopy(star_textures_.at(frame_), { x - 15, y - 15, 30, 30 });
 
@@ -498,6 +495,7 @@ public:
     const std::string kText = std::to_string(value - (value % kThresholdMultiplier)) + " diamonds cleared";
 
     int width, height;
+
     std::tie(texture_, width, height) = CreateTextureFromText(*this, GetAsset().GetFont(Large), kText, Color::White);
 
     rc_ = { kBlackAreaX + Center(kBlackAreadWidth, width), kBlackAreaY + Center(kBlackAreadHeight, height) , width, height };
