@@ -14,7 +14,9 @@ class Board final {
 
   operator SDL_Window*() const { return window_; }
 
-  void Restart();
+  void Restart(bool music_on = true);
+
+  bool IsGameOver() const { return game_over_; }
 
   std::shared_ptr<Animation> ShowHint();
 

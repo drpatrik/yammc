@@ -85,7 +85,7 @@ Board::~Board() noexcept {
   SDL_DestroyWindow(window_);
 }
 
-void Board::Restart() {
+void Board::Restart(bool music_on) {
   score_.Reset();
   game_over_ = false;
   active_animations_.clear();
@@ -94,7 +94,9 @@ void Board::Restart() {
   grid_ = std::make_unique<Grid>(kRows, kCols, asset_manager_.get());
   timer_animation_ = std::make_shared<TimerAnimation>(renderer_, *grid_.get(), asset_manager_);
   asset_manager_->GetAudio().StopSound();
-  asset_manager_->GetAudio().PlayMusic();
+  if (music_on) {
+    asset_manager_->GetAudio().PlayMusic();
+  }
 }
 
 std::shared_ptr<Animation> Board::ShowHint() {
