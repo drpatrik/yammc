@@ -1,9 +1,10 @@
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
 
-#include <initializer_list>
 #include "animation.h"
 #include "grid.h"
+
+#include <initializer_list>
+#include "catch.hpp"
 
 class AssetManagerMock : public AssetManagerInterface {
  public:
@@ -49,28 +50,6 @@ TEST_CASE("FindAllMatchesAndChains") {
   REQUIRE(matches.size() == 21ul);
   REQUIRE(chains == 7);
 }
-
-/*TEST_CASE("FindAllMatchesAndChains2") {
-  std::vector<std::vector<int>> init_grid {
-    {6, 6, 6, 6, 6, 6, 6, 6},  // 6 // 1 chains (6H) 7(h)
-    {6, 6, 6, 6, 6, 6, 6, 6}, // 1
-    {0, 0, 1, 1, 1, 1, 6, 6}, // 2 // chains (7V)
-    {6, 6, 6, 6, 6, 6, 6, 6}, // 3
-    {6, 6, 6, 6, 6, 6, 6, 6}, // 4 // 1 chain (28H)
-    {6, 6, 6, 6, 6, 6, 6, 6}, // 5 // 1 chain (28V)
-    {6, 6, 6, 6, 6, 6, 6, 6}, // 6
-    {6, 6, 6, 6, 6, 6, 6, 6}, // 7 2 chains (56H, 61H)
-    {6, 1, 6, 1, 6, 1, 6, 6}          // 8
-  };
-  Grid grid(init_grid, &kAssetManagerMock);
-
-  std::vector<Position> matches;
-  int chains;
-
-  std::tie(matches, chains) = grid.GetAllMatches();
-
-  std::cout << chains << std::endl;
-  }*/
 
 TEST_CASE("TestIsMatch") {
   std::vector<std::vector<int>> init_grid {
@@ -212,29 +191,4 @@ TEST_CASE("FindPotentialMatches") {
   std::tie(matches_found, swap_to_match) = grid_no_matches.FindPotentialMatches();
 
   REQUIRE(matches_found == false);
-}
-
-TEST_CASE("DISABLED_TestFindPositionForScoreAnimation") {
-  std::vector<std::vector<int>> init_grid {
-    {5, 5, 5, 5, 5, 5, 5, 5}, // 0
-    {5, 1, 1, 1, 5, 5, 5, 5}, // 1
-    {5, 5, 5, 1, 5, 5, 5, 5}, // 2
-    {5, 5, 5, 1, 5, 5, 5, 5}, // 3
-    {5, 5, 5, 5, 5, 5, 5, 5}, // 4
-    {5, 5, 5, 5, 5, 5, 5, 5}, // 5
-    {5, 5, 5, 5, 5, 5, 5, 5}, // 6
-    {5, 5, 5, 5, 5, 5, 5, 5}, // 7
-    {5, 5, 5, 5, 5, 5, 5, 5}, // 8
-
-  };
-  Grid grid(init_grid, &kAssetManagerMock);
-
-  std::vector<Position> matches;
-  int chains;
-
-  std::tie(matches, chains) = grid.GetAllMatches();
-
-  // std::cout << matches.size() << std::endl;
-
-  //FindPositionForScoreAnimation(matches, chains).Print();
 }
