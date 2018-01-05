@@ -23,9 +23,9 @@ class Sprite final {
       : id_(s.id_), sprite_(s.sprite_), width_(s.width_), height_(s.height_),
         selected_sprite_(s.selected_sprite_) {}
 
-  Sprite(Sprite&& other) { swap(*this, other); }
+  Sprite(Sprite&& other) noexcept { swap(*this, other); }
 
-  Sprite& operator=(Sprite other) {
+  Sprite& operator=(Sprite other) noexcept {
     swap(*this, other);
 
     return *this;
