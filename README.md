@@ -81,7 +81,7 @@ PATH C:\SDL2-2.0.5\lib\x64;C:\SDL2_mixer\lib\x64;C:\SDL2_ttf-2.0.14\lib\x64
 
 Generate Visual Studio project files with CMakeSetup.exe
 
-##Credits
+## Credits
 
         All sfx and music are from www.freesound.org
         Fonts http://www.dafont.com/cabin.font
