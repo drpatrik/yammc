@@ -83,9 +83,9 @@ Generate Visual Studio project files with CMakeSetup.exe
 
 ##Credits
 
-All sfx and music are from www.freesound.org
-Fonts http://www.dafont.com/cabin.font
-Music by https://mrthenoronha.bandcamp.com
-FindSDL2_mixer https://github.com/rlsosborne/doom
-DeltaTimer adapted from http://headerphile.com/sdl2/sdl2-part-9-no-more-delays/
-https://github.com/philsquared/Catch
+        All sfx and music are from www.freesound.org
+        Fonts http://www.dafont.com/cabin.font
+        Music by https://mrthenoronha.bandcamp.com
+        FindSDL2_mixer https://github.com/rlsosborne/doom
+        DeltaTimer adapted from http://headerphile.com/sdl2/sdl2-part-9-no-more-delays/
+        https://github.com/philsquared/Catch
