@@ -1,4 +1,4 @@
-# yammc - Yet Another Midas Miner Clone in C++
+# YAMMC - Yet Another Midas Miner Clone
 
 ![screenshots](screenshots/midas-demo-2.png)
 
@@ -18,7 +18,14 @@ http://www.royalgames.com/games/puzzle-games/midas-miner
 * Music and sound
 * Advanced scoring system
 
-**Space** restarts the game. **M** toggles the music on / off.
+**Keyboard Commands**
+
+Key | Action
+--- | ------
+Space  | Restart
+M | Toggle music on/off
+Trackpad / Mouse| Move cursor
+Button 1|Select
 
 ## Build YAMMC
 
