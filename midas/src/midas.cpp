@@ -33,6 +33,7 @@ class MidasMiner {
 
   ~MidasMiner() {
     SDL_Quit();
+    TTF_Quit();
     Mix_CloseAudio();
     Mix_Quit();
   }
