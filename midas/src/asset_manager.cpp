@@ -7,7 +7,11 @@ namespace {
 const size_t kStarTextures = 12;
 const size_t kExplosionTextures = 17;
 
+#if defined(__linux__)
+const std::string kAssetFolder = "assets/";
+#else
 const std::string kAssetFolder = "../../assets/";
+#endif
 
 SDL_Texture* LoadTexture(SDL_Renderer *renderer, const std::string& name) {
   std::string full_path =  kAssetFolder + "art/" + name;

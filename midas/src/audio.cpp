@@ -22,8 +22,11 @@ const std::vector<std::pair<std::string, int>> kSoundEffects = {
 };
 
 const int kMixChannels = 16;
+#if defined(__linux__)
+const std::string kAssetFolder = "assets/sfx/";
+#else
 const std::string kAssetFolder = "../../assets/sfx/";
-
+#endif
 }
 
 Audio::Audio() {

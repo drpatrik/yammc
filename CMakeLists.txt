@@ -1,8 +1,13 @@
-cmake_minimum_required(VERSION 2.8.8)
 project(midas)
 
-cmake_policy(SET CMP0054 OLD)
-cmake_policy(SET CMP0045 OLD)
+cmake_policy(SET CMP0054 NEW)
+cmake_policy(SET CMP0045 NEW)
+
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
+  cmake_minimum_required(VERSION 3.10.0)
+else()
+  cmake_minimum_required(VERSION 3.5.0)
+endif()
 
 # 3rdparty Libraries
 include(CMakeLists-Catch.txt)
@@ -11,9 +16,12 @@ include(CMakeLists-Catch.txt)
 set(BIN_DIR ${midas_BUILD_DIR}/)
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -pedantic -std=c++1z")
-   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -g")
-   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -pedantic -std=c++1z")
+  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  endif()
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -g")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
    if (CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
       string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")

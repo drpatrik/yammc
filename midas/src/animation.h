@@ -387,7 +387,8 @@ public:
 
     animation_ticks_ += delta;
     if (animation_ticks_ >= kTimeResolution) {
-      frame_ = (++frame_ % star_textures_.size());
+      frame_++;
+      frame_ = (frame_ % star_textures_.size());
       animation_ticks_ = 0.0;
     }
     movement_ticks_ += delta;
