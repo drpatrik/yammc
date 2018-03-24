@@ -41,8 +41,6 @@ Button 1|Select
 The test suit requires catch - Catch will be automatically downloaded and installed
 as part of the build process
 
-Tested under OSX and x64 Windows 10. It should run under Linux and GCC as well
-
 **OSX / Linux**
 
 Install the required libraries with apt/brew or any other package manager.
