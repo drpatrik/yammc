@@ -82,6 +82,7 @@ You need to set these flag before running make:
 ```bash
 export PATH=/usr/local/gcc-7.3.0/bin:$PATH
 export CXX=gcc-7.3.0
+```
 
 **64-bit Windows 10**
 
