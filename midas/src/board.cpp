@@ -62,7 +62,7 @@ std::string FormatTime(size_t seconds) {
 
 Board::Board() {
   window_ = SDL_CreateWindow("Yet Another Midas Clone", SDL_WINDOWPOS_UNDEFINED,
-                             SDL_WINDOWPOS_UNDEFINED, kWidth, kHeight, SDL_WINDOW_RESIZABLE);
+                             SDL_WINDOWPOS_UNDEFINED, kWidth, kHeight, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
   if (nullptr == window_) {
     std::cout << "Failed to create window : " << SDL_GetError() << std::endl;
     exit(-1);
@@ -72,7 +72,7 @@ Board::Board() {
     std::cout << "Failed to create renderer : " << SDL_GetError() << std::endl;
     exit(-1);
   }
-  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
+  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
   SDL_RenderSetLogicalSize(renderer_, kWidth, kHeight);
 
   asset_manager_ = std::make_shared<AssetManager>(renderer_);
@@ -154,6 +154,10 @@ std::vector<std::shared_ptr<Animation>> Board::ButtonPressed(const Position& p) 
 }
 
 void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, double delta_time) {
+  if (set_window_size_) {
+    SDL_SetWindowSize(window_, kWidth, kHeight);
+    set_window_size_ = false;
+  }
   SDL_RenderClear(renderer_);
   SDL_RenderCopy(renderer_, asset_manager_->GetBackgroundTexture(), nullptr, nullptr);
 

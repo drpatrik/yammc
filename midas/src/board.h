@@ -58,4 +58,5 @@ class Board final {
   std::deque<std::shared_ptr<Animation>> queued_animations_;
   std::deque<std::shared_ptr<Animation>> active_animations_;
   std::shared_ptr<TimerAnimation> timer_animation_;
+  bool set_window_size_ = true;
 };
