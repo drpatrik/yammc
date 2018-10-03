@@ -25,7 +25,7 @@ class MidasMiner {
       std::cout << "TTF_Init Error: " << TTF_GetError() << std::endl;
       exit(-1);
     }
-    if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) != 0) {
+    if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024) != 0) {
       std::cout << "Mix_OpenAudio Error: " << Mix_GetError() << std::endl;
       exit(-1);
     }
