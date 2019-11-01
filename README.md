@@ -9,9 +9,7 @@ If someone disagree please let me know and I will remove it.
 My goal is to make the game better then the original:
 http://www.royalgames.com/games/puzzle-games/midas-miner
 
-YAMMC has been tested and works under Windows 10 (x64 only),
-OSX 10.12/10.13, Raspian GNU/Linux 9 (stretch) and Ubuntu 16.04
-
+YAMMC has been tested and works under Windows 10 (x64 only), OSX 10.12/10.13/10.14/10.15, Raspian GNU/Linux 9/10 (stretch/buster) and Ubuntu 16.04
 **Features:**
 * Smooth Animation
 * Many effects
@@ -30,7 +28,7 @@ Button 1|Select
 ## Build YAMMC
 
 **Dependencies:**
-* C++17 compliant compiler (e.g. clang 4/5, clang-9.0.0, Visual Studio 2017.3 or GCC 7.x.x)
+* C++17 compliant compiler (e.g. clang 4 or newer, Visual Studio 2017.3 / 2019 or GCC 7.x.x)
 * cmake 3.10.0 or later (Windows) or 3.5.0 or later (OSX/Linux)
 * git
 * SDL2 (x64 only)
@@ -42,7 +40,7 @@ as part of the build process
 
 **OSX / Linux**
 
-Install the required libraries with apt/brew or any other package manager.
+Install the required libraries with apt/brew or any other package manager. Under Linux / Raspian install libsdl2-dev, libsdl2-ttf-dev and libsdl2-mixer-dev
 
 Builds the project, default is a release build. Ninja is used if available:
 
@@ -71,17 +69,28 @@ make cppcheck
 
 You need to activate the OpenGL driver otherwise the game will be far to slow.
 
-The code builds cleanly and has been tested with GCC 7.3.0, instructions how
-to install the compiler can be found here:
+The code builds cleanly and has been tested with GCC 7.3 / 9.2 (with some warnings) and Clang 6 / 8 / 9.  instructions how
+to install the compilers can be found here:
 
 https://solarianprogrammer.com/2017/12/08/raspberry-pi-raspbian-install-gcc-compile-cpp-17-programs/
+https://solarianprogrammer.com/2018/04/22/raspberry-pi-raspbian-install-clang-compile-cpp-17-programs/
 
-You need to set these flag before running make:
+You need to set these environment variables before running make:
 
 ```bash
 export PATH=/usr/local/gcc-7.3.0/bin:$PATH
 export CXX=gcc-7.3.0
 ```
+
+or
+
+```bash
+export PATH=/usr/local/clang_6.0.0/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/clang_6.0.0/lib:$LD_LIBRARY_PATH
+export CXX=clang
+```
+
+If you install a newer version of gcc or clang ensure that you update PATH/LD_LIBRARY/CXX settings accordingly.
 
 **64-bit Windows 10**
 
