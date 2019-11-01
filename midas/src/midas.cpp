@@ -58,14 +58,16 @@ class MidasMiner {
         }
         switch (event.type) {
           case SDL_KEYDOWN:
-            if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+            if (SDL_SCANCODE_Q == event.key.keysym.scancode) {
+              quit = true;
+              break;
+            } else if (SDL_SCANCODE_SPACE == event.key.keysym.scancode) {
               board.Restart(music_on);
               animations.clear();
               idle_penalty_timer.Reset();
               show_hint_timer.Reset();
               delta_timer.Reset();
-            }
-            if (!board.IsGameOver() && event.key.keysym.scancode == SDL_SCANCODE_M) {
+            } else if (!board.IsGameOver() && SDL_SCANCODE_M == event.key.keysym.scancode) {
               music_on = !music_on;
               if (music_on) {
                 board.GetAsset().GetAudio().PlayMusic();
