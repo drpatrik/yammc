@@ -178,9 +178,8 @@ void Board::Render(const std::vector<std::shared_ptr<Animation>>& animations, do
 
     SDL_RenderSetClipRect(renderer_, &kClipRect);
 
-    for (const auto& a:animations) {
-      queued_animations_.emplace_back(a);
-    }
+    std::copy(animations.begin(), animations.end(), std::back_inserter(queued_animations_));
+
     if (CanUpdateBoard(active_animations_) && !queued_animations_.empty()) {
       auto animation = queued_animations_.front();
       queued_animations_.pop_front();

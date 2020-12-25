@@ -9,7 +9,7 @@ If someone disagree please let me know and I will remove it.
 My goal is to make the game better then the original:
 http://www.royalgames.com/games/puzzle-games/midas-miner
 
-YAMMC has been tested and works under Windows 10 (x64 only), OSX 10.12/10.13/10.14/10.15, Raspian GNU/Linux 9/10 (stretch/buster) and Ubuntu 16.04
+YAMMC has been tested and works under Windows 10 (x64 only), OSX 10.12/10.13/10.14/10.15/11.00, Raspian GNU/Linux 9/10 (stretch/buster) and Ubuntu 16.04
 **Features:**
 * Smooth Animation
 * Many effects
@@ -29,7 +29,7 @@ Button 1|Select
 
 **Dependencies:**
 * C++17 compliant compiler (e.g. clang 4 or newer, Visual Studio 2017.3 / 2019 or GCC 7.x.x)
-* cmake 3.10.0 or later (Windows) or 3.5.0 or later (OSX/Linux)
+* cmake 3.10.0 or later (Windows) or 3.0.0 or later (OSX/Linux)
 * git
 * SDL2 (x64 only)
 * SDL2_ttf (x64 only)

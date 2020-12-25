@@ -82,9 +82,9 @@ AssetManager::AssetManager(SDL_Renderer *renderer) {
     std::make_pair("Cabin-Bold.ttf", kLargeFontSize)
   };
 
-  for (const auto& f:fonts) {
-    fonts_.push_back(UniqueFontPtr{ LoadFont(f.first, f.second) });
-  }
+  std::transform(fonts.begin(), fonts.end(), std::back_inserter(fonts_),
+                 [](const auto& f) { return UniqueFontPtr{ LoadFont(f.first, f.second) }; });
+
   background_texture_ = UniqueTexturePtr{ LoadTexture(renderer, "BackGround.bmp") };
 }
 

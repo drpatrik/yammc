@@ -1,7 +1,5 @@
 project(midas)
 
-add_definitions(-DASSETS_FOLDER="${midas_SOURCE_DIR}/assets/" )
-
 include_directories(${SDL2_INCLUDE_DIR} ${SDL2_TTF_INCLUDE_DIR})
 include_directories(${SDL2_MIXER_INCLUDE_DIRS})
 
